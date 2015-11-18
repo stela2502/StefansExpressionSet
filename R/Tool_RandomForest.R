@@ -306,16 +306,22 @@ calculate_RF <- function (datRF = NULL, mtry1=3, no.rep= 20, no.tree= 500, addcl
 }
 
 
-prepareRFcalc <- function( x, trees=433, forrests=7, pocs=32, opath ) {
+prepareRFcalc <- function( x, trees=433, forrests=7, pocs=32, opath, debug=F ) {
 	UseMethod('prepareRFcalc', x)
 }
-prepareRFcalc.ExpressionSet <- function( x, trees=433, forrests=7, pocs=32, opath ) {
+prepareRFcalc.ExpressionSet <- function( x, trees=433, forrests=7, pocs=32, opath, debug=F ) {
 	print ( install.path )
 	datRF <- x$data
 	save( datRF, file=paste(opath,'datRF.RData',sep="/" ) )
+	if ( debug) {
+		debug = ' -debug '
+	}
+	else {
+		debug =''
+	}
 	system ( paste( "perl ", install.path,"/../scripts/CreateRandomForestScripts.pl -infile ",
 					paste(opath,'datRF.RData',sep="/" ), " -splits ",pocs, " -trees ", trees, 
 					" -forrests ",forrests , " -outfile ", paste(opath,"RandomForestTransfereData.tar.gz", sep='/'), sep='' ) )
-	paste( "Please copy the file",paste(opath,"RandomForestTransfereData.tar.gz", sep='/'),
+	paste( "Please copy the file",paste(opath,"RandomForestTransfereData.tar.gz", debug, sep='/'),
 			"to the calculation server and run the script 'submit_RF_to_qsub.pl -files randomForest_worker_*.R'")
 }
