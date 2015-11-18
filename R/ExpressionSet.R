@@ -319,6 +319,7 @@ addAnnotation.NGSexpressionSet <- function(x ,mart, mart.col='refseq_mrna'){
 	x
 }
 
+
 rank <- function( x ){
 	UseMethod('rank', x)
 }
@@ -465,7 +466,7 @@ plot.heatmaps.ExpressionSet <- function ( dataOBJ, gene.names=NULL , pvalue=1, a
 		dev.off()
 	}
 	else {
-		print ( "Problems - P value cutoff to stringent - no gselected genes!" );
+		print ( "Problems - P value cutoff to stringent - no selected genes!" );
 	}
 }
 

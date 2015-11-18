@@ -231,7 +231,7 @@ save_RF <- function ( Rf.data , fname ) {
 	save( Rf.data, file=fname )
 }
 
-calculate_RF <- function (datRF = NULL, mtry1=3, no.rep= 20, no.tree= 500, addcl1=TRUE, addcl2=FALSE,  imp=T, oob.prox1=T, max.syn=100) {
+calculate_RF <- function (datRF = NULL, mtry1=3, no.rep= 20, no.tree= 500, addcl1=TRUE, addcl2=FALSE,  imp=T, oob.prox1=T, max.syn=100, file) {
 	
 	synthetic1 <- function(dat, syn.n=NULL) {
 		sample1 <- function(X)   { sample(X, replace=T) } 
@@ -288,7 +288,8 @@ calculate_RF <- function (datRF = NULL, mtry1=3, no.rep= 20, no.tree= 500, addcl
 			RF1 <- randomForest(factor(yy)~.,data=datRFsyn[,-1], ntree=no.tree, oob.prox=oob.prox1, proximity=TRUE,do.trace=F,mtry=mtry1,importance=imp)
 			collect.garbage()
 			RF1prox <- RF1$proximity[rep1,rep1]
-			Rf.data[[i+1]] <- list(index1=index1, yy=yy, RF1prox=RF1prox, importance =RF1$importance, err.rate=RF1$err.rate )
+			Rf.data = list( A = list(index1=index1, yy=yy, RF1prox=RF1prox, importance =RF1$importance, err.rate=RF1$err.rate ) )
+			save(Rf.data, file=paste(file,i,".Rdata", sep='' ) )
 		}
 	}
 	if (addcl2) { 
@@ -301,7 +302,8 @@ calculate_RF <- function (datRF = NULL, mtry1=3, no.rep= 20, no.tree= 500, addcl
 			RF1 <- randomForest(factor(yy)~.,data=datRFsyn[,-1], ntree=no.tree, oob.prox=oob.prox1, proximity=TRUE,do.trace=F,mtry=mtry1,importance=imp) 
 			collect.garbage()
 			RF1prox <- RF1$proximity[rep1,rep1]
-			Rf.data[[i+1]] <- list(index1=index1, yy=yy, RF1prox=RF1prox, importance =RF1$importance, err.rate=RF1$err.rate )
+			Rf.data = list( A = list(index1=index1, yy=yy, RF1prox=RF1prox, importance =RF1$importance, err.rate=RF1$err.rate ) )
+			save(Rf.data, file=paste(file,i,".Rdata", sep='' ) )
 		}
 	}
 	Rf.data

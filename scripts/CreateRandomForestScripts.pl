@@ -154,23 +154,21 @@ for ( my $i = 0 ; $i < $splits ; $i++ ) {
 	  . "load ('$ifm->{'filename'}')\n"
 	  . "no.forests=$forests\n"
 	  . "no.trees=$trees\n"
-	  . "system.time (RF <- calculate_RF(  datRF, $forests , $trees ,imp=T, oob.prox1=T, mtry1=3 ))\n"
-	  . "save_RF(RF, 'randomForest_worker_$i.Rdata' )\n"
+	  . "system.time (RF <- calculate_RF(  datRF, $forests , $trees ,imp=T, oob.prox1=T, mtry1=3, file='randomForest_worker_$i.' ))\n"
 	  ## The gene based randomForests
 	  . "datRF <- data.frame(t( datRF ))\n"
 	  . "attach(datRF)\n"
-	  . "system.time (RF <- calculate_RF( datRF, $forests , $trees ,imp=T, oob.prox1=T, mtry1=3 ))\n"
-	  . "save_RF(RF, 'randomForest_worker_genes_$i.Rdata' )\n"
+	  . "system.time (RF <- calculate_RF( datRF, $forests , $trees ,imp=T, oob.prox1=T, mtry1=3, file='randomForest_worker_genes_$i.' ))\n"
 	  . "release_lock (lock.name)\n"
 	  . "release_lock (lock.name2)\n";
 	close(RSCRIPT);
-	$files[$i]      = "randomForest_worker_" . $i . ".Rdata";
-	$gene_files[$i] = "randomForest_worker_genes_" . $i . ".Rdata";
+	push ( @files, map{ "randomForest_worker_$i.$_.Rdata" } 0..$forests );
+	push( @gene_files, map{ "randomForest_worker_genes_$i.$_.Rdata" } 0..$forests );
 }
 ## calculate the distance matrix
-open( RSCRIPT, ">$fm->{'path'}/tmp/randomForest_finisher.R" )
+open( RSCRIPT, ">$fm->{'path'}/tmp/randomForest_xfinisher.R" )
 	  or Carp::confess(
-"I could not create the R script '$fm->{'path'}/tmp/randomForest_worker_finisher.R'\n$!\n"
+"I could not create the R script '$fm->{'path'}/tmp/randomForest_worker_xfinisher.R'\n$!\n"
 	  );
 
 print RSCRIPT "## this is using work published in\n"
@@ -189,7 +187,7 @@ print RSCRIPT "## this is using work published in\n"
   . "distRF = RFdist(Rf.data, datRF, no.tree= $trees, imp=F)\n"
   . "save( distRF, file=\"RandomForestdistRFobject_genes.RData\" )\n"
   . "load ('$infile')\n"
-  . "attach(datRF)\n"
+ # . "attach(datRF)\n"
   . "Rf.data <- read_RF ( c('"
   . join( "',\n '", @files ) . "'),"
   . scalar( @files )
@@ -200,7 +198,7 @@ print RSCRIPT "## this is using work published in\n"
 close(RSCRIPT);
 
 open ( SCRIPT ,">$fm->{'path'}/tmp/single_proc.sh" ) or die $!;
-print SCRIPT map { '/bin/bash -c \"DISPLAY=:7 R CMD BATCH --no-save --no-restore --no-readline -- '.$_."\n" } map{ my $r = $_; $r =~ s/Data$//; $r } @files, "randomForest_finisher.RData";
+print SCRIPT map { 'R CMD BATCH --no-save --no-restore --no-readline -- '.$_."\n" } &uniq(map{ my $r = $_; $r =~ s/\.?\d*\.R[dD]ata$/.R/; $r } @files, "randomForest_xfinisher.RData");
 close ( SCRIPT);
 
 
@@ -219,4 +217,8 @@ unless ( $debug ){
 }
 print "please copy the file $fm->{'path'}$fm->{'filename_core'}.tar.gz to the calculation server extract all files and run 'perl submit_RF_to_psub.pl -email <your email address> -files randomForest_*.R' in the folder\n";
 
+sub uniq {
+  my %seen;
+  return grep { !$seen{$_}++ } @_;
+}
 
