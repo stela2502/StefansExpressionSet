@@ -1,0 +1,13 @@
+#import(affy)  # Affymetrix pre-processing
+#import(limma)
+import(RSvgDevice)
+import(gplots)
+import(rgl)
+#import(stats)
+import(Rsubread)
+import(DESeq) 
+import("biomaRt")
+import(stringr)
+import(ggplot2)
+imports(reshape2)
+imports(scales)
