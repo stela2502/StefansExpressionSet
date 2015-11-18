@@ -135,7 +135,7 @@ my ( @files, @gene_files, $ifm );
 $ifm =  root->filemap($infile);
 
 for ( my $i = 0 ; $i < $splits ; $i++ ) {
-	open( RSCRIPT, "$fm->{'path'}tmp/randomForest_worker_$i.R" )
+	open( RSCRIPT, ">$fm->{'path'}tmp/randomForest_worker_$i.R" )
 	  or Carp::confess(
 "I could not create the R script '$fm->{'path'}tmp/randomForest_worker_$i.R'\n$!\n"
 	  );
@@ -168,7 +168,7 @@ for ( my $i = 0 ; $i < $splits ; $i++ ) {
 	$gene_files[$i] = "randomForest_worker_genes_" . $i . ".Rdata";
 }
 ## calculate the distance matrix
-open( RSCRIPT, "$fm->{'path'}tmp/randomForest_finisher.R" )
+open( RSCRIPT, ">$fm->{'path'}tmp/randomForest_finisher.R" )
 	  or Carp::confess(
 "I could not create the R script '$fm->{'path'}tmp/randomForest_worker_finisher.R'\n$!\n"
 	  );
