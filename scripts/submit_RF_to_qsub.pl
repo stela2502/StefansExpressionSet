@@ -87,7 +87,7 @@ sub helpString {
 
 my ( $task_description);
 
-$task_description .= 'perl '.root->perl_include().' '.$plugin_path .'/submit_RF_to_qsub.pl';
+$task_description .= 'perl '.$plugin_path .'/submit_RF_to_qsub.pl';
 $task_description .= ' -files '.join( ' ', @files ) if ( defined $files[0]);
 
 for ( my $i = 0; $i < @files; $i ++ ){ ## the last script is the sum up script and that has to be run after all others have finished!
@@ -95,10 +95,10 @@ for ( my $i = 0; $i < @files; $i ++ ){ ## the last script is the sum up script a
 	print QSCRIPT 
 	'#!/bin/bash'."\n"
 	.'#$ -S /bin/bash'."\n"
-	.'#$ -M '.$email.'."\n"
+	.'#$ -M '.$email."\n"
 	.'#$ -m eas'."\n"
 	.'#$ -pe orte 1'."\n"
-	.'#$ -l mem_free=3G'."\n"
+	.'#$ -l mem_free=20G'."\n"
 	.'cd '.$wd."\n"
 	.'R CMD BATCH --no-save --no-restore --no-readline -- '.$files[$i]."\n";
 	close ( QSCRIPT);

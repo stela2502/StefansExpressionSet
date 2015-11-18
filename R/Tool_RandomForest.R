@@ -280,6 +280,7 @@ calculate_RF <- function (datRF = NULL, mtry1=3, no.rep= 20, no.tree= 500, addcl
 	}
 	if (addcl1) {
 		for (i in c(0:no.rep))  {
+			print ( paste( "forest", i) )
 			index1 <- sample(c(1:(nrow1+syn.n))) 
 			rep1[index1] <-  c(1:(nrow1+syn.n)) 
 			datRFsyn <- synthetic1(datRF,syn.n)[index1,] 
@@ -292,6 +293,7 @@ calculate_RF <- function (datRF = NULL, mtry1=3, no.rep= 20, no.tree= 500, addcl
 	}
 	if (addcl2) { 
 		for (i in c(0:no.rep))  {
+			print ( paste( "forest", i) )
 			index1 <- sample(c(1:(2*nrow1))) 
 			rep1[index1] <-  c(1:(2*nrow1)) 
 			datRFsyn <- synthetic2(datRF)[index1,] 
@@ -306,7 +308,7 @@ calculate_RF <- function (datRF = NULL, mtry1=3, no.rep= 20, no.tree= 500, addcl
 }
 
 
-prepareRFcalc <- function( x, trees=433, forrests=7, pocs=32, opath, debug=F ) {
+prepareRFcalc <- function( x, trees=433, forests=7, pocs=32, opath, debug=F ) {
 	UseMethod('prepareRFcalc', x)
 }
 prepareRFcalc.ExpressionSet <- function( x, trees=433, forrests=7, pocs=32, opath, debug=F ) {
@@ -321,7 +323,7 @@ prepareRFcalc.ExpressionSet <- function( x, trees=433, forrests=7, pocs=32, opat
 	}
 	system ( paste( "perl ", install.path,"/../scripts/CreateRandomForestScripts.pl -infile ",
 					paste(opath,'datRF.RData',sep="/" ), " -splits ",pocs, " -trees ", trees, 
-					" -forrests ",forrests , " -outfile ", paste(opath,"RandomForestTransfereData.tar.gz", sep='/'), sep='' ) )
+					" -forests ",forests , " -outfile ", paste(opath,"RandomForestTransfereData.tar.gz", sep='/'), sep='' ) )
 	paste( "Please copy the file",paste(opath,"RandomForestTransfereData.tar.gz", debug, sep='/'),
 			"to the calculation server and run the script 'submit_RF_to_qsub.pl -files randomForest_worker_*.R'")
 }

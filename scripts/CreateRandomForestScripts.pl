@@ -127,20 +127,20 @@ close(LOG);
 
 my $fm = root->filemap($outfile);
 mkdir( $fm->{'path'} ) unless ( -d $fm->{'path'} );
-system("rm -Rf $fm->{'path'}tmp/") if ( -d "$fm->{'path'}tmp/" );
-mkdir("$fm->{'path'}tmp/");
+system("rm -Rf $fm->{'path'}/tmp/") if ( -d "$fm->{'path'}/tmp/" );
+mkdir("$fm->{'path'}/tmp/");
 
 my ( @files, @gene_files, $ifm );
 
 $ifm =  root->filemap($infile);
 
 for ( my $i = 0 ; $i < $splits ; $i++ ) {
-	open( RSCRIPT, ">$fm->{'path'}tmp/randomForest_worker_$i.R" )
+	open( RSCRIPT, ">$fm->{'path'}/tmp/randomForest_worker_$i.R" )
 	  or Carp::confess(
-"I could not create the R script '$fm->{'path'}tmp/randomForest_worker_$i.R'\n$!\n"
+"I could not create the R script '$fm->{'path'}/tmp/randomForest_worker_$i.R'\n$!\n"
 	  );
-	system("touch $fm->{'path'}tmp/randomForest_worker_$i.Rdata.lock");
-	system("touch $fm->{'path'}tmp/randomForest_worker_genes_$i.Rdata.lock");
+	system("touch $fm->{'path'}/tmp/randomForest_worker_$i.Rdata.lock");
+	system("touch $fm->{'path'}/tmp/randomForest_worker_genes_$i.Rdata.lock");
 	print RSCRIPT "## this is using work published in\n"
 	  . "## Tao Shi and Steve Horvath (2006) Unsupervised Learning with Random Forest Predictors. \n"
 	  . "## Journal of Computational and Graphical Statistics. Volume 15, Number 1, March 2006, pp. 118-138(21)\n"
@@ -168,9 +168,9 @@ for ( my $i = 0 ; $i < $splits ; $i++ ) {
 	$gene_files[$i] = "randomForest_worker_genes_" . $i . ".Rdata";
 }
 ## calculate the distance matrix
-open( RSCRIPT, ">$fm->{'path'}tmp/randomForest_finisher.R" )
+open( RSCRIPT, ">$fm->{'path'}/tmp/randomForest_finisher.R" )
 	  or Carp::confess(
-"I could not create the R script '$fm->{'path'}tmp/randomForest_worker_finisher.R'\n$!\n"
+"I could not create the R script '$fm->{'path'}/tmp/randomForest_worker_finisher.R'\n$!\n"
 	  );
 
 print RSCRIPT "## this is using work published in\n"
@@ -199,21 +199,20 @@ print RSCRIPT "## this is using work published in\n"
 
 close(RSCRIPT);
 
-open ( SCRIPT ,">$fm->{'path'}tmp/single_proc.sh" ) or die $!;
-print SCRIPT map { '/bin/bash -c \"DISPLAY=:7 R CMD BATCH --no-save --no-restore --no-readline -- '.$_."\n" } map{ $_ =~ s/Data$//; $_ } @files, "randomForest_finisher.RData";
+open ( SCRIPT ,">$fm->{'path'}/tmp/single_proc.sh" ) or die $!;
+print SCRIPT map { '/bin/bash -c \"DISPLAY=:7 R CMD BATCH --no-save --no-restore --no-readline -- '.$_."\n" } map{ my $r = $_; $r =~ s/Data$//; $r } @files, "randomForest_finisher.RData";
 close ( SCRIPT);
 
 
 ## now copy all important things to the folder
-system( "cp $plugin_path/submit_RF_to_psub.pl $fm->{'path'}tmp/" );
+system( "cp $plugin_path/submit_RF_to_qsub.pl $fm->{'path'}/tmp/" );
 system( "cp $infile $fm->{'path'}/tmp/$ifm->{'filename'}");
-mkdir( "$fm->{'path'}tmp/libs");
-system( "cp $plugin_path/../R/Tool_RandomForest.R fm->{'path'}tmp/libs");
-system( "cp $plugin_path/submit_RF_to_psum.pl $fm->{'path'}tmp/" );
-chdir( "$fm->{'path'}tmp/" );
-system( "tar -cf $fm->{'filename_core'}.tar *" );
-system( "gzip2 -9 $fm->{'filename_core'}.tar");
-system( "cp $fm->{'filename_core'}.tar.gz ../" );
+mkdir( "$fm->{'path'}/tmp/libs");
+system( "cp $plugin_path/../R/Tool_RandomForest.R $fm->{'path'}/tmp/libs");
+chdir( "$fm->{'path'}/tmp/" );
+system( "tar -cf $fm->{'path'}/tmp/$fm->{'filename_base'}.tar *" );
+system( "gzip -9 $fm->{'path'}/tmp/$fm->{'filename_base'}.tar");
+system( "mv $fm->{'path'}/tmp/$fm->{'filename_base'}.tar.gz $fm->{'path'}/" );
 unless ( $debug ){
 	chdir( "$fm->{'path'}" );
 	system( "rm -Rf $fm->{'path'}/tmp" );
