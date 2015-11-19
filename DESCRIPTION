@@ -4,8 +4,8 @@ Version: 1.0
 Date: 2015-10-21
 Author: Stefan Lang
 Maintainer: Stefan Lang <Stefan.Lang@med.lu.se>
-Description: ExpressionSet is a simple wrapper to analyze NGS expression data sets.
-   Expression analysis is based on the DESeq package. This package is mainly to plot the results.
+Description: ExpressionSet is a simple package to analyze NGS expression data sets.
+   Expression analysis is based on the DESeq package. This package is mainly built to plot the results.
 Imports: gplots, rgl, RSvgDevice, stringr, DESeq, biomaRt, Rsubread
 License: GPL-2
 Suggests: testthat
