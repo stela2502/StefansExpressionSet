@@ -90,20 +90,36 @@ my ( $task_description);
 $task_description .= 'perl '.$plugin_path .'/submit_RF_to_qsub.pl';
 $task_description .= ' -files '.join( ' ', @files ) if ( defined $files[0]);
 
-for ( my $i = 0; $i < @files; $i ++ ){ ## the last script is the sum up script and that has to be run after all others have finished!
+for ( my $i = 0; $i < @files-2; $i ++ ){ ## the last script is the sum up script and that has to be run after all others have finished!
 	open ( QSCRIPT, ">$files[$i].sh" ) or die $!;
 	print QSCRIPT 
 	'#!/bin/bash'."\n"
 	.'#$ -S /bin/bash'."\n"
 	.'#$ -M '.$email."\n"
 	.'#$ -m eas'."\n"
-	.'#$ -pe orte 1'."\n"
-	.'#$ -l mem_free=20G'."\n"
+	.'#$ -pe orte 3'."\n"
+	.'#$ -l mem_total=10G'."\n"
 	.'cd '.$wd."\n"
 	.'R CMD BATCH --no-save --no-restore --no-readline -- '.$files[$i]."\n";
 	close ( QSCRIPT);
 }
-for ( my $i = 0; $i < @files-1; $i ++ ){
+
+for ( my $i = @files-2; $i < @files; $i ++ ){ ## the last script is the sum up script and that has to be run after all others have finished!
+	open ( QSCRIPT, ">$files[$i].sh" ) or die $!;
+	print QSCRIPT 
+	'#!/bin/bash'."\n"
+	.'#$ -S /bin/bash'."\n"
+	.'#$ -M '.$email."\n"
+	.'#$ -m eas'."\n"
+	.'#$ -pe orte 32'."\n"
+	.'#$ -l mem_total=120G'."\n"
+	.'cd '.$wd."\n"
+	.'R CMD BATCH --no-save --no-restore --no-readline -- '.$files[$i]."\n";
+	close ( QSCRIPT);
+}
+
+
+for ( my $i = 0; $i < @files-2; $i ++ ){
 	system( "qsub $files[$i].sh");
 }
 while ( 1 ) {
@@ -113,6 +129,8 @@ while ( 1 ) {
 		last;
 	}
 	close(CHECK);
+	sleep(10);
 }
 system( "qsub $files[$#files].sh");
+system( "qsub $files[$#files-1].sh");
 

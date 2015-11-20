@@ -130,18 +130,15 @@ mkdir( $fm->{'path'} ) unless ( -d $fm->{'path'} );
 system("rm -Rf $fm->{'path'}/tmp/") if ( -d "$fm->{'path'}/tmp/" );
 mkdir("$fm->{'path'}/tmp/");
 
-my ( @files, @gene_files, $ifm );
+my ( @files, @gene_files, $ifm, $script_head );
 
 $ifm =  root->filemap($infile);
 
 for ( my $i = 0 ; $i < $splits ; $i++ ) {
-	open( RSCRIPT, ">$fm->{'path'}/tmp/randomForest_worker_$i.R" )
-	  or Carp::confess(
-"I could not create the R script '$fm->{'path'}/tmp/randomForest_worker_$i.R'\n$!\n"
-	  );
+	
 	system("touch $fm->{'path'}/tmp/randomForest_worker_$i.Rdata.lock");
 	system("touch $fm->{'path'}/tmp/randomForest_worker_genes_$i.Rdata.lock");
-	print RSCRIPT "## this is using work published in\n"
+	$script_head = "## this is using work published in\n"
 	  . "## Tao Shi and Steve Horvath (2006) Unsupervised Learning with Random Forest Predictors. \n"
 	  . "## Journal of Computational and Graphical Statistics. Volume 15, Number 1, March 2006, pp. 118-138(21)\n"
 	  . "initial.options <- commandArgs(trailingOnly = FALSE)\n"
@@ -153,15 +150,29 @@ for ( my $i = 0 ; $i < $splits ; $i++ ) {
 	  . "source ('libs/Tool_RandomForest.R')\n"
 	  . "load ('$ifm->{'filename'}')\n"
 	  . "no.forests=$forests\n"
-	  . "no.trees=$trees\n"
-	  . "system.time (RF <- calculate_RF(  datRF, $forests , $trees ,imp=T, oob.prox1=T, mtry1=3, file='randomForest_worker_$i.' ))\n"
-	  ## The gene based randomForests
+	  . "no.trees=$trees\n";
+	
+	## for the genes
+	open( RSCRIPT, ">$fm->{'path'}/tmp/randomForest_worker_genes_$i.R" )
+	  or Carp::confess(
+"I could not create the R script '$fm->{'path'}/tmp/randomForest_worker_genes_$i.R'\n$!\n"
+	  );
+	
+	print RSCRIPT $script_head
+	  . "system.time (calculate_RF(  datRF, $forests , $trees ,imp=T, oob.prox1=T, mtry1=3, file='randomForest_worker_genes_$i.' ))\n"
+	  . "release_lock (lock.name)\n";
+	close ( RSCRIPT);
+	open( RSCRIPT, ">$fm->{'path'}/tmp/randomForest_worker_$i.R" )
+	  or Carp::confess(
+"I could not create the R script '$fm->{'path'}/tmp/randomForest_worker_$i.R'\n$!\n"
+	  );
+	## for the samples
+	print RSCRIPT $script_head
 	  . "datRF <- data.frame(t( datRF ))\n"
-	  . "attach(datRF)\n"
-	  . "system.time (RF <- calculate_RF( datRF, $forests , $trees ,imp=T, oob.prox1=T, mtry1=3, file='randomForest_worker_genes_$i.' ))\n"
-	  . "release_lock (lock.name)\n"
+	  . "system.time (RF <- calculate_RF( datRF, $forests , $trees ,imp=T, oob.prox1=T, mtry1=3, file='randomForest_worker_$i.' ))\n"
 	  . "release_lock (lock.name2)\n";
 	close(RSCRIPT);
+	
 	push ( @files, map{ "randomForest_worker_$i.$_.Rdata" } 0..$forests );
 	push( @gene_files, map{ "randomForest_worker_genes_$i.$_.Rdata" } 0..$forests );
 }
@@ -185,8 +196,22 @@ print RSCRIPT "## this is using work published in\n"
   . scalar(@gene_files) . "  )\n"
   . "datRF <- data.frame(t( datRF ))\n"
   . "distRF = RFdist(Rf.data, datRF, no.tree= $trees, imp=F)\n"
-  . "save( distRF, file=\"RandomForestdistRFobject_genes.RData\" )\n"
-  . "load ('$infile')\n"
+  . "save( distRF, file=\"RandomForestdistRFobject_genes.RData\" )\n";
+close(RSCRIPT);
+
+  open( RSCRIPT, ">$fm->{'path'}/tmp/randomForest_xfinisher2.R" )
+	  or Carp::confess(
+"I could not create the R script '$fm->{'path'}/tmp/randomForest_worker_xfinisher2.R'\n$!\n"
+	  );
+print RSCRIPT "## this is using work published in\n"
+	  . "## Tao Shi and Steve Horvath (2006) Unsupervised Learning with Random Forest Predictors. \n"
+	  . "## Journal of Computational and Graphical Statistics. Volume 15, Number 1, March 2006, pp. 118-138(21)\n"
+	  . "initial.options <- commandArgs(trailingOnly = FALSE)\n"
+	  . "script.dir <- dirname ( initial.options[ grep( 'randomForest', initial.options ) ] )\n"
+	  . "print ( paste( 'working directory = ',script.dir))\n"
+	  . "setwd(script.dir)\n"
+	  . "source ('libs/Tool_RandomForest.R')\n"	  
+  . "load ('$ifm->{'filename'}')\n"
  # . "attach(datRF)\n"
   . "Rf.data <- read_RF ( c('"
   . join( "',\n '", @files ) . "'),"

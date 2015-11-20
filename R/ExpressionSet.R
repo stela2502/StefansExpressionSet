@@ -287,7 +287,6 @@ pwd <- function () {
 forceAbsoluteUniqueSample <- function ( x ,separator='_') {
 	last = ''
 	ret <- vector(length=length(x))
-	
 	for ( i in 1:length(x) ){
 		if ( is.null(ret) ){
 			last = x[i]
