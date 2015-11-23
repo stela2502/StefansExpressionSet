@@ -502,10 +502,10 @@ groups.boxplot.ExpressionSet <- function( x, SampleCol='GroupName', clusters, sv
 	for ( i in 1:maxG ){
 		if ( svg ) {
 			fnames[i] = paste(x$outpath,fname,i,"_boxplot.C.svg",sep='')
-			devSVG ( filename= fnames[i], width=width/130, height=height/130 )
+			devSVG ( file= fnames[i], width=width/130, height=height/130 )
 		}else{
 			fnames[i] =paste(x$outpath,fname,i,"_boxplot.png",sep='')
-			png( filename=fnames[i],width=width,height=height )
+			png( file=fnames[i],width=width,height=height )
 		}
 		
 		robj <- reduce.Obj( x, names(clusters)[which(clusters==i)], name=paste("group_",i,sep='') )
