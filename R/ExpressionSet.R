@@ -168,6 +168,11 @@ melt.ExpressionSet <- function( x, groupcol='GroupName' ) {
 
 #dmg <- cbind(dm,grps)
 
+## plot grouped probesets creates ONE plot for ONE group of probesets
+## If you want a multi group plot create it qourself from the single ones.
+
+
+
 plot.probeset <- function ( x, probeset, boxplot=F, pdf=F, geneNameCol= "mgi_symbol" ) {
 	UseMethod('plot.probeset', x)
 }
@@ -318,6 +323,13 @@ addAnnotation.NGSexpressionSet <- function(x ,mart, mart.col='refseq_mrna'){
 	x
 }
 
+## get a vator from the annotation dataset
+getAnnotation4probesets <- function (x, probesets=c(), colname='Gene.Symbol' ) {
+	UseMethod('getAnnotation4probesets', x)
+}
+getAnnotation4probesets <- function (x, probesets=c(), colname='Gene.Symbol' ) {
+	as.vector(x$annotation[match( probesets, rownames(x$data) ), colname ])
+}
 
 rank <- function( x ){
 	UseMethod('rank', x)
@@ -503,7 +515,7 @@ groups.boxplot.ExpressionSet <- function( x, SampleCol='GroupName', clusters, sv
 		names(ret)[length(ret)] = robj$name
 		a= 1;
 		d <- list()
-		for ( n in gnames ){
+		for ( n in as.vector(gnames) ){
 			d[[a]] = as.vector(unlist(robj$data[,which(robj$samples[,SampleCol] == n)]))
 			a = a+1
 		}
