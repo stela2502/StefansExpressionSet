@@ -68,6 +68,7 @@ testGeneList.pathwaySearch <- function (x, lst=c() ){
 		}
 	}
 	ret[,5] <- p.adjust( ret[,4], method ='BH' )
+	ret <- ret[order(ret[,5]),]
 	ret
 }	
 t <- testGeneList( PW, toupper(geneNames_4_Group ( HSC_single_cells, userGroups,  gId=10, nameCol='Gene.Symbol' )))
