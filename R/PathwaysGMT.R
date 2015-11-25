@@ -71,7 +71,6 @@ testGeneList.pathwaySearch <- function (x, lst=c() ){
 	ret <- ret[order(ret[,5]),]
 	ret
 }	
-t <- testGeneList( PW, toupper(geneNames_4_Group ( HSC_single_cells, userGroups,  gId=10, nameCol='Gene.Symbol' )))
 
 
 
