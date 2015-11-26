@@ -145,28 +145,22 @@ cor2cytoscape <- function (M, file, cut=0.9 ){
 }
 
 
-melt.ExpressionSet <- function( x, groupcol='GroupName' ) {
+melt.ExpressionSet <- function( x, groupcol='GroupName', colCol='GroupName' ) {
 	melted <- melt(cbind( rownames(x$data),  x$data ) )
 	grps <- NULL
 	for ( i in as.vector(x$samples[,groupcol]) ){
 		grps <- c( grps, rep( i, nrow(x$data)))
 	}
+	cgrps <- NULL
+	for ( i in as.vector(x$samples[,colCol]) ){
+		cgrps <- c( cgrps, rep( i, nrow(x$data)))
+	}
 	colnames(melt) <- c('ProbeName', 'SampleName', 'Expression')
 	melted$Group <- grps
+	melted$ColorGroup <- cgrps
 	melted
 }
-#d <- read.delim("MK_BL6_Data_V2.csv",header=T,skip=1)
-#dm <- melt(d)
 
-#grps <- c(rep("young_LT_HSC",length(grep("young_LT_HSC",dm$variable))),
-#          rep("young_ST_HSC",length(grep("young_ST_HSC",dm$variable))),
-#          rep("young_MPP",length(grep("young_MPP",dm$variable))),
-#          rep("old_LT_HSC",length(grep("old_LT_HSC",dm$variable))),
-#          rep("old_ST_HSC",length(grep("old_ST_HSC",dm$variable))),
-#          rep("old_MPP",length(grep("old_MPP",dm$variable))))
-
-
-#dmg <- cbind(dm,grps)
 
 ## plot grouped probesets creates ONE plot for ONE group of probesets
 ## If you want a multi group plot create it qourself from the single ones.
