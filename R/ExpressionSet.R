@@ -145,8 +145,15 @@ cor2cytoscape <- function (M, file, cut=0.9 ){
 }
 
 
-melt.ExpressionSet <- function( x, groupcol='GroupName', colCol='GroupName' ) {
-	melted <- melt(cbind( rownames(x$data),  x$data ) )
+melt.ExpressionSet <- function( x, groupcol='GroupName', colCol='GroupName', probeNames="Gene.Symbol" ) {
+	ma  <- x$data[,order(x$samples[,groupcol] )]
+	rownames(ma) <- forceAbsoluteUniqueSample(x$annotation[, probeNames] )
+	melted <- melt( ma )
+	x$samples <- x$samples[order(x$samples[,groupcol]),]
+	if ( length( which ( melted[,2] == '') ) > 0 ){
+		melted <- melted[ - which ( melted[,2] == ''),]
+	}
+	melted[,3] <- as.numeric(as.character(melted[,3]))
 	grps <- NULL
 	for ( i in as.vector(x$samples[,groupcol]) ){
 		grps <- c( grps, rep( i, nrow(x$data)))
@@ -155,7 +162,7 @@ melt.ExpressionSet <- function( x, groupcol='GroupName', colCol='GroupName' ) {
 	for ( i in as.vector(x$samples[,colCol]) ){
 		cgrps <- c( cgrps, rep( i, nrow(x$data)))
 	}
-	colnames(melt) <- c('ProbeName', 'SampleName', 'Expression')
+	colnames(melted) <- c('ProbeName', 'SampleName', 'Expression')
 	melted$Group <- grps
 	melted$ColorGroup <- cgrps
 	melted
