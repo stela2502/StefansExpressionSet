@@ -148,7 +148,7 @@ cor2cytoscape <- function (M, file, cut=0.9 ){
 melt.ExpressionSet <- function( x, groupcol='GroupName', colCol='GroupName', probeNames="Gene.Symbol" ) {
 	ma  <- x$data[,order(x$samples[,groupcol] )]
 	rownames(ma) <- forceAbsoluteUniqueSample(x$annotation[, probeNames] )
-	melted <- melt( ma )
+	melted <- melt( cbind(rownames(ma),ma) )
 	x$samples <- x$samples[order(x$samples[,groupcol]),]
 	if ( length( which ( melted[,2] == '') ) > 0 ){
 		melted <- melted[ - which ( melted[,2] == ''),]

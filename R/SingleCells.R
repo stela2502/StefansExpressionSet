@@ -22,12 +22,12 @@ z.score.SingleCells <- function ( x ) {
 	x
 }
 
-gg.heatmap <- function (dat, colrs, groupCol='GroupName', colCol='GroupName', probeNames="Gene.Symbol" ) {
+gg.heatmap <- function (dat, colrs, groupCol='GroupName', colCol='GroupName', probeNames="Gene.Symbol", facet_grid=F ) {
 	UseMethod('gg.heatmap',dat )
 }
 
 
-gg.heatmap.SingleCells <- function(dat, colrs, groupCol='GroupName', colCol='GroupName', probeNames="Gene.Symbol"  ){
+gg.heatmap.SingleCells <- function(dat, colrs, groupCol='GroupName', colCol='GroupName', probeNames="Gene.Symbol" , facet_grid=F ){
 	dat <- z.score ( dat )
 	melted <- melt(dat, groupcol=groupCol, colCol=colCol, probeNames=probeNames )
 	samp.cast <- dcast(melted,ProbeName~SampleName,mean,value.var="Expression")
@@ -56,9 +56,10 @@ gg.heatmap.SingleCells <- function(dat, colrs, groupCol='GroupName', colCol='Gro
 			axis.text.x=element_blank(),
 			axis.ticks.x=element_line(color=ss$colrss),
 			axis.ticks.length=unit(0.6,"cm")
-	)+ labs( y='') 
-	+  facet_grid(. ~ Group,scales="free_x", space='free') 
-	)
+	)+ labs( y='') 	)
+	if ( facet_grid ){
+		p <- p + facet_grid(. ~ Group,scales="free_x", space='free') 
+	} 
 	print ( p )
 	invisible (p)
 }

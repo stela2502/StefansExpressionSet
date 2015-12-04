@@ -91,7 +91,7 @@ testGeneList.pathwaySearch <- function (x, lst=c(),  bootstrap =F ){
 		for (p in 1:length( names(x$pw[[f]]) ) ) {
 			pos <- x$background[is.na(match( x$background, x$pw[[f]][[p]]))==F]
 			if ( length(pos) > 5 ) {
-				OK <- lst[is.na(fmatch( lst, x$pw[[f]][[p]]))==F]
+				OK <- lst[is.na(match( lst, x$pw[[f]][[p]]))==F]
 				if ( length(OK) > 2 ) {
 					#t <- bootstrap_phyper ( x, length(lst), v=length(OK), file.id=f, pathway.id=p )$p
 					t<- (phyper( length(OK), length(pos), x$bgl - length(pos), length(lst),lower.tail=FALSE  ) * 20) ## emperical check using the bootsrap phyper is too positive
