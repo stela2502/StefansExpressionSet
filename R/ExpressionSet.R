@@ -71,11 +71,11 @@ coexprees4gene <- function( x, gene=NULL, method='spearman', padjMethod='BH'  ){
 coexprees4gene.ExpressionSet <- function( x, gene=NULL, method='spearman', geneNameCol='gene_name', padjMethod='BH' ) {
 	ret <- NULL
 	if ( ! is.null(gene) ){
-		z <- as.vector( x$data[ gene[1] ,] )
+		z <- as.vector( t(x$data[ gene[1] ,]) )
 		pval <- vector( 'numeric', nrow(x$data))
 		cor <- vector( 'numeric', nrow(x$data))
 		for ( i in 1:nrow(x$data) ) {
-			try( {	res <-  cor.test( z, as.vector(x$data[i,], 'numeric') ,method=method)
+			try( {	res <-  cor.test( z, as.vector(t(x$data[i,]), 'numeric') ,method=method)
 			pval[i] <- res$p.value
 			cor[i] <- res$estimate }, silent=T
 			)
@@ -87,15 +87,42 @@ coexprees4gene.ExpressionSet <- function( x, gene=NULL, method='spearman', geneN
 	ret
 }
 
-corMat <-function ( x, sd_cut=1, method='spearman', geneNameCol='gene_name', groupCol=NULL ) {
-	UseMethod('corMat', x)
+corMat.Pvalues <-function ( x, sd_cut=1, method='spearman', geneNameCol='gene_name', groupCol=NULL , name='tmp' ) {
+	UseMethod('corMat.Pvalues', x)
 }
 
 
 # 80.505 for a 355 x 355 matrix 65 deep
 
-corMat.ExpressionSet <-function ( x, sd_cut=1, method='spearman', geneNameCol='gene_name', groupCol=NULL ) {
-	d <- reduce.Obj( x, rownames(x$data)[which( apply(x$data,1,sd) > sd_cut)], name ="tmp" )
+corMat.Pvalues.ExpressionSet <-function ( x, sd_cut=1, method='spearman', geneNameCol='gene_name', groupCol=NULL, name='tmp' ) {
+	d <- reduce.Obj( x, rownames(x$data)[which( apply(x$data,1,sd) > sd_cut)], name =name )
+	if ( ! is.null(groupCol) ){
+		ret <- list()
+		names <- unique(d$samples[,groupCol])
+		for ( i in 1:length(names)) {
+			a <- subset( d, column=groupCol, value=names[i], name= paste(d$name,names[i],sep='_'), mode='equals' )
+			
+			ret[[i]] = corMat( a, sd_cut= sd_cut,method=method, geneNameCol=geneNameCol )
+		}
+		names(ret) <- names
+		ret
+	}
+	else {
+		n = nrow(d$data)
+		print ( paste(d$name,": I create a",n,'x', n,'matrix') )
+		ret <- cor(t(d$data), method=method )
+		colnames(ret) <- rownames(ret) <- forceAbsoluteUniqueSample( as.vector(d$annotation[,geneNameCol]) )
+		
+		ret
+	}
+}
+
+corMat <-function ( x, sd_cut=1, method='spearman', geneNameCol='gene_name', groupCol=NULL, name='tmp' ) {
+	UseMethod('corMat', x)
+}
+
+corMat.ExpressionSet <-function ( x, sd_cut=1, method='spearman', geneNameCol='gene_name', groupCol=NULL, name='tmp' ) {
+	d <- reduce.Obj( x, rownames(x$data)[which( apply(x$data,1,sd) > sd_cut)], name = name )
 	if ( ! is.null(groupCol) ){
 		ret <- list()
 		names <- unique(d$samples[,groupCol])
@@ -277,10 +304,6 @@ subset.ExpressionSet <- function( x, column='Analysis', value=NULL, name='newSet
 }
 
 
-reduce.Obj <- function  ( x, probeSets=c(), name="reducedSet" ) {
-	UseMethod('reduce.Obj', x)
-}
-
 pwd <- function () {
 	system( 'pwd > __pwd' )
 	t <- read.delim( file = '__pwd', header=F)
@@ -350,6 +373,12 @@ reduce.Obj <- function  ( x, probeSets=c(), name="reducedSet" ) {
 reduce.Obj.ExpressionSet <- function ( x, probeSets=c(), name="reducedSet" ) {
 	retObj <- x
 	useOnly <- match(probeSets, rownames(x$data))
+	not.matched <- probeSets[is.na(useOnly)]
+	if ( length(not.matched) > 0 ){
+		print (paste('Problematic genes:', paste(not.matched,sep=', ')))
+		probeSets <- probeSets[ ! is.na(useOnly)]
+		useOnly <- useOnly[ ! is.na(useOnly) ]
+	}
 	retObj$data <- data.frame( x$data[ useOnly ,] )
 	rownames(retObj$data) <- probeSets
 	colnames(retObj$data) <- colnames(x$data)
@@ -372,6 +401,93 @@ reduce.Obj.ExpressionSet <- function ( x, probeSets=c(), name="reducedSet" ) {
 
 ### plotting data
 
+ggplot.gene <- function (dat,gene, colrs, groupCol='GroupID', colCol='GroupID', boxplot=F) {
+	UseMethod('ggplot.gene', dat)
+}
+ggplot.gene.ExpressionSet <- function(dat,gene, colrs, groupCol='GroupID', colCol='GroupID', boxplot=F){
+	not.in = 'NUKL'
+	g1 <- melt(reduce.Obj ( dat, gene, name=gene ), probeNames=isect$rownamescol, groupcol=groupCol,colCol=colCol)
+	#g1 <- subset(dat, Gene.Symbol == gene)
+	colnames(g1) <- c( 'Gene.Symbol', 'Sample', 'Expression', 'Group', 'ColorGroup' )
+	g1$Group <- factor( g1$Group, levels=unique( as.character(g1$Group)))
+	if ( length(g1) == 0){
+		not.in = c( gene )
+	}
+	
+	if ( boxplot ){
+		list ( plot=ggplot(g1 ,aes(x=Group, y=Expression,color=Group)) 
+						+ geom_boxplot(shape=19)+theme_bw() 
+						+ scale_colour_manual( values= colrs, guide=FALSE )
+						+ theme( axis.text.x= element_text(angle=90) )
+						+ labs(title=gene, x=''),
+				not.in = not.in
+		)
+		
+	}else{
+		list ( plot=ggplot(g1,aes(x=Group, y=Expression,color=Group)) 
+						+ geom_jitter(shape=19)+theme_bw()
+						+ scale_colour_manual( values= colrs, guide=FALSE )
+						+ theme( axis.text.x= element_text(angle=90) )
+						+ labs(title=gene, x=''),
+				not.in = not.in
+		)
+	}
+}
+
+gg.heatmap.list <- function (dat,glist, colrs, groupCol='GroupID', colCol='GroupID') {
+	UseMethod('gg.heatmap.list', dat)
+}
+gg.heatmap.list.ExpressionSet <- function(dat,glist, colrs, groupCol='GroupID', colCol='GroupID'){
+	
+	isect <- reduce.Obj ( dat, glist)
+	#browser()
+	dat.ss <- melt ( isect, probeNames=isect$rownamescol, groupcol=groupCol,colCol=colCol)
+	#dat.ss <- dat[which(is.na(match(dat$Gene.Symbol,isect))==F),]
+	colnames(dat.ss) <- c( 'Gene.Symbol', 'Sample', 'Expression', 'Group', 'ColorGroup' )
+	dat.ss$z <- ave(dat.ss$Expression, dat.ss$Gene.Symbol, 
+			FUN= function (x) { 
+				n <- which(x==0)
+				if ( length(x) - length(n) > 1 ){
+					x[-n] <- scale(as.vector(t(x[-n])))
+				}
+				else {
+					x[] = -20
+				}
+				x[n] <- -20
+				x
+			}
+	)
+	
+	#dat.ss$z[which(dat.ss$z < -5)] <- -5
+	#dat.ss$z[which(dat.ss$z > 5)] <- 5
+	samp.cast <- dcast(dat.ss,Gene.Symbol~Sample,mean,value.var="z")
+	samp.mat <- as.matrix(samp.cast[,2:ncol(samp.cast)])
+	ord.genes <-
+			as.vector(samp.cast[hclust(dist(samp.mat),method="ward.D")$order,1])
+	dat.ss$Gene.Symbol <- with(dat.ss,factor(Gene.Symbol,levels =
+							unique(as.character(ord.genes))))
+	dat.ss$Sample <- with(dat.ss,factor(Sample,levels =
+							unique(as.character(Sample))))
+	dat.ss$Group <- with(dat.ss,factor(Group,levels =
+							unique(as.character(Group))))
+	dat.ss$colrss <- colrs[dat.ss$Group]
+	ss <-dat.ss[which(dat.ss$Gene.Symbol==dat.ss$Gene.Symbol[1]),]
+	brks= c( -20.1, quantile(dat.ss$z[which(dat.ss$z != -20)],seq(0,1,by=0.1)) )
+	brks[length(brks)] = brks[length(brks)] + 0.1
+	dat.ss$z <- cut( dat.ss$z, breaks= brks)
+	
+	list ( plot = ggplot(dat.ss, aes(x=Sample,y=Gene.Symbol))
+					+ geom_tile(aes(fill=z))
+					+ scale_fill_manual( values = c( 'gray', bluered(10)) ) 
+					+ theme(
+							legend.position= 'bottom',
+							axis.text.x=element_blank(),
+							axis.ticks.x=element_line(color=ss$colrss),
+							axis.ticks.length=unit(0.6,"cm")
+					)
+					+ labs( y=''),
+			not.in = setdiff( glist, rownames(isect$data)) )
+}
 
 plot.heatmaps <- function ( dataOBJ, gene.names , pvalue=1, analysis_name ='Unnamed', gene_centered = F, Subset=NULL, collaps=NULL,geneNameCol= "mgi_symbol", pdf=F ,... ) {
 	
