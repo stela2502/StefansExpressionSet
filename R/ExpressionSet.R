@@ -1,19 +1,17 @@
 
-# this file contains all generic fnction for data export and ploting
-
-
-# Create an ExpressionSet object (S3)
-# This object is mainly used for subsetting of the data and plotting
-# @param dat data frame or matrix containing all expression data
-# @param Samples A sample description table
-# @param Analysis If the samples table contains a Analysis column you can subset the data already here to the Analysis here (String). This table has to contain a column filenames that is expected to connect the sample table to the dat column names.
-# @param name The name of this object is going to be used in the output of all plots and tables - make it specific
-# @param namecol The samples table column that contains the (to be set) names of the samples in the data matrix
-# @param namerow This is the name of the gene level annotation column in the dat file to use as ID 
-# @param outpath Where to store the output from the analysis
-# @param annotation The annotation table from e.g. affymetrix csv data
-# @param newOrder The samples column name for the new order (default 'Order')
-
+#' this file contains all generic fnction for data export and ploting
+#' Create an ExpressionSet object (S3)
+#' This object is mainly used for subsetting of the data and plotting
+#' @param dat data frame or matrix containing all expression data
+#' @param Samples A sample description table
+#' @param Analysis If the samples table contains a Analysis column you can subset the data already here to the Analysis here (String). This table has to contain a column filenames that is expected to connect the sample table to the dat column names.
+#' @param name The name of this object is going to be used in the output of all plots and tables - make it specific
+#' @param namecol The samples table column that contains the (to be set) names of the samples in the data matrix
+#' @param namerow This is the name of the gene level annotation column in the dat file to use as ID 
+#' @param outpath Where to store the output from the analysis
+#' @param annotation The annotation table from e.g. affymetrix csv data
+#' @param newOrder The samples column name for the new order (default 'Order')
+#' @export 
 createWorkingSet <- function ( dat, Samples,  Analysis = NULL, name='WorkingSet', namecol='GroupName', namerow= 'GeneID', usecol='Use' , outpath = NULL ) {
 	S <- Samples
 	if ( ! is.null(Analysis) ){
@@ -68,6 +66,15 @@ coexprees4gene <- function( x, gene=NULL, method='spearman', padjMethod='BH'  ){
 	UseMethod('coexprees4gene', x)
 }
 
+#' Calculate the coexpression for any given gene
+#' 
+#' @param x the ExpressionSet varibale
+#' @param method any method supported by \link[=cor.test]{cor.test}
+#' @param geneNameCol the name of the gene column (gene_name)
+#' @param padjMethod the method to calucate the FDR with \link[=p.adjust]{p.adjust}
+#' 
+#' @return a data.frame with the columns 'GeneSymbol', 'pval', 'cor', 'adj.p'
+#' @export 
 coexprees4gene.ExpressionSet <- function( x, gene=NULL, method='spearman', geneNameCol='gene_name', padjMethod='BH' ) {
 	ret <- NULL
 	if ( ! is.null(gene) ){
@@ -92,16 +99,27 @@ corMat.Pvalues <-function ( x, sd_cut=1, method='spearman', geneNameCol='gene_na
 }
 
 
-# 80.505 for a 355 x 355 matrix 65 deep
-
+#' calculate a p_value matrix for the data object
+#' 
+#' @param x the ExpressionSet varibale
+#' @param sd_cut the cut off value for the sd check
+#' @param method any method supported by \link[=cor.test]{cor.test}
+#' @param geneNameCol the name of the gene column (gene_name)
+#' @param groupCol the column name of the grouping variable in the samples table
+#' @param name the name of the analysis
+#' 
+#' THIS FUNCTION IS NOT DOING THE RIGTH THING
+#' BROKEN
+#' 
+#' @export 
 corMat.Pvalues.ExpressionSet <-function ( x, sd_cut=1, method='spearman', geneNameCol='gene_name', groupCol=NULL, name='tmp' ) {
+	# TODO: implement the p value calculation!
 	d <- reduce.Obj( x, rownames(x$data)[which( apply(x$data,1,sd) > sd_cut)], name =name )
 	if ( ! is.null(groupCol) ){
 		ret <- list()
 		names <- unique(d$samples[,groupCol])
 		for ( i in 1:length(names)) {
 			a <- subset( d, column=groupCol, value=names[i], name= paste(d$name,names[i],sep='_'), mode='equals' )
-			
 			ret[[i]] = corMat( a, sd_cut= sd_cut,method=method, geneNameCol=geneNameCol )
 		}
 		names(ret) <- names
@@ -111,16 +129,27 @@ corMat.Pvalues.ExpressionSet <-function ( x, sd_cut=1, method='spearman', geneNa
 		n = nrow(d$data)
 		print ( paste(d$name,": I create a",n,'x', n,'matrix') )
 		ret <- cor(t(d$data), method=method )
-		colnames(ret) <- rownames(ret) <- forceAbsoluteUniqueSample( as.vector(d$annotation[,geneNameCol]) )
-		
+		colnames(ret) <- rownames(ret) <- forceAbsoluteUniqueSample( as.vector(d$annotation[,geneNameCol]) )		
 		ret
 	}
 }
+
 
 corMat <-function ( x, sd_cut=1, method='spearman', geneNameCol='gene_name', groupCol=NULL, name='tmp' ) {
 	UseMethod('corMat', x)
 }
 
+#' calculate a correlation matrix for the data object
+#' 
+#' @param x the ExpressionSet varibale
+#' @param sd_cut the cut off value for the sd check
+#' @param method any method supported by \link[=cor.test]{cor.test}
+#' @param geneNameCol the name of the gene column (gene_name)
+#' @param groupCol the column name of the grouping variable in the samples table
+#' @param name the name of the analysis
+#' 
+#' @return the correlation matrix
+#' @export 
 corMat.ExpressionSet <-function ( x, sd_cut=1, method='spearman', geneNameCol='gene_name', groupCol=NULL, name='tmp' ) {
 	d <- reduce.Obj( x, rownames(x$data)[which( apply(x$data,1,sd) > sd_cut)], name = name )
 	if ( ! is.null(groupCol) ){
@@ -130,7 +159,7 @@ corMat.ExpressionSet <-function ( x, sd_cut=1, method='spearman', geneNameCol='g
 			a <- subset( d, column=groupCol, value=names[i], name= paste(d$name,names[i],sep='_'), mode='equals' )
 			ret[[i]] = corMat( a, sd_cut= sd_cut,method=method, geneNameCol=geneNameCol )
 		}
-		names(ret) <- names
+		names(ret) <- namestime.col
 		ret
 	}
 	else {
@@ -142,7 +171,11 @@ corMat.ExpressionSet <-function ( x, sd_cut=1, method='spearman', geneNameCol='g
 		ret
 	}
 }
-
+#' exports the correlation matrix in the format \href{http://www.cytoscape.org/}{CytoScape} 
+#' does support as network file.
+#' 
+#' @param M the correlation matrix obtained by a run of \code{\link{corMat}}
+#' @export 
 cor2cytoscape <- function (M, file, cut=0.9 ){
 	edges <- NULL
 	if ( class(M) == 'list' ) {
@@ -171,7 +204,13 @@ cor2cytoscape <- function (M, file, cut=0.9 ){
 	invisible(edges)
 }
 
-
+#' melts the object using  \code{\link[reshape2]{melt}}
+#' 
+#' @param x the ExpressionSet object
+#' @param groupcol the grouping column in the samples data
+#' @param colCol the coloring column in the sample data
+#' @param probeNames the column in the annotation datacontaining the gene symbol
+#' @export 
 melt.ExpressionSet <- function( x, groupcol='GroupName', colCol='GroupName', probeNames="Gene.Symbol" ) {
 	ma  <- x$data[,order(x$samples[,groupcol] )]
 	rownames(ma) <- forceAbsoluteUniqueSample(x$annotation[, probeNames] )
@@ -196,11 +235,14 @@ melt.ExpressionSet <- function( x, groupcol='GroupName', colCol='GroupName', pro
 }
 
 
-## plot grouped probesets creates ONE plot for ONE group of probesets
-## If you want a multi group plot create it qourself from the single ones.
-
-
-
+#' plot grouped probesets creates ONE plot for ONE group of probesets
+#' If you want a multi group plot create it yourself from the single ones.
+#' @param x the ExpressionSet object
+#' @param probeset the probeset name (rownames(x$data))
+#' @param boxplot (F or T) create a a dots- or box-plot
+#' @param pdf save the file as pdf (default svg)
+#' @param geneNameCol the column name for the gene symbol to use in the plots
+#' @export 
 plot.probeset <- function ( x, probeset, boxplot=F, pdf=F, geneNameCol= "mgi_symbol" ) {
 	UseMethod('plot.probeset', x)
 }
@@ -209,7 +251,7 @@ plot.probeset.ExpressionSet <- function ( x, probeset, boxplot=F, pdf=F, geneNam
 	if ( sum(is.na(match(probeset, rownames(x$data)))==F) == 0 ){
 		probeset <- rownames(x$data)[match( probeset, x$annotation[,geneNameCol] ) ]
 	}
-	if ( length(probeset) == 0 ) {
+	if ( length(probeset) == 0 ) {time.col
 		stop( "I could not find the probeset in the data object!")
 	}
 	print ( probeset )
@@ -239,10 +281,16 @@ plot.probeset.ExpressionSet <- function ( x, probeset, boxplot=F, pdf=F, geneNam
 	}
 }
 
+
 drop.samples <- function ( x, samplenames=NULL, name='dopped_samples' ){
 	UseMethod('drop.samples', x)
 }
-
+#' drops samples from the ExpressionSet
+#' @param x the ExpressionSet object
+#' @param samplenames which samples to drop (samples like colnames(x$data))
+#' @param name the name of the new ExpressionSet object
+#' 
+#' @export 
 drop.samples.ExpressionSet <- function ( x, samplenames=NULL, name='dopped_samples' ){
 	if ( ! is.null(samplenames)){
 		S <- NULL
@@ -271,6 +319,13 @@ subset <-  function ( x, column='Analysis', value=NULL, name='newSet', mode= 'eq
 	UseMethod('subset', x)
 }
 
+#' subset the ExpressionSet based on a variable in the samples table
+#' @param x the ExpressionSet object
+#' @param name the name of the new ExpressionSet
+#' @param column which column to analyze in the samples table
+#' @param value which value to take as 'cut off'
+#' @param mode one of 'less', 'more', 'onlyless', 'equals'
+#' @export 
 subset.ExpressionSet <- function( x, column='Analysis', value=NULL, name='newSet', mode= 'equals' ){
 	
 	S <- NULL
@@ -303,7 +358,8 @@ subset.ExpressionSet <- function( x, column='Analysis', value=NULL, name='newSet
 	x
 }
 
-
+#' return the working directory using the linux pwd command
+#' @export 
 pwd <- function () {
 	system( 'pwd > __pwd' )
 	t <- read.delim( file = '__pwd', header=F)
@@ -313,6 +369,10 @@ pwd <- function () {
 	t
 }
 
+#' force absolute unique names in a vector by adding _<amount of repeats> to each value if
+#' there is more than one repeat opf the value
+#' @param x the ExpressionSet object
+#' @param separator '_' or anything you want to set the separator to
 forceAbsoluteUniqueSample <- function ( x ,separator='_') {
 	last = ''
 	ret <- vector(length=length(x))
@@ -335,7 +395,11 @@ forceAbsoluteUniqueSample <- function ( x ,separator='_') {
 addAnnotation <- function(x ,mart, mart.col='refseq_mrna' ) {
 	UseMethod('addAnnotation', x)
 }
-
+#' add aditional annotation to the ExpressionSet
+#' @param x the ExpressionSet object
+#' @param mart the annotation table (data.frame or mart object)
+#' @param mart.col which column corresponds to the rownames(x$data)
+#' @export 
 addAnnotation.NGSexpressionSet <- function(x ,mart, mart.col='refseq_mrna'){
 	if ( ! class(mart) == 'data.frame' ){
 		x$annotation <- cbind(x$annotation, mart[match(rownames(x$data),mart[,mart.col] ), ] )
@@ -347,17 +411,24 @@ addAnnotation.NGSexpressionSet <- function(x ,mart, mart.col='refseq_mrna'){
 	x
 }
 
-## get a vator from the annotation dataset
+#' subsets the annotation table for a set of probesets
+#' @param x the ExpressionSet object
+#' @param probesets the vector of probesets to annotate (rownames(x$data))
+#' @param colname a vector of colnames to annotate
+#' @return a vector of annotation values
 getAnnotation4probesets <- function (x, probesets=c(), colname='Gene.Symbol' ) {
 	UseMethod('getAnnotation4probesets', x)
 }
-getAnnotation4probesets <- function (x, probesets=c(), colname='Gene.Symbol' ) {
+getAnnotation4probesets.ExpressionSet <- function (x, probesets=c(), colname='Gene.Symbol' ) {
 	as.vector(x$annotation[match( probesets, rownames(x$data) ), colname ])
 }
 
 rank <- function( x ){
 	UseMethod('rank', x)
 }
+#' creates a new ranks vector in the ExpressionSet
+#' @param  x the ExpressionSet object
+#' @export 
 rank.ExpressionSet <- function(x ) {
 	if ( ! exists ( 'ranks', where =x ) ){
 		x$ranks <- apply( x$data,2,order)
@@ -366,7 +437,11 @@ rank.ExpressionSet <- function(x ) {
 	}
 	x
 }
-
+#' reduces the dataset based on genes e.g. dropps genes from the ExpressionSet
+#' @param x the ExpressionSet object
+#' @param probeSets a list of probesets to reduce the data to
+#' @param name the new ExpressionSet name
+#' @export 
 reduce.Obj <- function  ( x, probeSets=c(), name="reducedSet" ) {
 	UseMethod('reduce.Obj', x)
 }
@@ -399,7 +474,6 @@ reduce.Obj.ExpressionSet <- function ( x, probeSets=c(), name="reducedSet" ) {
 	retObj
 }
 
-### plotting data
 
 ggplot.gene <- function (dat,gene, colrs, groupCol='GroupID', colCol='GroupID', boxplot=F) {
 	UseMethod('ggplot.gene', dat)
@@ -713,8 +787,12 @@ force.numeric.ExpressionSet <- function ( dataObj ) {
 	dataObj
 }
 
-### exporting data
-
+#' print the ExpressionSet 
+#' @param x the ExpressionSet object
+#' @return nothing
+#' @example 
+#' 
+#' @export 
 print.ExpressionSet <- function (x) {
 	cat (paste("An object of class", class(x)),"\n" )
 	cat("named ",x$name,"\n")
@@ -734,12 +812,15 @@ print.ExpressionSet <- function (x) {
 }
 
 
-# write.data
-# @param x the NGSexpressionSet
+
 
 write.data <- function ( x, annotation=NULL ) {
 	UseMethod('write.data', x)
 }
+#' write the ExpressionSet data table to disk
+#' @param x the ExpressionSet object
+#' @param annotation a vector of annotation data column names to include in the written table (default=none)
+#' @export 
 write.data.ExpressionSet <- function ( x, annotation=NULL ) {
 	if ( !is.null(annotation) ) {
 		write.table( cbind( x$annotation[,annotation], x$data), file= paste( x$outpath,x$name,"_expressionValues.xls",sep=''), row.names=F, sep="\t",quote=F )
@@ -783,6 +864,12 @@ writeStatTables.ExpressionSet <- function( x, annotation=NULL, wData=F ) {
 	}
 }
 
+#' exports the ExpressionSet in the format \href{https://apps.childrenshospital.org/clinical/research/ingber/GEDI/gedihome.htm}[GEDI] can import.
+#' @param x the ExpressionSet object
+#' @param fname the filename to export the data to
+#' @param tag.col the sample name column in the samples table
+#' @param time.col the time column in the samples table
+#' @export 
 export4GEDI <- function( x, fname="GEDI_output.txt", tag.col = NULL, time.col=NULL ) {
 	UseMethod('export4GEDI', x)
 }

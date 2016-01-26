@@ -9,7 +9,7 @@ library(survival)
 library(randomForest)
 library(Hmisc)
 
-install.path <- dirname(sys.frame(1)$ofile)
+#install.path <- dirname(sys.frame(1)$ofile)
 
 #########################################################################################
 #########################################################################################

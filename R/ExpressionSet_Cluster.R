@@ -1,16 +1,8 @@
-# TODO: Add comment
-# 
-# Author: Stefan Lang
-###############################################################################
+# TODO: implement! Add Documentation when ready
 
-## this implements clustering of genes for the ExpressionSet class
-## the clustering options are taken from the SCExV R lib
-
-
-
-
-
-
+#' Author: Stefan Lang
+#' this implements clustering of genes for the ExpressionSet class
+#' the clustering options are taken from the SCExV R lib
 mds.and.clus <-function(dataObj,clusterby="raw",mds.type="PCA", groups.n, LLEK=2, cmethod='ward.D', ctype='hierarchical clust',onwhat="Expression",... ) {
 	if(onwhat=="Expression"){
 		tab <- dataObj$z$PCR
@@ -53,8 +45,11 @@ mds.and.clus <-function(dataObj,clusterby="raw",mds.type="PCA", groups.n, LLEK=2
 	dataObj
 }
 
-## cclusters calculates all possible clusters on the dataset
-## supported are hclust cclust and tclust with there respective options
+#' cclusters calculates all possible clusters on the dataset
+#' supported are hclust cclust and tclust with there respective options
+#' @param dataObj the ExpressionSet object
+#' @param clusterby (raw or MDS)
+#' 
 clusters <- function(dataObj,clusterby="raw", mds.proj=NULL,groups.n = 3, ctype='hierarchical clust',onwhat="Expression", cmethod='ward.D', tc_restr="eigen", tc_alpha=0.05, tc_nstart=50, tc_iter.max=20, tc_restr.fact=20 ){
 	## custering	
 	clusters <- NULL

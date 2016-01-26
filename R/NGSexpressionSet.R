@@ -1,5 +1,12 @@
-
-
+#' Use most of ExpressionSet functionallity with minor changes to NGS data (like normalizing)
+#' 
+#' This package is mainly meant to plot the data - all important quantification or gene annotation is performed using 
+#' DEseq functionallity.
+#' 
+#' Read a set of bam files and perform the quantification (better do that without using this function!)
+#' @param bamFiles a file containing one file name per line
+#' @param annotation the gene level annotation to use
+#' @export 
 read.bams <- function ( bamFiles, annotation, GTF.featureType='exon', GTF.attrType = "gene_id", isPairedEnd = FALSE, nthreads = 2){
 	if (file.exists(bamFiles)){
 		bamFiles <- readLines(bamFiles)
@@ -10,7 +17,21 @@ read.bams <- function ( bamFiles, annotation, GTF.featureType='exon', GTF.attrTy
 	counts.tab
 }
 
-
+#' create a new NGSexpressionSet object
+#' 
+#' This object is mainly used for plotting the data
+#' 
+#' @param dat data frame or matrix containing all expression data
+#' @param Samples A sample description table
+#' @param Analysis If the samples table contains a Analysis column you can subset the data already here to the Analysis here (String). This table has to contain a column filenames that is expected to connect the sample table to the dat column names.
+#' @param name The name of this object is going to be used in the output of all plots and tables - make it specific
+#' @param namecol The samples table column that contains the (to be set) names of the samples in the data matrix
+#' @param namerow This is the name of the gene level annotation column in the dat file to use as ID 
+#' @param outpath Where to store the output from the analysis
+#' @param annotation The annotation table from e.g. affymetrix csv data
+#' @param newOrder The samples column name for the new order (default 'Order')
+#' @return A new NGSexpressionSet object
+#' @export 
 NGSexpressionSet <- function ( dat, Samples,  Analysis = NULL, name='WorkingSet', namecol='GroupName', namerow= 'GeneID', usecol='Use' , outpath = NULL) {
 	x <- createWorkingSet ( dat, Samples,  Analysis = Analysis, name=name, namecol=namecol, namerow= namerow, usecol= usecol, outpath =  outpath)
 	class( x ) <- append(  'NGSexpressionSet', class(x))
@@ -21,10 +42,13 @@ getProbesetsFromStats <- function ( x, v=0.05, pos=6, mode='less', Comparisons=N
 	UseMethod('getProbesetsFromStats', x)
 }
 
-# normalizeReads.NGSexpressionSet <- function ( x, readCounts  )
-# @param x The NGSexpressionSet
-# @param readCounts The number of reads from each bam file
-
+#' normalize the expression data
+#' @param x The NGSexpressionSet
+#' @param readCounts The number of reads from each bam file or another value you want to normalize the data to
+#' @param to_gene_length FALSE whether or not to normalize the data to gene length
+#' @param geneLengthCol the column in the annotation data.frame to normalize the genes to
+#' @return the normalized data set (original data stored in NGS$raw
+#' @export 
 normalize.NGSexpressionSet <- function (  x, readCounts=NULL, to_gene_length=FALSE, geneLengthCol='transcriptLength' ) {
 	if ( is.null( readCounts ) ) {
 		readCounts <- as.vector( estimateSizeFactorsForMatrix ( x$data) )
@@ -47,15 +71,16 @@ normalize.NGSexpressionSet <- function (  x, readCounts=NULL, to_gene_length=FAL
 	x
 }
 
-# getProbesetsFromStats returns a list of probesets (the rownames from the data matrix) for a restriction of a list of stat comparisons
-# @param v The cutoff value
-# @param pos The column in the stats tables to base the selection on
-# @param Comparisons A list of comparisons to check (all if left out)
-# @param mode one of 'less', 'more', 'onlyless' or 'equals' default 'less' ( <= )
-# @examples 
-# probes <- getProbesetsFromStats ( x, v=1e-4, pos="adj.P.Val" ) 
-# returns a list of probesets that shows an adjusted p value below 1e-4
-
+#' returns a list of probesets (the rownames from the data matrix) for a restriction of a list of stat comparisons
+#' 
+#' @param v The cutoff value
+#' @param pos The column in the stats tables to base the selection on
+#' @param Comparisons A list of comparisons to check (all if left out)
+#' @param mode one of 'less', 'more', 'onlyless' or 'equals' default 'less' ( <= )
+#' @examples 
+#' probes <- getProbesetsFromStats ( x, v=1e-4, pos="adj.P.Val" ) 
+#' @return a list of probesets that shows an adjusted p value below v (1e-4 in the example)
+#' @export 
 getProbesetsFromStats.NGSexpressionSet <- function ( x, v=0.05, pos=6, mode='less', Comparisons=NULL ) {
 	if ( is.null(Comparisons)){	Comparisons <- names(x$toptabs) }
 	probesets <- NULL
@@ -75,14 +100,14 @@ getProbesetsFromValues <- function ( x, v='NULL', sample='NULL', mode='less' ){
 }
 
 
-# Select probesets, that show a certain level in expression for a single sample
-# @param v The cutoff value
-# @param sample The sample name
-# @param mode one of 'less', 'more', 'onlyless' or 'equals' default 'less' ( <= )
-# @examples 
-# probes <- getProbesetsFromStats ( x, v=10, sample="A" ) 
-# returns a list of probesets that has a expression less than 10 in sample A
-
+#' Select probesets, that show a certain level in expression for a single sample
+#' @param v The cutoff value
+#' @param sample The sample name
+#' @param mode one of 'less', 'more', 'onlyless' or 'equals' default 'less' ( <= )
+#' @examples 
+#' probes <- getProbesetsFromStats ( x, v=10, sample="A" ) 
+#' @return a list of probesets that has a expression less than 10 in sample A
+#' @export 
 getProbesetsFromValues.NGSexpressionSet <- function ( x, v='NULL', sample='NULL', mode='less' ){
 	s <- FALSE
 	if ( is.null(v) ){
@@ -135,6 +160,18 @@ get_gene_list.NGSexpressionSet <- function (x, p_value = c ( 0.1,  1e-2 ,1e-3,1e
 	x
 }
 
+#' create heatmap for each statistics table and each pvalue cutoff
+#' 
+#' @param x the NGSexpressionSet
+#' @param pvalue a vector of pvalues to set as cut off
+#' @param Subset no idear at the moment....
+#' @param comp a list of comparisons to restric the plotting to (NULL = all)
+#' @param Subset.name no idear what that should do here....
+#' @param gene_centered collapse all genes with the same gene symbol into one value
+#' @param collaps how to collapse the data if gene_centered
+#' @param geneNameCol the name of the gene.symbol column in the annotation
+#' This function uses internally the plot.heatmaps() function for each selected probeset list
+#' @export 
 plot.NGSexpressionSet <- function ( x, pvalue=c( 0.1,1e-2 ,1e-3,1e-4,1e-5, 1e-6, 1e-7, 1e-8 ), Subset=NULL , Subset.name= NULL, comp=NULL, gene_centered=F, collaps=NULL,geneNameCol= "mgi_symbol") {
 	if ( !is.null(comp) ){
 		print ("At the moment it is not possible to reduce the plotting to one comparison only" )
@@ -186,6 +223,16 @@ plot.NGSexpressionSet <- function ( x, pvalue=c( 0.1,1e-2 ,1e-3,1e-4,1e-5, 1e-6,
 collaps <- function ( dataObj, what=c('median','mean','sd','sum' ) ) {
 	UseMethod('collaps', dataObj)
 }
+
+#' merge the groups in the dataset into one single column
+#' @param dataObj the NGSexpressionSet
+#' @param what merge by 'median','mean','sd' or 'sum'
+#' 
+#' The sample description is restricted to the first entry in each group.
+#' Most variables in the sample description table might be useless after this collape
+#' 
+#' @return the collapsed NGSexpressionSet
+#' @export 
 collaps.NGSexpressionSet<- function(dataObj, what=c('median','mean','sd','sum' ) ) {
 	u <- unique(as.vector(dataObj$samples$GroupName))
 	m <- length(u)
@@ -234,7 +281,15 @@ removeBatch.NGSexpressionSet <- function( x, phenotype ){
 check <- function ( x , genes=NULL, cutoff=0.77 ) {
 	UseMethod('check', x)
 }
-
+#' this check is testing how many percent of the total reads are taken from the first x percent of the genes
+#' 
+#' @param x the NGSexpressionSet
+#' @param genes see reads.taken 
+#' @param cutoff = 0.77 a good expression dataset should not use more than 77% of the reads in the top 5%
+#' 
+#' this function calls reads.taken.NGSexpressionSet internally.
+#' @return a list of samples which have passed the test
+#' @export 
 check.NGSexpressionSet <- function (x, genes=NULL, cutoff = 0.77 ) {
 	percent5 <-  reads.taken(x, 0.05, genes)
 	names(which(percent5$reads.taken > cutoff )) ## obtained experimentally using Jennies HSC dataset
@@ -243,6 +298,12 @@ check.NGSexpressionSet <- function (x, genes=NULL, cutoff = 0.77 ) {
 reads.taken <- function ( x , percentile= 0.05, tf=NULL) {
 	UseMethod('reads.taken', x)
 }
+#' calculates how many reads are consumed by the top genes
+#' @param x the NGSexpressionSet
+#' @param percentile how many of the top genes to use (0.05)
+#' @param tf further subselect the top genes using these genes
+#' @return a list of values - please read the source code of this function
+#' @export 
 reads.taken.NGSexpressionSet <- function ( x, percentile= 0.05, tf=NULL ) {
 	top.genes <- list()
 	reads.taken <- vector( 'numeric', ncol(x$data))
@@ -270,7 +331,10 @@ reads.taken.NGSexpressionSet <- function ( x, percentile= 0.05, tf=NULL ) {
 	list( reads.taken = reads.taken, top.genes = top.genes, intersect = inter,reads.taken.intersect = reads.taken.intersect, nTF = nTF )
 }
 	
-	
+
+#' performes a set of preprocess function used by DEseq
+#' @param x the NGSexpressionSet
+#' Do not use
 preprocess.NGSexpressionSet <- function (x) {
 	if ( ! exists(where=x, 'vsdFull')){
 		condition <- as.factor(x$samples$GroupName)
@@ -287,6 +351,10 @@ preprocess.NGSexpressionSet <- function (x) {
 z.score <- function ( m ){
 	UseMethod('z.score', m)
 }
+#' z score the matrix
+#' @param m the matrix of column = samples and rows = genes
+#' @return the z scored matrix
+#' @export 
 z.score.matrix <- function (m ) {
 	rn <- rownames( m )
 	me <- apply( m, 1, mean )
@@ -296,6 +364,10 @@ z.score.matrix <- function (m ) {
 	rownames(m) <- rn
 	m
 }
+#' zscore the ngs dataset
+#' @param m the NGSexpressionSet
+#' @return The z scored NGSexpressionSet
+#' @export 
 z.score.NGSexpressionSet <- function(m) {
 	#m$data <- z.score( as.matrix( m$data ))
 	rn <- rownames( m$data )
@@ -345,7 +417,15 @@ simpleAnova.NGSexpressionSet <- function ( x, samples.col='GroupName', padjMetho
 }
 
 
-
+#' calculate staistics on all possible groupings using the DEseq nbinomTest test
+#' @param x the NGSexpressionSet
+#' @param condition the grouping column in the samples data.frame
+#' @param files write the statistics tables (FALSE)
+#' @param A the first component to analyze (Group A)
+#' @param B the second component to analyze (Group B)
+#' Both together create the group 'A vs. B'
+#' @return the NGSexpressionSet with a set of ststs tables
+#' @export 
 createStats.NGSexpressionSet <- function (x, condition, files=F, A=NULL, B=NULL) {
 	if ( nrow(x$data) < 2e+4 ) {
 	    stop ( "Please calculate the statistics only for the whole dataset!" )
@@ -424,15 +504,15 @@ describe.probeset.NGSexpressionSet <-  function ( x, probeset ) {
 }
 
 
-# getProbesetsFromStats returns a list of probesets (the rownames from the data matrix) for a restriction of a list of stat comparisons
-# @param v The cutoff value
-# @param pos The column in the stats tables to base the selection on
-# @param Comparisons A list of comparisons to check (all if left out)
-# @param mode one of 'less', 'more', 'onlyless' or 'equals' default 'less' ( <= )
-# @examples 
-# probes <- getProbesetsFromStats ( x, v=1e-4, pos="adj.P.Val" ) 
-# returns a list of probesets that shows an adjusted p value below 1e-4
-
+#' getProbesetsFromStats returns a list of probesets (the rownames from the data matrix) for a restriction of a list of stat comparisons
+#' @param v The cutoff value
+#' @param pos The column in the stats tables to base the selection on
+#' @param Comparisons A list of comparisons to check (all if left out)
+#' @param mode one of 'less', 'more', 'onlyless' or 'equals' default 'less' ( <= )
+#' @examples 
+#' probes <- getProbesetsFromStats ( x, v=1e-4, pos="adj.P.Val" ) 
+#' @return a list of probesets that shows an adjusted p value below 1e-4
+#' @export 
 getProbesetsFromStats.NGSexpressionSet <- function ( x, v=1e-4, pos='padj', mode='less', Comparisons=NULL ) {
 	if ( is.null(Comparisons)){	Comparisons <- names(x$stats) }
 	probesets <- NULL
@@ -451,14 +531,14 @@ getProbesetsFromValues <- function ( x, v=NULL, sample=NULL, mode='less' ){
 	UseMethod('getProbesetsFromValues', x)
 }
 
-# Select probesets, that show a certain level in expression for a single sample
-# @param v The cutoff value
-# @param sample The sample name
-# @param mode one of 'less', 'more', 'onlyless' or 'equals' default 'less' ( <= )
-# @examples 
-# probes <- getProbesetsFromStats ( x, v=10, sample="A" ) 
-# returns a list of probesets that has a expression less than 10 in sample A
-
+#' Select probesets, that show a certain level in expression for a single sample
+#' @param v The cutoff value
+#' @param sample The sample name
+#' @param mode one of 'less', 'more', 'onlyless' or 'equals' default 'less' ( <= )
+#' @examples 
+#' probes <- getProbesetsFromStats ( x, v=10, sample="A" ) 
+#' @return a list of probesets that has a expression less than 10 in sample A
+#' @export 
 getProbesetsFromValues.NGSexpressionSet <- function ( x, v=NULL, sample=NULL, mode='less' ){
 	s <- FALSE
 	if ( is.null(v) ){

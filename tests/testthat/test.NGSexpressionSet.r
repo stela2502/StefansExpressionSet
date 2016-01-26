@@ -17,4 +17,3 @@ expect_equal(round(as.vector(t(normalized$data[4,]))), c(21773, 28980, 17473, 22
 
 PMID25158935 <- simpleAnova( PMID25158935 )
 
-
