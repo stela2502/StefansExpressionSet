@@ -4,7 +4,7 @@
 \alias{pwd}
 \title{return the working directory using the linux pwd command}
 \usage{
-pwd()
+pwd(a)
 }
 \description{
 return the working directory using the linux pwd command

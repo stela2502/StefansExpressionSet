@@ -11,7 +11,7 @@ plot.probeset(x, probeset, boxplot = F, pdf = F,
 \arguments{
 \item{x}{the ExpressionSet object}
 
-\item{probeset}{the probeset name (rownames(x$data))}
+\item{probeset}{the probeset name (rownames(x@data))}
 
 \item{boxplot}{(F or T) create a a dots- or box-plot}
 

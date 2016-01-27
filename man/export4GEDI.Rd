@@ -4,7 +4,8 @@
 \alias{export4GEDI}
 \title{exports the ExpressionSet in the format \href{https://apps.childrenshospital.org/clinical/research/ingber/GEDI/gedihome.htm}[GEDI] can import.}
 \usage{
-export4GEDI(x, fname = "GEDI_output.txt", tag.col = NULL, time.col = NULL)
+export4GEDI(x, fname = "GEDI_output.txt", tag.col = NULL, time.col = NULL,
+  minSample_PerTime = 1)
 }
 \arguments{
 \item{x}{the ExpressionSet object}

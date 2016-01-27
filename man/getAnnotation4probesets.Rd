@@ -9,7 +9,7 @@ getAnnotation4probesets(x, probesets = c(), colname = "Gene.Symbol")
 \arguments{
 \item{x}{the ExpressionSet object}
 
-\item{probesets}{the vector of probesets to annotate (rownames(x$data))}
+\item{probesets}{the vector of probesets to annotate (rownames(x@data))}
 
 \item{colname}{a vector of colnames to annotate}
 }

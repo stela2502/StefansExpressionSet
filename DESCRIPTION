@@ -7,23 +7,12 @@ Maintainer: Stefan Lang <Stefan.Lang@med.lu.se>
 Description: ExpressionSet is a simple package to analyze NGS expression data
     sets. Expression analysis is based on the DESeq package. This package is mainly
     built to plot the results.
-Imports:
-    gplots,
-    rgl,
-    RSvgDevice,
-    stringr,
-    DESeq,
-    biomaRt,
-    Rsubread,
-    roxygen2
+Imports: reshape2, Rsubread, DESeq, stringr, RSvgDevice, rgl, gplots, biomaRt
+Depends: reshape2, gplots, ggplot2
 License: GPL-2
 Suggests:
     testthat
 Collate:
     'ExpressionSet.R'
-    'NGSexpressionSet.R'
-    'ExpressionSet_Cluster.R'
-    'PathwaysGMT.R'
-    'SingleCells.R'
 LazyData: true
 RoxygenNote: 5.0.1
