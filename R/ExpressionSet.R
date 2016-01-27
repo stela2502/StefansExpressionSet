@@ -20,11 +20,20 @@ setClass(
 			sampleNamesCol='character',
 			stats = 'list'
 		),
-		prototype(outpath ='./', name = 'ExpressionSet', 
-				rownamescol=NA_character_, 
+		prototype(outpath ='./', name = 'ExpressionSet',
 				sampleNamesCol=NA_character_, 
 				stats=list() )
 )
+
+requireNamespace('reshape2', quietly = F)
+requireNamespace('ggplot2', quietly = TRUE)
+requireNamespace('RSvgDevice', quietly = TRUE)
+requireNamespace('gplots', quietly = TRUE)
+requireNamespace('rgl', quietly = TRUE)
+
+
+
+
 #' this file contains all generic fnction for data export and ploting
 #' Create an ExpressionSet object (S3)
 #' This object is mainly used for subsetting of the data and plotting
@@ -37,7 +46,7 @@ setClass(
 #' @param outpath Where to store the output from the analysis
 #' @param annotation The annotation table from e.g. affymetrix csv data
 #' @param newOrder The samples column name for the new order (default 'Order')
-#' @export 
+#' @export
 setGeneric("ExpressionSet", ## Name
 		function( dat, Samples, class='ExpressionSet',  Analysis = NULL, name='WorkingSet', namecol='GroupName', namerow= 'GeneID', usecol='Use' , outpath = NULL){ ## Argumente der generischen Funktion
 			standardGeneric("ExpressionSet") ## der Aufruf von standardGeneric sorgt für das Dispatching
@@ -256,12 +265,12 @@ setMethod('cor2cytoscape', signature = c ( 'ExpressionSet') ,
 	invisible(edges)
 })
 #
-#setGeneric('melt', ## Name
-#		package = 'ExpressoinSet',
-#	function ( x, groupcol='GroupName', colCol='GroupName', probeNames="Gene.Symbol" ) { ## Argumente der generischen Funktion
-#		standardGeneric('melt') ## der Aufruf von standardGeneric sorgt für das Dispatching
-#	}
-#)
+setGeneric('melt', ## Name
+		package = 'ExpressoinSet',
+	function ( data, groupcol='GroupName', colCol='GroupName', probeNames="Gene.Symbol",  na.rm = FALSE, value.name = "value") { ## Argumente der generischen Funktion
+		standardGeneric('melt') ## der Aufruf von standardGeneric sorgt für das Dispatching
+	}
+)
 
 
 #' melts the object using  \code{\link[reshape2]{melt}}
@@ -460,6 +469,7 @@ setMethod('pwd', signature = c ('ExpressionSet') ,
 #' there is more than one repeat opf the value
 #' @param x the ExpressionSet object
 #' @param separator '_' or anything you want to set the separator to
+#' @exportMethod
 setGeneric('forceAbsoluteUniqueSample', ## Name
 	function ( x ,separator='_') { ## Argumente der generischen Funktion
 		standardGeneric('forceAbsoluteUniqueSample') ## der Aufruf von standardGeneric sorgt für das Dispatching
@@ -1007,12 +1017,20 @@ setMethod('writeStatTables', signature = c ( 'ExpressionSet') ,
 	}
 })
 
-#' exports the ExpressionSet in the format \href{https://apps.childrenshospital.org/clinical/research/ingber/GEDI/gedihome.htm}[GEDI] can import.
+#' @name export4GEDI
+#' @aliases export4GEDI,ExpressionSet-method
+#' @docType methods
+#' @rdname export4GEDI-methods
+#' @description Convert the values in the  ExpressionSet to the format GEDI program can import.
+#' 
+#' @seealso \url{"http://apps.childrenshospital.org/clinical/research/ingber/GEDI/gedihome.htm"}
+#' 
 #' @param x the ExpressionSet object
 #' @param fname the filename to export the data to
 #' @param tag.col the sample name column in the samples table
 #' @param time.col the time column in the samples table
-#' @export 
+#' 
+#' @exportMethod 
 setGeneric('export4GEDI', ## Name
 	function ( x, fname="GEDI_output.txt", tag.col = NULL, time.col=NULL, minSample_PerTime=1 ) { ## Argumente der generischen Funktion
 		standardGeneric('export4GEDI') ## der Aufruf von standardGeneric sorgt für das Dispatching
