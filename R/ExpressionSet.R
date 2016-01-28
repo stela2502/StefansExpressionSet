@@ -1,5 +1,7 @@
-#' An S4 class to visualize Expression data.
-#'
+#' @name ExpressionSet
+#' @title ExpressionSet
+#' @docType package
+#' @description  An S4 class to visualize Expression data.
 #' @slot data a data.frame containing the expression values for each gene x sample (gene = row)
 #' @slot samples a data.frame describing the columnanmes in the data column
 #' @slot annotation a data.frame describing the rownames in the data rows
@@ -13,30 +15,37 @@ setClass(
 		representation = representation ( 
 			data='data.frame',
 			samples='data.frame',
+			ranks='numeric',
+			raw="data.frame",
 			annotation='data.frame',
 			outpath='character',
 			name='character',
 			rownamescol='character',
 			sampleNamesCol='character',
-			stats = 'list'
+			stats = 'list',
+			simple = 'character'
 		),
 		prototype(outpath ='./', name = 'ExpressionSet',
 				sampleNamesCol=NA_character_, 
-				stats=list() )
+				stats=list(),
+				simple= c( 'outpath', 'rownamescol', 'sampleNamesCol', 'simple') )
 )
 
-requireNamespace('reshape2', quietly = F)
-requireNamespace('ggplot2', quietly = TRUE)
-requireNamespace('RSvgDevice', quietly = TRUE)
-requireNamespace('gplots', quietly = TRUE)
-requireNamespace('rgl', quietly = TRUE)
+loadNamespace('reshape2')
+loadNamespace('ggplot2')
+loadNamespace('RSvgDevice')
+loadNamespace('gplots')
+loadNamespace('rgl')
 
 
 
 
-#' this file contains all generic fnction for data export and ploting
-#' Create an ExpressionSet object (S3)
-#' This object is mainly used for subsetting of the data and plotting
+#' @name ExpressionSet
+#' @aliases ExpressionSet,data.frame-method
+#' @rdname ExpressionSet-methods
+#' @docType methods
+#' @description  this file contains all generic fnction for data export and ploting Create an ExpressionSet
+#' @description  object (S3) This object is mainly used for subsetting of the data and plotting @export
 #' @param dat data frame or matrix containing all expression data
 #' @param Samples A sample description table
 #' @param Analysis If the samples table contains a Analysis column you can subset the data already here to the Analysis here (String). This table has to contain a column filenames that is expected to connect the sample table to the dat column names.
@@ -46,7 +55,7 @@ requireNamespace('rgl', quietly = TRUE)
 #' @param outpath Where to store the output from the analysis
 #' @param annotation The annotation table from e.g. affymetrix csv data
 #' @param newOrder The samples column name for the new order (default 'Order')
-#' @export
+#' @title description of function ExpressionSet
 setGeneric("ExpressionSet", ## Name
 		function( dat, Samples, class='ExpressionSet',  Analysis = NULL, name='WorkingSet', namecol='GroupName', namerow= 'GeneID', usecol='Use' , outpath = NULL){ ## Argumente der generischen Funktion
 			standardGeneric("ExpressionSet") ## der Aufruf von standardGeneric sorgt für das Dispatching
@@ -104,14 +113,17 @@ setMethod("ExpressionSet", signature = c ('data.frame'),
 })
 
 
-#' Calculate the coexpression for any given gene
-#' 
+#' @name coexprees4gene
+#' @aliases coexprees4gene,ExpressionSet-method
+#' @rdname coexprees4gene-methods
+#' @docType methods
+#' @description  Calculate the coexpression for any given gene
 #' @param x the ExpressionSet varibale
 #' @param method any method supported by \link[=cor.test]{cor.test}
 #' @param geneNameCol the name of the gene column (gene_name)
 #' @param padjMethod the method to calucate the FDR with \link[=p.adjust]{p.adjust}
-#' 
 #' @return a data.frame with the columns 'GeneSymbol', 'pval', 'cor', 'adj.p'
+#' @title description of function coexprees4gene
 #' @export 
 setGeneric('coexprees4gene', ## Name
 	function ( x, gene=NULL, method='spearman', geneNameCol='gene_name', padjMethod='BH' ) { ## Argumente der generischen Funktion
@@ -138,28 +150,28 @@ setMethod('coexprees4gene', signature = c ( 'ExpressionSet') ,
 	}
 	ret
 })
-
-
-#' calculate a p_value matrix for the data object
-#' 
+ 
+#' @name pcorMat
+#' @aliases pcorMat,ExpressionSet-method
+#' @rdname pcorMat-methods
+#' @docType methods
+#' @description  calculate a p_value matrix for the data object THIS FUNCTION IS NOT DOING THE RIGTH
+#' @description  THING BROKEN
 #' @param x the ExpressionSet varibale
 #' @param sd_cut the cut off value for the sd check
-#' @param method any method supported by \link[=cor.test]{cor.test}
+#' @param method any method supported by \code{\link[stats]{cor.test}}
 #' @param geneNameCol the name of the gene column (gene_name)
 #' @param groupCol the column name of the grouping variable in the samples table
 #' @param name the name of the analysis
-#' 
-#' THIS FUNCTION IS NOT DOING THE RIGTH THING
-#' BROKEN
-#' 
+#' @title description of function corMat.Pvalues
 #' @export 
-setGeneric('corMat.Pvalues', ## Name
+setGeneric('pcorMat', ## Name
 	function ( x, sd_cut=1, method='spearman', geneNameCol='gene_name', groupCol=NULL, name='tmp' ) { ## Argumente der generischen Funktion
-		standardGeneric('corMat.Pvalues') ## der Aufruf von standardGeneric sorgt für das Dispatching
+		standardGeneric('pcorMat') ## der Aufruf von standardGeneric sorgt für das Dispatching
 	}
 )
 
-setMethod('corMat.Pvalues', signature = c ( 'ExpressionSet') ,
+setMethod('pcorMat', signature = c ( 'ExpressionSet') ,
 	definition = function ( x, sd_cut=1, method='spearman', geneNameCol='gene_name', groupCol=NULL, name='tmp' ) {
 	# TODO: implement the p value calculation!
 	d <- reduce.Obj( x, rownames(x@data)[which( apply(x@data,1,sd) > sd_cut)], name =name )
@@ -184,16 +196,19 @@ setMethod('corMat.Pvalues', signature = c ( 'ExpressionSet') ,
 
 
 
-#' calculate a correlation matrix for the data object
-#' 
+#' @name corMat
+#' @aliases corMat,ExpressionSet-method
+#' @rdname corMat-methods
+#' @docType methods
+#' @description  calculate a correlation matrix for the data object
 #' @param x the ExpressionSet varibale
 #' @param sd_cut the cut off value for the sd check
-#' @param method any method supported by \link[=cor.test]{cor.test}
+#' @param method any method supported by \code{\link[stats]{cor.test}}
 #' @param geneNameCol the name of the gene column (gene_name)
 #' @param groupCol the column name of the grouping variable in the samples table
 #' @param name the name of the analysis
-#' 
 #' @return the correlation matrix
+#' @title description of function corMat
 #' @export 
 setGeneric('corMat', ## Name
 	function ( x, sd_cut=1, method='spearman', geneNameCol='gene_name', groupCol=NULL, name='tmp' ) { ## Argumente der generischen Funktion
@@ -223,10 +238,14 @@ setMethod('corMat', signature = c ( 'ExpressionSet') ,
 		ret
 	}
 })
-#' exports the correlation matrix in the format \href{http://www.cytoscape.org/}{CytoScape} 
-#' does support as network file.
-#' 
+#' @name cor2cytoscape
+#' @aliases cor2cytoscape,ExpressionSet-method
+#' @rdname cor2cytoscape-methods
+#' @docType methods
+#' @description  exports the correlation matrix in the format \url{http://www.cytoscape.org/} does
+#' @description  support as network file.
 #' @param M the correlation matrix obtained by a run of \code{\link{corMat}}
+#' @title description of function cor2cytoscape
 #' @export 
 setGeneric('cor2cytoscape', ## Name
 	function (M, file, cut=0.9 ) { ## Argumente der generischen Funktion
@@ -265,22 +284,25 @@ setMethod('cor2cytoscape', signature = c ( 'ExpressionSet') ,
 	invisible(edges)
 })
 #
-setGeneric('melt', ## Name
-		package = 'ExpressoinSet',
+#' @name melt
+#' @aliases melt,ExpressionSet-method
+#' @rdname melt-methods
+#' @docType methods
+#' @description  met an ExpressionSet to be plotted using ggplot2 functions
+#' @param data the ExpressionSet object
+#' @param groupcol the column in the samples table to group the expression on
+#' @param colCol the column in the samples table to color the grouping data on
+#' @param probeNames which probenames to use (ProbeSetID or Gene.Symbol ...)
+#' @title description of function melt
+setGeneric('melt.ExpressionSet', ## Name
+		package = 'ExpressionSet',
 	function ( data, groupcol='GroupName', colCol='GroupName', probeNames="Gene.Symbol",  na.rm = FALSE, value.name = "value") { ## Argumente der generischen Funktion
-		standardGeneric('melt') ## der Aufruf von standardGeneric sorgt für das Dispatching
+		standardGeneric('melt.ExpressionSet') ## der Aufruf von standardGeneric sorgt für das Dispatching
 	}
 )
 
 
-#' melts the object using  \code{\link[reshape2]{melt}}
-#' 
-#' @param x the ExpressionSet object
-#' @param groupcol the grouping column in the samples data
-#' @param colCol the coloring column in the sample data
-#' @param probeNames the column in the annotation datacontaining the gene symbol
-#' @export 
-setMethod('melt',
+setMethod('melt.ExpressionSet',
 	 signature= ('ExpressionSet' ),
 	 function ( data, groupcol='GroupName', colCol='GroupName', probeNames="Gene.Symbol", na.rm = FALSE, value.name = "value" ) {
 	ma  <- data@data[,order(data@samples[,groupcol] )]
@@ -306,18 +328,30 @@ setMethod('melt',
 })
 
 
-#' plot grouped probesets creates ONE plot for ONE group of probesets
-#' If you want a multi group plot create it yourself from the single ones.
+#' @name plot.probeset
+#' @aliases plot.probeset,ExpressionSet-method
+#' @rdname plot.probeset-methods
+#' @docType methods
+#' @description This function plots the expression data grouped by the GroupName using ggplot2.
+#' @description Works only for one probeset.
+#' @param x the ExpressionSet object
+#' @param groupcol the grouping column in the samples data
+#' @param colCol the coloring column in the sample data
+#' @param probeNames the column in the annotation datacontaining the gene symbol
 #' @param x the ExpressionSet object
 #' @param probeset the probeset name (rownames(x@data))
 #' @param boxplot (F or T) create a a dots- or box-plot
 #' @param pdf save the file as pdf (default svg)
 #' @param geneNameCol the column name for the gene symbol to use in the plots
-#' @export 
-#' @docType methods
-#' @rdname plot.probeset-methods
+#' @param sampleGroup the sample table column containing the grouping information
+#' @title description of function plot.probeset
+#' @example p <- plot.probeset( red, rownames(red@data)[20], geneNameCol= 'GeneID', boxplot=T)
+#' @example #produces the file '../../tmp/reducedSet_boxplot_Mybl1_expression.svg'
+#' @example p <- plot.probeset( red, rownames(red@data)[20], geneNameCol= 'GeneID', boxplot=F)
+#' @example #produces the file '../../tmp/reducedSet_points_Mybl1_expression.svg'
+#' @export
 setGeneric('plot.probeset', ## Name
-	function ( x, probeset, boxplot=F, pdf=F, geneNameCol= "mgi_symbol" ) { ## Argumente der generischen Funktion
+	function ( x, probeset, boxplot=F, pdf=F, geneNameCol= "mgi_symbol", sampleGroup='GroupName' ) { ## Argumente der generischen Funktion
 		standardGeneric('plot.probeset') ## der Aufruf von standardGeneric sorgt für das Dispatching
 	}
 )
@@ -325,17 +359,18 @@ setGeneric('plot.probeset', ## Name
 ####last
 
 setMethod('plot.probeset', signature = c ( 'ExpressionSet') ,
-	definition = function ( x, probeset, boxplot=F, pdf=F, geneNameCol= "mgi_symbol" ) {
+	definition = function ( x, probeset, boxplot=F, pdf=F, geneNameCol= "mgi_symbol", sampleGroup='GroupName' ) {
 	if ( sum(is.na(match(probeset, rownames(x@data)))==F) == 0 ){
 		probeset <- rownames(x@data)[match( probeset, x@annotation[,geneNameCol] ) ]
 	}
-	if ( length(probeset) == 0 ) {time.col
+	if ( length(probeset) == 0 ) {
 		stop( "I could not find the probeset in the data object!")
 	}
 	print ( probeset )
 	x <- reduce.Obj(x, probeset )
 	if ( nrow(x@data) == 1 ) {
-		melted <- melt( x )
+		melted <- melt( x, probeNames=geneNameCol, groupcol = sampleGroup , colCol= sampleGroup )
+		colnames(melted) <- c( 'Gene.Symbol', 'Sample', 'Expression', 'Group', 'ColorGroup' )
 		collaps <- '_points_'
 		if (boxplot){
 			collaps <-'_boxplot_'
@@ -346,9 +381,10 @@ setMethod('plot.probeset', signature = c ( 'ExpressionSet') ,
 			devSVG( file=paste(x@outpath,x@name,collaps,x@annotation[,geneNameCol],"_expression.svg",sep='') ,width=5,height=4)
 		}
 		if ( boxplot ){
-			p <- ggplot(restricSamples(x, Gene.Symbol == gene) ,aes(x=Group, y=Expression,color=Group)) + geom_boxplot(shape=19)+theme_bw()
+			p <- ggplot(melted ,aes(x=Group, y=Expression,color=Group)) + geom_boxplot(shape=19)+theme_bw()
 		}else{
-			p <-ggplot(g1,aes(x=Group, y=Expression,color=Group)) +geom_jitter(shape=19)+theme_bw()
+			#TODO: adjust jitter width based on sample group numbers
+			p <-ggplot(melted ,aes(x=Group, y=Expression,color=Group)) +geom_jitter(shape=19, width=0.2, height=0)+theme_bw()
 		}
 		print ( p )
 		dev.off()
@@ -361,49 +397,49 @@ setMethod('plot.probeset', signature = c ( 'ExpressionSet') ,
 
 
 
-#' drops samples from the ExpressionSet
+#' @name drop.samples
+#' @aliases drop.samples,ExpressionSet-method
+#' @rdname drop.samples-methods
+#' @docType methods
+#' @description  drops samples from the ExpressionSet
 #' @param x the ExpressionSet object
 #' @param samplenames which samples to drop (samples like colnames(x@data))
 #' @param name the name of the new ExpressionSet object
-#' 
+#' @title description of function drop.samples
 #' @export 
 setGeneric('drop.samples', ## Name
-	function ( x, samplenames=NULL, name='dopped_samples' ) { ## Argumente der generischen Funktion
+	function ( x, samplenames=NULL, name='dropped_samples' ) { ## Argumente der generischen Funktion
 		standardGeneric('drop.samples') ## der Aufruf von standardGeneric sorgt für das Dispatching
 	}
 )
 
 setMethod('drop.samples', signature = c ( 'ExpressionSet') ,
-	definition = function ( x, samplenames=NULL, name='dopped_samples' ) {
+	definition = function ( x, samplenames=NULL, name='dropped_samples' ) {
 	if ( ! is.null(samplenames)){
-		S <- NULL
-		S <- x@samples[ is.na(match(x@samples$SampleName, samplenames  ) ) == T ,]
+		red  <- new('ExpressionSet', name=name )
+		red@samples <- x@samples[ is.na(match(x@samples[,x@sampleNamesCol], samplenames  ) ) == T ,]
 		print ( paste( "Dropping", length(samplenames), "samples (", paste( samplenames, collapse=", "),")") )
-		x@data <- x@data[, as.vector(S[, 'SampleName' ])]
-		x@samples <- S
-		x@name <- name
-		if ( exists(where=x, 'vsdFull')){
-			x@vsdFull <- NULL
-			x@cds <- NULL
+		for ( i in c(x@simple, 'annotation') ){
+			slot( red, i) <- slot( x,i)
 		}
-		if ( exists(where=x, 'stats')){
-			x@stats <- NULL
-		}
-		if ( exists(where=x, 'sig_genes')){
-			x@sig_genes <- NULL
-		}
-		colnames(x@data) <- forceAbsoluteUniqueSample ( as.vector(S[, x@sampleNamesCol ]) )
-		x@samples[,'SampleName'] <- colnames(x@data)
+		red@data <- x@data[, as.vector(red@samples[,red@sampleNamesCol])]
+		colnames(red@data) <- forceAbsoluteUniqueSample ( as.vector(red@samples[, red@sampleNamesCol ]) )
+		red@samples[,red@sampleNamesCol] <- colnames(red@data)
 	}
-	x
+	red
 })
 
-#' restrictSamples the ExpressionSet based on a variable in the samples table
+#' @name restrictSamples
+#' @aliases restrictSamples,ExpressionSet-method
+#' @rdname restrictSamples-methods
+#' @docType methods
+#' @description Drop the samples, that have been selected!
 #' @param x the ExpressionSet object
 #' @param name the name of the new ExpressionSet
 #' @param column which column to analyze in the samples table
 #' @param value which value to take as 'cut off'
 #' @param mode one of 'less', 'more', 'onlyless', 'equals'
+#' @title description of function restrictSamples
 #' @export 
 setGeneric('restrictSamples', ## Name
 	function ( x, column='Analysis', value=NULL, name='newSet', mode= 'equals' ) { ## Argumente der generischen Funktion
@@ -413,40 +449,35 @@ setGeneric('restrictSamples', ## Name
 
 setMethod('restrictSamples', signature = c ( 'ExpressionSet') ,
 	definition = function ( x, column='Analysis', value=NULL, name='newSet', mode= 'equals' ) {
-	
+		
 	S <- NULL
 	if ( is.null(value)) {
 		stop( "the value must not be NULL!")
 	}
+	
 	switch( mode,
 			'less' = S <- x@samples[which ( x@samples[,column] <=  value), ], 
 			'more' = S <- x@samples[which ( x@samples[,column] > value ), ], 
 			'onlyless' = S <- x@samples[which ( x@samples[,column]  < value ), ],
 			'equals' = S <- x@samples[which ( x@samples[,column] ==  value), ]
 	)
-	
-	x@data <- x@data[, as.vector(S[, 'SampleName' ])]
-	x@samples <- S
-	x@name <- name
-	if ( exists(where=x, 'vsdFull')){
-		x@vsdFull <- NULL
-		x@cds <- NULL
+	browser()
+	if ( nrow(S) < nrow(x@samples)){
+		x <- drop.samples( x, S[,x@sampleNamesCol], name=name)
 	}
-	if ( exists(where=x, 'stats')){
-		x@stats <- NULL
-	}
-	if ( exists(where=x, 'sig_genes')){
-		x@sig_genes <- NULL
-	}
-	colnames(x@data) <- forceAbsoluteUniqueSample ( as.vector(S[, x@sampleNamesCol ]) )
-	x@samples[,'SampleName'] <- colnames(x@data)
 	write.table (S, file=paste(name,'_Sample_Description', ".xls", sep=''), sep='\t',  row.names=F,quote=F )
 	x
 })
 
 ####last
 
-#' return the working directory using the linux pwd command
+#' @name pwd
+#' @aliases pwd
+#' @rdname pwd-methods
+#' @docType methods
+#' @description  uses the linux pwd command to determin the working directory 
+#' @return A string containing the working directory 
+#' @title description of function pwd
 #' @export 
 setGeneric('pwd', ## Name
 	function ( a ) { ## Argumente der generischen Funktion
@@ -454,7 +485,7 @@ setGeneric('pwd', ## Name
 	}
 )
 
-setMethod('pwd', signature = c ('ExpressionSet') ,
+setMethod('pwd', signature = c () ,
 	definition = function ( a ) {
 		rm(a)
 	system( 'pwd > __pwd' )
@@ -465,11 +496,15 @@ setMethod('pwd', signature = c ('ExpressionSet') ,
 	t
 })
 
-#' force absolute unique names in a vector by adding _<amount of repeats> to each value if
-#' there is more than one repeat opf the value
+#' @name forceAbsoluteUniqueSample
+#' @aliases forceAbsoluteUniqueSample,character-method
+#' @rdname forceAbsoluteUniqueSample-methods
+#' @docType methods
+#' @description  force absolute unique names in a vector by adding _<amount of repeats> to each value
+#' @description  if there is more than one repeat opf the value @exportMethod
 #' @param x the ExpressionSet object
 #' @param separator '_' or anything you want to set the separator to
-#' @exportMethod
+#' @title description of function forceAbsoluteUniqueSample
 setGeneric('forceAbsoluteUniqueSample', ## Name
 	function ( x ,separator='_') { ## Argumente der generischen Funktion
 		standardGeneric('forceAbsoluteUniqueSample') ## der Aufruf von standardGeneric sorgt für das Dispatching
@@ -477,6 +512,7 @@ setGeneric('forceAbsoluteUniqueSample', ## Name
 )
 
 setMethod('forceAbsoluteUniqueSample',
+		, signature = c ( 'character') ,
 	definition = function ( x ,separator='_') {
 	last = ''
 	ret <- vector(length=length(x))
@@ -497,10 +533,37 @@ setMethod('forceAbsoluteUniqueSample',
 })
 
 
-#' add aditional annotation to the ExpressionSet
+
+setMethod('forceAbsoluteUniqueSample',
+		, signature = c ( 'factor') ,
+		definition = function ( x ,separator='_') {
+			last = ''
+			ret <- vector(length=length(x))
+			for ( i in 1:length(x) ){
+				if ( is.null(ret) ){
+					last = x[i]
+					ret[i] <- last
+				}
+				else{
+					last = x[i]
+					if ( ! is.na(match( last, ret )) ){
+						last <- paste(last,separator,sum( ! is.na(match( x[1:i], last )))-1, sep = '')
+					}
+					ret[i] <- last
+				}
+			}
+			ret
+		})
+
+#' @name addAnnotation
+#' @aliases addAnnotation,ExpressionSet-method
+#' @rdname addAnnotation-methods
+#' @docType methods
+#' @description  add aditional annotation to the ExpressionSet
 #' @param x the ExpressionSet object
 #' @param mart the annotation table (data.frame or mart object)
 #' @param mart.col which column corresponds to the rownames(x@data)
+#' @title description of function addAnnotation
 #' @export 
 setGeneric('addAnnotation', ## Name
 	function (x ,mart, mart.col='refseq_mrna') { ## Argumente der generischen Funktion
@@ -520,11 +583,16 @@ setMethod('addAnnotation', signature = c ( 'ExpressionSet') ,
 	x
 })
 
-#' subsets the annotation table for a set of probesets
+#' @name getAnnotation4probesets
+#' @aliases getAnnotation4probesets,ExpressionSet-method
+#' @rdname getAnnotation4probesets-methods
+#' @docType methods
+#' @description  subsets the annotation table for a set of probesets
 #' @param x the ExpressionSet object
 #' @param probesets the vector of probesets to annotate (rownames(x@data))
 #' @param colname a vector of colnames to annotate
 #' @return a vector of annotation values
+#' @title description of function getAnnotation4probesets
 setGeneric('getAnnotation4probesets', ## Name
 	function (x, probesets=c(), colname='Gene.Symbol' ) { ## Argumente der generischen Funktion
 		standardGeneric('getAnnotation4probesets') ## der Aufruf von standardGeneric sorgt für das Dispatching
@@ -536,8 +604,13 @@ setMethod('getAnnotation4probesets', signature = c ( 'ExpressionSet') ,
 	as.vector(x@annotation[match( probesets, rownames(x@data) ), colname ])
 })
 
-#' creates a new ranks vector in the ExpressionSet
-#' @param  x the ExpressionSet object
+#' @name ranks
+#' @aliases ranks,ExpressionSet-method
+#' @rdname ranks-methods
+#' @docType methods
+#' @description  creates a new ranks vector in the ExpressionSet
+#' @param x the ExpressionSet object
+#' @title description of function ranks
 #' @export 
 setGeneric('ranks', ## Name
 	function (x ) { ## Argumente der generischen Funktion
@@ -554,10 +627,15 @@ setMethod('ranks', signature = c ('ExpressionSet') ,
 	}
 	x
 })
-#' reduces the dataset based on genes e.g. dropps genes from the ExpressionSet
+#' @name reduce.Obj
+#' @aliases reduce.Obj,ExpressionSet-method
+#' @rdname reduce.Obj-methods
+#' @docType methods
+#' @description  reduces the dataset based on genes e.g. dropps genes from the ExpressionSet
 #' @param x the ExpressionSet object
 #' @param probeSets a list of probesets to reduce the data to
 #' @param name the new ExpressionSet name
+#' @title description of function reduce.Obj
 #' @export 
 setGeneric('reduce.Obj', ## Name
 	function ( x, probeSets=c(), name="reducedSet" ) { ## Argumente der generischen Funktion
@@ -567,7 +645,7 @@ setGeneric('reduce.Obj', ## Name
 
 setMethod('reduce.Obj', signature = c ( 'ExpressionSet') ,
 	definition = function ( x, probeSets=c(), name="reducedSet" ) {
-	retObj <- x
+	retObj <- new('ExpressionSet', name = name)
 	useOnly <- match(probeSets, rownames(x@data))
 	not.matched <- probeSets[is.na(useOnly)]
 	if ( length(not.matched) > 0 ){
@@ -575,27 +653,42 @@ setMethod('reduce.Obj', signature = c ( 'ExpressionSet') ,
 		probeSets <- probeSets[ ! is.na(useOnly)]
 		useOnly <- useOnly[ ! is.na(useOnly) ]
 	}
-	retObj$data <- data.frame( x@data[ useOnly ,] )
-	rownames(retObj$data) <- probeSets
-	colnames(retObj$data) <- colnames(x@data)
-	retObj$name = name
-	retObj$annotation <- x@annotation[useOnly,]
-	if ( exists( 'stats', where=retObj) ){
-		for ( i in 1:length(names(retObj$stats))){
-			retObj$stats[[i]]= x@stats[[i]][ match(probeSets ,x@stats[[i]][,1] ),]
+	for (n in slot(x,'simple')){
+		slot(retObj,n) <- slot(x,n)
+	}
+	retObj@samples <- x@samples
+	retObj@data <- data.frame( x@data[ useOnly ,] )
+	rownames(retObj@data) <- probeSets
+	colnames(retObj@data) <- colnames(x@data)
+	retObj@annotation <- x@annotation[useOnly,]
+	if ( length( names(x@stats)) > 0){
+		for ( i in 1:length(names(x$stats))){
+			retObj@stats[[i]]= x@stats[[i]][ match(probeSets ,x@stats[[i]][,1] ),]
 		}
+		names(retObj@stats) <- names(x@stats)
 	}
-	if ( exists ( 'ranks', where=x)){
-		retObj$ranks = x@ranks[useOnly,]
+	if ( length(x@ranks) > 0 ){
+		retObj@ranks = x@ranks[useOnly,]
 	}
-	if ( exists ( 'raw', where=x)){
-		retObj$raw = x@raw[useOnly,]
+	if ( ncol( x@raw ) > 0 ) {
+		retObj@raw = x@raw[useOnly,]
 	}
-	retObj[ match( c( 'design', 'cont.matrix', 'eset','fit', 'fit2' ), names(retObj) )] <- NULL
 	retObj
 })
 
 
+
+#' @name ggplot.gene
+#' @aliases ggplot.gene,ExpressionSet-method
+#' @rdname ggplot.gene-methods
+#' @docType methods
+#' @description  Plot one gene in the ExpressionSet as boxplot or points plot (using ggplot2)
+#' @param dat the ExpressionSet object
+#' @param gene the gene of interest
+#' @param colrs the grouping colors for the x axis (samples)
+#' @param groupCol the samples clumn that contains the grouping information
+#' @param colCol the sample column that contains the color information
+#' @title description of function ggplot.gene
 setGeneric('ggplot.gene', ## Name
 	function (dat,gene, colrs, groupCol='GroupID', colCol='GroupID', boxplot=F) { ## Argumente der generischen Funktion
 		standardGeneric('ggplot.gene') ## der Aufruf von standardGeneric sorgt für das Dispatching
@@ -605,7 +698,7 @@ setGeneric('ggplot.gene', ## Name
 setMethod('ggplot.gene', signature = c ( 'ExpressionSet') ,
 	definition = function (dat,gene, colrs, groupCol='GroupID', colCol='GroupID', boxplot=F) {
 	not.in = 'NUKL'
-	g1 <- melt(reduce.Obj ( dat, gene, name=gene ), probeNames=isect$rownamescol, groupcol=groupCol,colCol=colCol)
+	g1 <- melt(reduce.Obj ( dat, gene, name=gene ), probeNames=dat@rownamescol, groupcol=groupCol,colCol=colCol)
 	#g1 <- subset(dat, Gene.Symbol == gene)
 	colnames(g1) <- c( 'Gene.Symbol', 'Sample', 'Expression', 'Group', 'ColorGroup' )
 	g1$Group <- factor( g1$Group, levels=unique( as.character(g1$Group)))
@@ -633,6 +726,17 @@ setMethod('ggplot.gene', signature = c ( 'ExpressionSet') ,
 	}
 })
 
+#' @name gg.heatmap.list
+#' @aliases gg.heatmap.list,ExpressionSet-method
+#' @rdname gg.heatmap.list-methods
+#' @docType methods
+#' @description  uses ggplot2 to plot heatmaps
+#' @param dat the ExpressionSet object
+#' @param glist a list of probesets to plot (or all)
+#' @param colrs a list of colors for the sample level boxes (or rainbow colors)
+#' @param groupCol the column group in the samples table that contains the grouping strings
+#' @param colCol the column group in the samples table that contains the color groups
+#' @title description of function gg.heatmap.list
 setGeneric('gg.heatmap.list', ## Name
 	function (dat,glist, colrs, groupCol='GroupID', colCol='GroupID') { ## Argumente der generischen Funktion
 		standardGeneric('gg.heatmap.list') ## der Aufruf von standardGeneric sorgt für das Dispatching
@@ -640,9 +744,15 @@ setGeneric('gg.heatmap.list', ## Name
 )
 
 setMethod('gg.heatmap.list', signature = c ( 'ExpressionSet') ,
-	definition = function (dat,glist, colrs, groupCol='GroupID', colCol='GroupID') {
-	
-	isect <- reduce.Obj ( dat, glist)
+	definition = function (dat,glist=NULL, colrs=NULL, groupCol='GroupID', colCol='GroupID') {
+	if ( ! is.null(glist) ) {
+		isect <- reduce.Obj ( dat, glist)
+	}else {
+		isect <- dat
+	}
+	if ( is.null(colrs) ){
+		colrs = rainbow( length(unique(isect@samples[,colCol])))
+	}
 	#browser()
 	dat.ss <- melt ( isect, probeNames=isect$rownamescol, groupcol=groupCol,colCol=colCol)
 	#dat.ss <- dat[which(is.na(match(dat$Gene.Symbol,isect))==F),]
@@ -692,6 +802,20 @@ setMethod('gg.heatmap.list', signature = c ( 'ExpressionSet') ,
 })
 
 
+#' @name plot.heatmaps
+#' @aliases plot.heatmaps,ExpressionSet-method
+#' @rdname plot.heatmaps-methods
+#' @docType methods
+#' @description  A flexible heatmapping function that depends on heatmap.2 and allows for many data
+#' @description  selection/conversion options
+#' @param dataOBJ the ExpressionSet object
+#' @param gene.names the rownames(dataObj@data) level gene names
+#' @param pvalue an optional cut off value to select genes from the statistical results tables
+#' @param analysis_name the name for the outfiles
+#' @param gene_centered in case there are multiple probesets for each gene - sum the data or display each probset
+#' @param Subset an optional list of strings matching to the gene symbols used to select genes of interest
+#' @param collaps collaps the sample groups into a single column of the heatmap using one of collaps=c('median', 'mean')
+#' @title description of function plot.heatmaps
 setGeneric('plot.heatmaps', ## Name
 	function ( dataOBJ, gene.names=NULL , pvalue=1, analysis_name =NULL, gene_centered = F, Subset=NULL, collaps=NULL,geneNameCol= "mgi_symbol", pdf=F,... ) { ## Argumente der generischen Funktion
 		standardGeneric('plot.heatmaps') ## der Aufruf von standardGeneric sorgt für das Dispatching
@@ -719,7 +843,7 @@ setMethod('plot.heatmaps', signature = c ( 'ExpressionSet') ,
 	else {
 		geneNamesBased <- data.frame( 'GeneSymbol' = dataOBJ@annotation[rownames(exprs),geneNameCol], exprs )
 	}
-	if ( ! is.null(Subset) ) { ## subset is a list of srings matching to the gene symbols
+	if ( ! is.null(Subset) ) { ## 
 		useful <- NULL
 		for ( i in 1:length(Subset) ){
 			useful <- c( useful, grep(Subset[i], geneNamesBased[,1] ) )
@@ -802,6 +926,20 @@ distfun = function (x) {as.dist( 1- cor(t(x), method='pearson') ) } ,...)
 })
 
 
+#' @name groups.boxplot
+#' @aliases groups.boxplot,ExpressionSet-method
+#' @rdname groups.boxplot-methods
+#' @docType methods
+#' @description  This function can be used to get an overview of the different gene level groups in
+#' @description  an ExpressionSet It uses the linux montage command to merge all different boxplots
+#' @description  into one figure
+#' @param x the ExpresionSet object
+#' @param SampleCol the column in the samples table that contains the sample grouping information
+#' @param clusters the gene level clusters. The function plots one boxplot for each cluster.
+#' @param svg create the single boxplots as svg or (default png) files
+#' @param fname the filename extension files are created by paste(x@outpath,fname,<GroupID>,"_boxplot")
+#' @param Collapse if set will lead to a collapse of the sample groups into one value per gene. Supports all \code{\link{collaps}} by options.
+#' @title description of function groups.boxplot
 setGeneric('groups.boxplot', ## Name
 	function ( x, SampleCol='GroupName', clusters, svg=F, fname='group_', width=800, height=800,mar=NULL, Collapse=NULL, ...) { ## Argumente der generischen Funktion
 		standardGeneric('groups.boxplot') ## der Aufruf von standardGeneric sorgt für das Dispatching
@@ -860,23 +998,67 @@ setMethod('groups.boxplot', signature = c ( 'ExpressionSet') ,
 	ret
 })
 
-## obtained from https://stackoverflow.com/questions/8261590/write-list-to-a-text-file-preserving-names-r
-setGeneric('write.list', ## Name
-	function ( x, fname, sep=' ') { ## Argumente der generischen Funktion
-		standardGeneric('write.list') ## der Aufruf von standardGeneric sorgt für das Dispatching
-	}
+#' @name collaps
+#' @aliases collaps,NGSexpressionSet-method
+#' @rdname collaps-methods
+#' @docType methods
+#' @description  This function will collpase the data in the ExpressionSet to only contain one value
+#' @description  per sample group.
+#' @param dataObj the ExpressionSet
+#' @param by collapsing method c('median','mean','sd','sum', or own function )
+#' @title description of function collaps
+setGeneric('collaps', ## Name
+		function (dataObj, by=c('median','mean','sd','sum' ) ) { ## Argumente der generischen Funktion
+			standardGeneric('collaps') ## der Aufruf von standardGeneric sorgt für das Dispatching
+		}
 )
 
-setMethod('write.list', signature = c ( 'ExpressionSet') ,
-	definition = function ( x, fname, sep=' ') {
-	z <- deparse(substitute(x))
-	cat(z, "\n", file=fname)
-	nams=names(x) 
-	for (i in seq_along(x) ){ cat(nams[i], sep,  x[[i]], "\n", 
-				file=fname, append=TRUE) 
-	}
+setMethod('collaps', signature = c ('ExpressionSet'),
+		definition = function (dataObj, by=c('median','mean','sd','sum' ) ) {
+			u <- unique(as.vector(dataObj@samples$GroupName))
+			m <- length(u)
+			mm <-  matrix ( rep(0,m * nrow(dataObj@data)), ncol=m)
+			colnames(mm) <- u
+			rownames(mm) <- rownames(dataObj@data)
+			f <- NULL
+			if ( is.function(by)){
+				f <- by
+			}else {
+			switch( by,
+					median = f<- function (x ) { median(x) },
+					mean = f <- function(x) { mean(x) },
+					sd = f <- function(x) { sd(x) },
+					sum = f <-function(x) { sum(x)}
+			);
+			}
+			if ( is.null(f) ) {
+				stop("Please set what to one of 'median','mean','sd','sum'" )
+			}
+			new_samples <- NULL
+			for ( i in u ){
+				all <- which(as.vector(dataObj$samples$GroupName) == i )
+				new_samples <- rbind ( new_samples, dataObj$samples[all[1],] )
+				mm[,i] <- apply( dataObj$data[ , all],1,f)
+			}
+			dataObj$name = paste( dataObj$name, what, sep='_')
+			dataObj$data <- mm
+			dataObj$samples <- new_samples
+			dataObj
 })
 
+
+#' @name simpleAnova
+#' @aliases simpleAnova,ExpressionSet-method
+#' @rdname simpleAnova-methods
+#' @docType methods
+#' @description  This function calculates an annova to identify significant changes in the ExpressionSet
+#' @description  has a higher sensitivity for multi group analyses to identify group specific changes
+#' @description  or general trends in the dataset. This function adds the results into the stats slot
+#' @description  of the ExpressionSet object.
+#' @param x the ExpressionSet object
+#' @param samples.col the samples table column that contains the grouping information
+#' @param padjMethod the p value correction method as described in  \code{\link[stats]{p.adjust}}
+#' @title description of function simpleAnova
 setGeneric('simpleAnova', ## Name
 	function ( x, samples.col='GroupName', padjMethod='BH' ) { ## Argumente der generischen Funktion
 		standardGeneric('simpleAnova') ## der Aufruf von standardGeneric sorgt für das Dispatching
@@ -900,7 +1082,17 @@ setMethod('simpleAnova', signature = c ( 'ExpressionSet') ,
 	x
 })
 
-#' constructors that have to be implemented in the classes
+#' @name createStats
+#' @aliases createStats,ExpressionSet-method
+#' @rdname createStats-methods
+#' @docType methods
+#' @description  constructor that has to be implemented in the data specific classes
+#' @param x the ExpressionSet object
+#' @param condition the samples column containing the condition of interest
+#' @param files whether or not (default) export the stat files using \code{\link{writeStatTables}}
+#' @param A an optional condition A to compare to a condition B
+#' @param B the condition B
+#' @title description of function createStats
 setGeneric('createStats', ## Name
 	function ( x, condition, files=F, A=NULL, B=NULL ) { ## Argumente der generischen Funktion
 		standardGeneric('createStats') ## der Aufruf von standardGeneric sorgt für das Dispatching
@@ -912,6 +1104,13 @@ setMethod('createStats', signature = c ( 'ExpressionSet') ,
 	stop( 'Not implemented' )
 })
 
+#' @name normalize
+#' @aliases normalize,ExpressionSet-method
+#' @rdname normalize-methods
+#' @docType methods
+#' @description  constructor that has to be implemented in the data specific classes
+#' @param x the ExpressionSet object
+#' @title description of function normalize
 setGeneric('normalize', ## Name
 	function ( x ) { ## Argumente der generischen Funktion
 		standardGeneric('normalize') ## der Aufruf von standardGeneric sorgt für das Dispatching
@@ -923,6 +1122,13 @@ setMethod('normalize', signature = c ('ExpressionSet') ,
 	x
 })
 
+#' @name force.numeric
+#' @aliases force.numeric,ExpressionSet-method
+#' @rdname force.numeric-methods
+#' @docType methods
+#' @description  The moethod forces the values in the data matrix to be numbers.
+#' @param dataObj the ExpressionSet object
+#' @title description of function force.numeric
 setGeneric('force.numeric', ## Name
 	function (dataObj ) { ## Argumente der generischen Funktion
 		standardGeneric('force.numeric') ## der Aufruf von standardGeneric sorgt für das Dispatching
@@ -939,11 +1145,14 @@ setMethod('force.numeric', signature = c ('ExpressionSet') ,
 	dataObj
 })
 
-#' print the ExpressionSet 
+#' @name show
+#' @aliases show,ExpressionSet-method
+#' @rdname show-methods
+#' @docType methods
+#' @description  print the ExpressionSet
 #' @param x the ExpressionSet object
 #' @return nothing
-#' @example 
-#' 
+#' @title description of function show
 #' @export 
 setMethod('show', signature = c ('ExpressionSet') ,
 	definition = function (object) {
@@ -959,9 +1168,14 @@ setMethod('show', signature = c ('ExpressionSet') ,
 
 
 
-#' write the ExpressionSet data table to disk
+#' @name write.data
+#' @aliases write.data,ExpressionSet-method
+#' @rdname write.data-methods
+#' @docType methods
+#' @description  write the ExpressionSet data table to disk
 #' @param x the ExpressionSet object
 #' @param annotation a vector of annotation data column names to include in the written table (default=none)
+#' @title description of function write.data
 #' @export 
 setGeneric('write.data', ## Name
 	function ( x, annotation=NULL ) { ## Argumente der generischen Funktion
@@ -979,8 +1193,13 @@ setMethod('write.data', signature = c ( 'ExpressionSet') ,
 	}
 })
 
-#' export the statistic files
+#' @name writeStatTables
+#' @aliases writeStatTables,ExpressionSet-method
+#' @rdname writeStatTables-methods
+#' @docType methods
+#' @description  export the statistic files
 #' @param x the NGSexpressionSet
+#' @title description of function writeStatTables
 #' @export 
 setGeneric('writeStatTables', ## Name
 	function ( x, annotation=NULL, wData=F ) { ## Argumente der generischen Funktion
@@ -1019,18 +1238,15 @@ setMethod('writeStatTables', signature = c ( 'ExpressionSet') ,
 
 #' @name export4GEDI
 #' @aliases export4GEDI,ExpressionSet-method
-#' @docType methods
 #' @rdname export4GEDI-methods
-#' @description Convert the values in the  ExpressionSet to the format GEDI program can import.
-#' 
-#' @seealso \url{"http://apps.childrenshospital.org/clinical/research/ingber/GEDI/gedihome.htm"}
-#' 
+#' @docType methods
+#' @description  Convert the values in the ExpressionSet to the format GEDI program can import.
 #' @param x the ExpressionSet object
 #' @param fname the filename to export the data to
 #' @param tag.col the sample name column in the samples table
 #' @param time.col the time column in the samples table
-#' 
-#' @exportMethod 
+#' @seealso \url{"http://apps.childrenshospital.org/clinical/research/ingber/GEDI/gedihome.htm"}
+#' @title description of function export4GEDI
 setGeneric('export4GEDI', ## Name
 	function ( x, fname="GEDI_output.txt", tag.col = NULL, time.col=NULL, minSample_PerTime=1 ) { ## Argumente der generischen Funktion
 		standardGeneric('export4GEDI') ## der Aufruf von standardGeneric sorgt für das Dispatching
