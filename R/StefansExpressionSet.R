@@ -25,7 +25,7 @@ setClass(
 			stats = 'list',
 			simple = 'character'
 		),
-		prototype(outpath ='./', name = 'StefansExpressionSet',
+		prototype(outpath =NULL, name = 'StefansExpressionSet',
 				sampleNamesCol=NA_character_, 
 				stats=list(),
 				simple= c( 'outpath', 'rownamescol', 'sampleNamesCol', 'simple') )
@@ -139,11 +139,12 @@ setMethod("StefansExpressionSet", signature = c ('data.frame'),
 	
 	if ( is.null(outpath)){
 		outpath = pwd()
-	}else if ( ! file.exists(outpath)){
+	}
+	if ( ! file.exists(outpath)){
 		dir.create( outpath )
 	}
 	data$outpath <- outpath
-	new ( class, data = data$data, samples = data$samples, name = data$name, annotation = data$annotation, rownamescol= data$rownamescol,sampleNamesCol = data$sampleNamesCol ) 
+	new ( class, data = data$data, samples = data$samples, name = data$name, annotation = data$annotation, rownamescol= data$rownamescol,sampleNamesCol = data$sampleNamesCol , outpath= data$outpath ) 
 })
 
 
