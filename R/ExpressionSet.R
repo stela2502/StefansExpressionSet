@@ -37,8 +37,33 @@ loadNamespace('RSvgDevice')
 loadNamespace('gplots')
 loadNamespace('rgl')
 
+#' @name PMID25158935exp
+#' @title Read counts for the expression data described in PMID25158935
+#' @description The data was re-mapped against mouse mm10 using HISAT
+#' @description and quantified using the R subreads package.
+#' @docType data
+#' @usage PMID25158935exp
+#' @format data.frame
+#' @export
+'PMID25158935exp'
 
+#' @name PMID25158935samples
+#' @title Read counts for the sample data for the expression information described in PMID25158935
+#' @description The data was collected from the NCBI SRA archive
+#' @docType data
+#' @usage PMID25158935samples
+#' @format data.frame
+#' @export
+'PMID25158935samples'
 
+#' @name red
+#' @title reduced PMID25158935 dataset to a 100x15 ExpressionSet
+#' @description Reduced ExpressionSet from the PMID25158935exp + PMID25158935samples dataset
+#' @docType data
+#' @usage red
+#' @format ExpressionSet
+#' @export
+'red'
 
 #' @name ExpressionSet
 #' @aliases ExpressionSet,data.frame-method
