@@ -55,7 +55,6 @@ require(ggplot2)
 #' @docType data
 #' @usage PMID25158935exp
 #' @format data.frame
-#' @export
 'PMID25158935exp'
 
 #' @name PMID25158935samples
@@ -64,7 +63,6 @@ require(ggplot2)
 #' @docType data
 #' @usage PMID25158935samples
 #' @format data.frame
-#' @export
 'PMID25158935samples'
 
 #' @name red
@@ -73,7 +71,6 @@ require(ggplot2)
 #' @docType data
 #' @usage red
 #' @format ExpressionSet
-#' @export
 'red'
 
 #' @name ExpressionSet
