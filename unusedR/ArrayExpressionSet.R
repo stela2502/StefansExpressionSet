@@ -7,7 +7,7 @@ library(stringr)
 library(stats)
 
 
-# Creaste a StefansExpressionSet object (S3)
+# Creaste a StefansStefansExpressionSet object (S3)
 # This object is mainly used for subsetting of the data and plotting
 # @param dat A LIMMA eset object
 # @param Samples A sample description table
@@ -19,7 +19,7 @@ library(stats)
 # @param annotation The annotation table from e.g. affymetrix csv data
 # @param newOrder The samples column name for the new order (default 'Order')
 
-ArrayExpressionSet <- function ( dat, Samples,  Analysis = NULL, name='WorkingSet', namecol='GroupName', namerow= 'Probe.Set.ID', usecol='Use', outpath = NULL, annotation=NULL, newOrder='Order' ) {
+ArrayStefansExpressionSet <- function ( dat, Samples,  Analysis = NULL, name='WorkingSet', namecol='GroupName', namerow= 'Probe.Set.ID', usecol='Use', outpath = NULL, annotation=NULL, newOrder='Order' ) {
 	S <- Samples
 	if ( ! is.null(Analysis) ){
 		if ( length(grep(usecol, colnames(Samples))) > 0 ){
@@ -46,7 +46,7 @@ ArrayExpressionSet <- function ( dat, Samples,  Analysis = NULL, name='WorkingSe
 	}
 	data <- list ( eset=dat, 'data' = ret, samples = S, name= name, annotation = annotation, rownamescol = namerow, sampleNamesCol =  namecol, outpath = outpath )
 	data$genes <- rownames(data$data)
-	class(data) <- 'StefansExpressionSet'
+	class(data) <- 'StefansStefansExpressionSet'
 	data
 }
 
@@ -55,7 +55,7 @@ addAnnotation <- function(x ,mart, mart.col='refseq_mrna' ) {
 	UseMethod('addAnnotation', x)
 }
 
-addAnnotation.StefansExpressionSet <- function(x ,mart, mart.col='refseq_mrna'){
+addAnnotation.StefansStefansExpressionSet <- function(x ,mart, mart.col='refseq_mrna'){
 	if ( ! class(mart) == 'data.frame' ){
 		x$annotation <- cbind(x$annotation, mart[match(rownames(x$data),mart[,mart.col] ), ] )
 	}
@@ -76,7 +76,7 @@ pwd <- function () {
 
 
 # This function will use the LIMMA package to calculate statistics.
-# @param x The StefansExpressionSet object
+# @param x The StefansStefansExpressionSet object
 # @param fcol The column in the samples table, that contains the group definition data
 # @param perlscript The all_vs_all_model_matrix.pl perl script that creates the cont.matrix and Comparisons data
 # @param files Whether to export the stat tables; default TRUE
@@ -85,7 +85,7 @@ pwd <- function () {
 #	UseMethod('createStats', x)
 #}
 
-createStats.StefansExpressionSet <- function (x, fcol=NULL, perlscript= '/home/slang/workspace/BMC_NGS/bin/all_vs_all_model_matrix.pl', files=T) {
+createStats.StefansStefansExpressionSet <- function (x, fcol=NULL, perlscript= '/home/slang/workspace/BMC_NGS/bin/all_vs_all_model_matrix.pl', files=T) {
 	if ( length( grep(fcol, colnames(x$samples)) ) == 0 ){
 		stop( paste("The sample description",fcol,"can not be found in the Samples table" ) )
 	}
@@ -108,7 +108,7 @@ createStats.StefansExpressionSet <- function (x, fcol=NULL, perlscript= '/home/s
 remBatchEffect<- function(x, batch=c(), fcol=NULL , design=FALSE  ) {
 	UseMethod('remBatchEffect', x)
 }
-remBatchEffect.StefansExpressionSet <- function(x, batch=c(), fcol=NULL , design=FALSE ) {
+remBatchEffect.StefansStefansExpressionSet <- function(x, batch=c(), fcol=NULL , design=FALSE ) {
 	if ( exists ('BatchEffectRemodved', x) ){
 		if ( x$BatchEffectRemodved) {stop ("Batch effect has already been removed!" ) }
 	}
@@ -131,7 +131,7 @@ remBatchEffect.StefansExpressionSet <- function(x, batch=c(), fcol=NULL , design
 
 
 
-createStats.StefansExpressionSet <- function ( x, condition, files=T , A=NULL, B=NULL) {
+createStats.StefansStefansExpressionSet <- function ( x, condition, files=T , A=NULL, B=NULL) {
 	if ( length( grep ( condition, colnames(x$samples))) > 0 ) {
 		condition = factor( x$samples[,condition] )
 	}
@@ -150,7 +150,7 @@ meanExpression4groups <- function ( x,  fcol=NULL ) {
 	UseMethod('meanExpression4groups', x)
 }
 # meanExpression4groups calculates the mean expression for groups defined in the samples table
-meanExpression4groups.StefansExpressionSet <- function ( x, fcol=NULL ) {
+meanExpression4groups.StefansStefansExpressionSet <- function ( x, fcol=NULL ) {
 	stop = FALSE
 	if ( is.null (fcol) ){
 		stop = TRUE
@@ -181,7 +181,7 @@ export4GEDI <- function( x, fname="GEDI_output.txt", tag.col = NULL, time.col=NU
 	UseMethod('export4GEDI', x)
 }
 
-export4GEDI.StefansExpressionSet <- function( x, fname="GEDI_output.txt", tag.col = NULL, time.col=NULL, minSample_PerTime=1 ) {
+export4GEDI.StefansStefansExpressionSet <- function( x, fname="GEDI_output.txt", tag.col = NULL, time.col=NULL, minSample_PerTime=1 ) {
 	if ( is.null(time.col)){
 		stop ( paste( "choose time.col from:", paste( colnames(x$samples), collapse=", ") ) ) 
 	}
@@ -243,7 +243,7 @@ getProbesetsFromStats <- function ( x, v=0.05, pos=6, mode='less', Comparisons=N
 # probes <- getProbesetsFromStats ( x, v=1e-4, pos="adj.P.Val" ) 
 # returns a list of probesets that shows an adjusted p value below 1e-4
 
-getProbesetsFromStats.StefansExpressionSet <- function ( x, v=0.05, pos=6, mode='less', Comparisons=NULL ) {
+getProbesetsFromStats.StefansStefansExpressionSet <- function ( x, v=0.05, pos=6, mode='less', Comparisons=NULL ) {
 	if ( is.null(Comparisons)){	Comparisons <- names(x$toptabs) }
 	probesets <- NULL
 	for ( i in match(Comparisons, names(x$toptabs) ) ) {
@@ -270,7 +270,7 @@ getProbesetsFromValues <- function ( x, v='NULL', sample='NULL', mode='less' ){
 # probes <- getProbesetsFromStats ( x, v=10, sample="A" ) 
 # returns a list of probesets that has a expression less than 10 in sample A
 
-getProbesetsFromValues.StefansExpressionSet <- function ( x, v='NULL', sample='NULL', mode='less' ){
+getProbesetsFromValues.StefansStefansExpressionSet <- function ( x, v='NULL', sample='NULL', mode='less' ){
 	s <- FALSE
 	if ( is.null(v) ){
 		s<-TRUE
@@ -291,7 +291,7 @@ getProbesetsFromValues.StefansExpressionSet <- function ( x, v='NULL', sample='N
 reduce.Obj <- function  ( x, probeSets=c(), name="reducedSet" ) {
 	UseMethod('reduce.Obj', x)
 }
-reduce.Obj.StefansExpressionSet <- function ( x, probeSets=c(), name="reducedSet" ) {
+reduce.Obj.StefansStefansExpressionSet <- function ( x, probeSets=c(), name="reducedSet" ) {
 	retObj <- x
 	retObj$data <- matrix(x$data[match(probeSets, rownames(x$data)),],ncol=ncol(x$data) )
 	rownames(retObj$data) <- probeSets
@@ -311,7 +311,7 @@ reduce.Obj.StefansExpressionSet <- function ( x, probeSets=c(), name="reducedSet
 pca.rows <- function (x, groups=2, rad=0.01, info = 'no_more_info', nmax=3000, dname='genes', method='ward.D2', group_on_pca=FALSE )  {
 	UseMethod('pca.rows', x)
 }
-pca.rows.StefansExpressionSet <- function (x, groups=2, rad=0.01, info = 'no_more_info', nmax=3000, dname='genes', method='ward.D2', group_on_pca=FALSE )  {
+pca.rows.StefansStefansExpressionSet <- function (x, groups=2, rad=0.01, info = 'no_more_info', nmax=3000, dname='genes', method='ward.D2', group_on_pca=FALSE )  {
 	## plot the pca for the rows (genes)
 	## the groups will be created from a hclust call
 	ma <- x$data
@@ -384,7 +384,7 @@ pca.rows.StefansExpressionSet <- function (x, groups=2, rad=0.01, info = 'no_mor
 simpleLinePlot <- function ( x, main="", mar=c(5.1, 4.1, 4.1, 2.1) ){
 	UseMethod('simpleLinePlot', x)
 }
-simpleLinePlot.StefansExpressionSet <- function ( x, main="", mar=c(5.1, 4.1, 4.1, 2.1) ){
+simpleLinePlot.StefansStefansExpressionSet <- function ( x, main="", mar=c(5.1, 4.1, 4.1, 2.1) ){
 	if ( length(x$genes) > 1 ){
 		x <- z.score(x)
 	}
@@ -401,7 +401,7 @@ simpleLinePlot.StefansExpressionSet <- function ( x, main="", mar=c(5.1, 4.1, 4.
 z.score <- function ( m ){
 	UseMethod('z.score', m)
 }
-z.score.StefansExpressionSet <- function(m) {
+z.score.StefansStefansExpressionSet <- function(m) {
 	rn <- rownames( m$data )
 	me <- apply( m$data, 1, mean )
 	sd <- apply( m$data, 1, sd )
@@ -435,7 +435,7 @@ multiplot.4.n.figures <- function ( n ) {
 	ret
 }
 
-plot.StefansExpressionSet <- function ( x, pvalue=c( 0.1,1e-2 ,1e-3,1e-4,1e-5, 1e-6, 1e-7, 1e-8 ), Subset=NULL , Subset.name= NULL, comp=NULL, gene_centered=F, collaps=NULL,geneNameCol= "mgi_symbol") {
+plot.StefansStefansExpressionSet <- function ( x, pvalue=c( 0.1,1e-2 ,1e-3,1e-4,1e-5, 1e-6, 1e-7, 1e-8 ), Subset=NULL , Subset.name= NULL, comp=NULL, gene_centered=F, collaps=NULL,geneNameCol= "mgi_symbol") {
 	if ( !is.null(comp) ){
 		print ("At the moment it is not possible to reduce the plotting to one comparison only" )
 		return (x)
@@ -489,7 +489,7 @@ plot.heatmaps <- function ( dataOBJ, gene.names , pvalue=1, analysis_name ='Unna
 }
 
 
-plot.heatmaps.StefansExpressionSet <- function ( dataOBJ, gene.names=NULL , pvalue=1, analysis_name =NULL, gene_centered = F, Subset=NULL, collaps=NULL,geneNameCol= "mgi_symbol" ) {	
+plot.heatmaps.StefansStefansExpressionSet <- function ( dataOBJ, gene.names=NULL , pvalue=1, analysis_name =NULL, gene_centered = F, Subset=NULL, collaps=NULL,geneNameCol= "mgi_symbol" ) {	
 	print ( "The function is untested - use with care!" )
 	dataOBJ <- z.score( dataOBJ )
 	

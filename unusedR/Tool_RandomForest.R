@@ -313,7 +313,7 @@ calculate_RF <- function (datRF = NULL, mtry1=3, no.rep= 20, no.tree= 500, addcl
 prepareRFcalc <- function( x, trees=433, forests=7, pocs=32, opath, debug=F ) {
 	UseMethod('prepareRFcalc', x)
 }
-prepareRFcalc.ExpressionSet <- function( x, trees=433, forrests=7, pocs=32, opath, debug=F ) {
+prepareRFcalc.StefansExpressionSet <- function( x, trees=433, forrests=7, pocs=32, opath, debug=F ) {
 	print ( install.path )
 	datRF <- x$data
 	save( datRF, file=paste(opath,'datRF.RData',sep="/" ) )

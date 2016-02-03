@@ -1,5 +1,5 @@
 setClass( 
-		Class='ExpressionSet', 
+		Class='StefansExpressionSet', 
 		representation = representation ( 
 			data='data.frame',
 			samples='data.frame',
@@ -12,7 +12,7 @@ setClass(
 		)
 )
 #' this file contains all generic fnction for data export and ploting
-#' Create an ExpressionSet object (S3)
+#' Create an StefansExpressionSet object (S3)
 #' This object is mainly used for subsetting of the data and plotting
 #' @param dat data frame or matrix containing all expression data
 #' @param Samples A sample description table
@@ -24,12 +24,12 @@ setClass(
 #' @param annotation The annotation table from e.g. affymetrix csv data
 #' @param newOrder The samples column name for the new order (default 'Order')
 #' @export 
-setGeneric("ExpressionSet", ## Name
+setGeneric("StefansExpressionSet", ## Name
 		function( dat, Samples,  Analysis = NULL, name='WorkingSet', namecol='GroupName', namerow= 'GeneID', usecol='Use' , outpath = NULL){ ## Argumente der generischen Funktion
-			standardGeneric("ExpressionSet") ## der Aufruf von standardGeneric sorgt für das Dispatching
+			standardGeneric("StefansExpressionSet") ## der Aufruf von standardGeneric sorgt für das Dispatching
 		})
 
-setMethod("ExpressionSet", signature = c ('ExpressionSet'), 
+setMethod("StefansExpressionSet", signature = c ('StefansExpressionSet'), 
 	definition = function ( dat, Samples,  Analysis = NULL, name='WorkingSet', namecol='GroupName', namerow= 'GeneID', usecol='Use' , outpath = NULL ) {
 	S <- Samples
 	if ( ! is.null(Analysis) ){
@@ -68,7 +68,7 @@ setMethod("ExpressionSet", signature = c ('ExpressionSet'),
 	write.table (S, file=paste(name,'_Sample_Description', ".xls", sep=''), sep='\t',  row.names=F,quote=F )
 	data <- list ( 'data' = data.frame(ret), samples = S, name= name, annotation = annotation, rownamescol = namerow )
 	data$sampleNamesCol <- namecol
-	class(data) <- 'ExpressionSet'
+	class(data) <- 'StefansExpressionSet'
 	data$batchRemoved=0
 	
 	if ( is.null(outpath)){
@@ -77,14 +77,14 @@ setMethod("ExpressionSet", signature = c ('ExpressionSet'),
 		dir.create( outpath )
 	}
 	data$outpath <- outpath
-	setClass ( Class = 'ExpressionSet', representation = representation ( data) )
+	setClass ( Class = 'StefansExpressionSet', representation = representation ( data) )
 	data
 })
 
 
 #' Calculate the coexpression for any given gene
 #' 
-#' @param x the ExpressionSet varibale
+#' @param x the StefansExpressionSet varibale
 #' @param method any method supported by \link[=cor.test]{cor.test}
 #' @param geneNameCol the name of the gene column (gene_name)
 #' @param padjMethod the method to calucate the FDR with \link[=p.adjust]{p.adjust}
@@ -97,7 +97,7 @@ setGeneric('coexprees4gene', ## Name
 	}
 )
 
-setMethod('coexprees4gene', signature = c ('ExpressionSet','ExpressionSet') ,
+setMethod('coexprees4gene', signature = c ('StefansExpressionSet','StefansExpressionSet') ,
 	definition = function ( x, gene=NULL, method='spearman', geneNameCol='gene_name', padjMethod='BH' ) {
 	ret <- NULL
 	if ( ! is.null(gene) ){
@@ -120,7 +120,7 @@ setMethod('coexprees4gene', signature = c ('ExpressionSet','ExpressionSet') ,
 
 #' calculate a p_value matrix for the data object
 #' 
-#' @param x the ExpressionSet varibale
+#' @param x the StefansExpressionSet varibale
 #' @param sd_cut the cut off value for the sd check
 #' @param method any method supported by \link[=cor.test]{cor.test}
 #' @param geneNameCol the name of the gene column (gene_name)
@@ -137,7 +137,7 @@ setGeneric('corMat.Pvalues', ## Name
 	}
 )
 
-setMethod('corMat.Pvalues', signature = c ('ExpressionSet','ExpressionSet') ,
+setMethod('corMat.Pvalues', signature = c ('StefansExpressionSet','StefansExpressionSet') ,
 	definition = function ( x, sd_cut=1, method='spearman', geneNameCol='gene_name', groupCol=NULL, name='tmp' ) {
 	# TODO: implement the p value calculation!
 	d <- reduce.Obj( x, rownames(x$data)[which( apply(x$data,1,sd) > sd_cut)], name =name )
@@ -164,7 +164,7 @@ setMethod('corMat.Pvalues', signature = c ('ExpressionSet','ExpressionSet') ,
 
 #' calculate a correlation matrix for the data object
 #' 
-#' @param x the ExpressionSet varibale
+#' @param x the StefansExpressionSet varibale
 #' @param sd_cut the cut off value for the sd check
 #' @param method any method supported by \link[=cor.test]{cor.test}
 #' @param geneNameCol the name of the gene column (gene_name)
@@ -179,7 +179,7 @@ setGeneric('corMat', ## Name
 	}
 )
 
-setMethod('corMat', signature = c ('ExpressionSet','ExpressionSet') ,
+setMethod('corMat', signature = c ('StefansExpressionSet','StefansExpressionSet') ,
 	definition = function ( x, sd_cut=1, method='spearman', geneNameCol='gene_name', groupCol=NULL, name='tmp' ) {
 	d <- reduce.Obj( x, rownames(x$data)[which( apply(x$data,1,sd) > sd_cut)], name = name )
 	if ( ! is.null(groupCol) ){
@@ -214,7 +214,7 @@ setGeneric('cor2cytoscape', ## Name
 	}
 )
 
-setMethod('cor2cytoscape', signature = c ('ExpressionSet','ExpressionSet') ,
+setMethod('cor2cytoscape', signature = c ('StefansExpressionSet','StefansExpressionSet') ,
 	definition = function (M, file, cut=0.9 ) {
 	edges <- NULL
 	if ( class(M) == 'list' ) {
@@ -245,7 +245,7 @@ setMethod('cor2cytoscape', signature = c ('ExpressionSet','ExpressionSet') ,
 
 #' melts the object using  \code{\link[reshape2]{melt}}
 #' 
-#' @param x the ExpressionSet object
+#' @param x the StefansExpressionSet object
 #' @param groupcol the grouping column in the samples data
 #' @param colCol the coloring column in the sample data
 #' @param probeNames the column in the annotation datacontaining the gene symbol
@@ -256,7 +256,7 @@ setGeneric('melt', ## Name
 	}
 )
 
-setMethod('melt', signature = c ('ExpressionSet','ExpressionSet') ,
+setMethod('melt', signature = c ('StefansExpressionSet','StefansExpressionSet') ,
 	definition = function ( x, groupcol='GroupName', colCol='GroupName', probeNames="Gene.Symbol" ) {
 	ma  <- x$data[,order(x$samples[,groupcol] )]
 	rownames(ma) <- forceAbsoluteUniqueSample(x$annotation[, probeNames] )
@@ -283,7 +283,7 @@ setMethod('melt', signature = c ('ExpressionSet','ExpressionSet') ,
 
 #' plot grouped probesets creates ONE plot for ONE group of probesets
 #' If you want a multi group plot create it yourself from the single ones.
-#' @param x the ExpressionSet object
+#' @param x the StefansExpressionSet object
 #' @param probeset the probeset name (rownames(x$data))
 #' @param boxplot (F or T) create a a dots- or box-plot
 #' @param pdf save the file as pdf (default svg)
@@ -295,7 +295,7 @@ setGeneric('plot.probeset', ## Name
 	}
 )
 
-setMethod('plot.probeset', signature = c ('ExpressionSet','ExpressionSet') ,
+setMethod('plot.probeset', signature = c ('StefansExpressionSet','StefansExpressionSet') ,
 	definition = function ( x, probeset, boxplot=F, pdf=F, geneNameCol= "mgi_symbol" ) {
 	if ( sum(is.na(match(probeset, rownames(x$data)))==F) == 0 ){
 		probeset <- rownames(x$data)[match( probeset, x$annotation[,geneNameCol] ) ]
@@ -332,10 +332,10 @@ setMethod('plot.probeset', signature = c ('ExpressionSet','ExpressionSet') ,
 
 
 
-#' drops samples from the ExpressionSet
-#' @param x the ExpressionSet object
+#' drops samples from the StefansExpressionSet
+#' @param x the StefansExpressionSet object
 #' @param samplenames which samples to drop (samples like colnames(x$data))
-#' @param name the name of the new ExpressionSet object
+#' @param name the name of the new StefansExpressionSet object
 #' 
 #' @export 
 setGeneric('drop.samples', ## Name
@@ -344,7 +344,7 @@ setGeneric('drop.samples', ## Name
 	}
 )
 
-setMethod('drop.samples', signature = c ('ExpressionSet','ExpressionSet') ,
+setMethod('drop.samples', signature = c ('StefansExpressionSet','StefansExpressionSet') ,
 	definition = function ( x, samplenames=NULL, name='dopped_samples' ) {
 	if ( ! is.null(samplenames)){
 		S <- NULL
@@ -369,9 +369,9 @@ setMethod('drop.samples', signature = c ('ExpressionSet','ExpressionSet') ,
 	x
 })
 
-#' restrictSamples the ExpressionSet based on a variable in the samples table
-#' @param x the ExpressionSet object
-#' @param name the name of the new ExpressionSet
+#' restrictSamples the StefansExpressionSet based on a variable in the samples table
+#' @param x the StefansExpressionSet object
+#' @param name the name of the new StefansExpressionSet
 #' @param column which column to analyze in the samples table
 #' @param value which value to take as 'cut off'
 #' @param mode one of 'less', 'more', 'onlyless', 'equals'
@@ -382,7 +382,7 @@ setGeneric('restrictSamples', ## Name
 	}
 )
 
-setMethod('restrictSamples', signature = c ('ExpressionSet','ExpressionSet') ,
+setMethod('restrictSamples', signature = c ('StefansExpressionSet','StefansExpressionSet') ,
 	definition = function ( x, column='Analysis', value=NULL, name='newSet', mode= 'equals' ) {
 	
 	S <- NULL
@@ -423,7 +423,7 @@ setGeneric('pwd', ## Name
 	}
 )
 
-setMethod('pwd', signature = c ('ExpressionSet') ,
+setMethod('pwd', signature = c ('StefansExpressionSet') ,
 	definition = function () {
 	system( 'pwd > __pwd' )
 	t <- read.delim( file = '__pwd', header=F)
@@ -435,7 +435,7 @@ setMethod('pwd', signature = c ('ExpressionSet') ,
 
 #' force absolute unique names in a vector by adding _<amount of repeats> to each value if
 #' there is more than one repeat opf the value
-#' @param x the ExpressionSet object
+#' @param x the StefansExpressionSet object
 #' @param separator '_' or anything you want to set the separator to
 setGeneric('forceAbsoluteUniqueSample', ## Name
 	function ( x ,separator='_') { ## Argumente der generischen Funktion
@@ -443,7 +443,7 @@ setGeneric('forceAbsoluteUniqueSample', ## Name
 	}
 )
 
-setMethod('forceAbsoluteUniqueSample', signature = c ('ExpressionSet','ExpressionSet') ,
+setMethod('forceAbsoluteUniqueSample', signature = c ('StefansExpressionSet','StefansExpressionSet') ,
 	definition = function ( x ,separator='_') {
 	last = ''
 	ret <- vector(length=length(x))
@@ -464,8 +464,8 @@ setMethod('forceAbsoluteUniqueSample', signature = c ('ExpressionSet','Expressio
 })
 
 
-#' add aditional annotation to the ExpressionSet
-#' @param x the ExpressionSet object
+#' add aditional annotation to the StefansExpressionSet
+#' @param x the StefansExpressionSet object
 #' @param mart the annotation table (data.frame or mart object)
 #' @param mart.col which column corresponds to the rownames(x$data)
 #' @export 
@@ -475,7 +475,7 @@ setGeneric('addAnnotation', ## Name
 	}
 )
 
-setMethod('addAnnotation', signature = c ('ExpressionSet','ExpressionSet') ,
+setMethod('addAnnotation', signature = c ('StefansExpressionSet','StefansExpressionSet') ,
 	definition = function (x ,mart, mart.col='refseq_mrna') {
 	if ( ! class(mart) == 'data.frame' ){
 		x$annotation <- cbind(x$annotation, mart[match(rownames(x$data),mart[,mart.col] ), ] )
@@ -488,7 +488,7 @@ setMethod('addAnnotation', signature = c ('ExpressionSet','ExpressionSet') ,
 })
 
 #' subsets the annotation table for a set of probesets
-#' @param x the ExpressionSet object
+#' @param x the StefansExpressionSet object
 #' @param probesets the vector of probesets to annotate (rownames(x$data))
 #' @param colname a vector of colnames to annotate
 #' @return a vector of annotation values
@@ -498,14 +498,14 @@ setGeneric('getAnnotation4probesets', ## Name
 	}
 )
 
-setMethod('getAnnotation4probesets', signature = c ('ExpressionSet','ExpressionSet') ,
+setMethod('getAnnotation4probesets', signature = c ('StefansExpressionSet','StefansExpressionSet') ,
 	definition = function (x, probesets=c(), colname='Gene.Symbol' ) {
 	as.vector(x$annotation[match( probesets, rownames(x$data) ), colname ])
 })
 
 
-#' creates a new ranks vector in the ExpressionSet
-#' @param  x the ExpressionSet object
+#' creates a new ranks vector in the StefansExpressionSet
+#' @param  x the StefansExpressionSet object
 #' @export 
 setGeneric('rank', ## Name
 	function (x ) { ## Argumente der generischen Funktion
@@ -513,7 +513,7 @@ setGeneric('rank', ## Name
 	}
 )
 
-setMethod('rank', signature = c ('ExpressionSet','ExpressionSet') ,
+setMethod('rank', signature = c ('StefansExpressionSet','StefansExpressionSet') ,
 	definition = function (x ) {
 	if ( ! exists ( 'ranks', where =x ) ){
 		x$ranks <- apply( x$data,2,order)
@@ -522,10 +522,10 @@ setMethod('rank', signature = c ('ExpressionSet','ExpressionSet') ,
 	}
 	x
 })
-#' reduces the dataset based on genes e.g. dropps genes from the ExpressionSet
-#' @param x the ExpressionSet object
+#' reduces the dataset based on genes e.g. dropps genes from the StefansExpressionSet
+#' @param x the StefansExpressionSet object
 #' @param probeSets a list of probesets to reduce the data to
-#' @param name the new ExpressionSet name
+#' @param name the new StefansExpressionSet name
 #' @export 
 setGeneric('reduce.Obj', ## Name
 	function ( x, probeSets=c(), name="reducedSet" ) { ## Argumente der generischen Funktion
@@ -533,7 +533,7 @@ setGeneric('reduce.Obj', ## Name
 	}
 )
 
-setMethod('reduce.Obj', signature = c ('ExpressionSet','ExpressionSet') ,
+setMethod('reduce.Obj', signature = c ('StefansExpressionSet','StefansExpressionSet') ,
 	definition = function ( x, probeSets=c(), name="reducedSet" ) {
 	retObj <- x
 	useOnly <- match(probeSets, rownames(x$data))
@@ -564,7 +564,7 @@ setMethod('reduce.Obj', signature = c ('ExpressionSet','ExpressionSet') ,
 })
 
 #' plot one gene using either a points plot or a boxplot version of ggplot2
-#' @param dat the ExpressionSet object
+#' @param dat the StefansExpressionSet object
 #' gene which gene to plot
 #' @param colrs wich colors to use for the sample groups
 #' @param groupCol which grouping variable to use for the grouping
@@ -577,7 +577,7 @@ setGeneric('ggplot.gene', ## Name
 	}
 )
 
-setMethod('ggplot.gene', signature = c ('ExpressionSet','ExpressionSet') ,
+setMethod('ggplot.gene', signature = c ('StefansExpressionSet','StefansExpressionSet') ,
 	definition = function (dat,gene, colrs, groupCol='GroupID', colCol='GroupID', boxplot=F) {
 	not.in = NULL
 	g1 <- melt(reduce.Obj ( dat, gene, name=gene ), probeNames=isect$rownamescol, groupcol=groupCol,colCol=colCol)
@@ -609,7 +609,7 @@ setMethod('ggplot.gene', signature = c ('ExpressionSet','ExpressionSet') ,
 })
 
 #' draw a ggplot heatmap from a subset of genes in the Expression set
-#' @param dat a ExpressionSet object
+#' @param dat a StefansExpressionSet object
 #' @param glist a list of genes to select using reduce.Obj
 #' @param groupCol which grouping variable to use for the grouping
 #' @param colCol which grouping variable to use for the coloring (not used here)
@@ -620,7 +620,7 @@ setGeneric('gg.heatmap.list', ## Name
 	}
 )
 
-setMethod('gg.heatmap.list', signature = c ('ExpressionSet','ExpressionSet') ,
+setMethod('gg.heatmap.list', signature = c ('StefansExpressionSet','StefansExpressionSet') ,
 	definition = function (dat,glist, colrs, groupCol='GroupID', colCol='GroupID') {
 	
 	isect <- reduce.Obj ( dat, glist)
@@ -688,7 +688,7 @@ setGeneric('plot.heatmaps', ## Name
 	}
 )
 
-setMethod('plot.heatmaps', signature = c ('ExpressionSet','ExpressionSet') ,
+setMethod('plot.heatmaps', signature = c ('StefansExpressionSet','StefansExpressionSet') ,
 	definition = function ( dataOBJ, gene.names=NULL , pvalue=1, analysis_name =NULL, gene_centered = F, Subset=NULL, collaps=NULL,geneNameCol= "mgi_symbol", pdf=F,... ) {
 	dataOBJ <- normalize(dataOBJ)
 	dataOBJ <- z.score( dataOBJ )
@@ -798,7 +798,7 @@ setGeneric('groups.boxplot', ## Name
 	}
 )
 
-setMethod('groups.boxplot', signature = c ('ExpressionSet','ExpressionSet') ,
+setMethod('groups.boxplot', signature = c ('StefansExpressionSet','StefansExpressionSet') ,
 	definition = function ( x, SampleCol='GroupName', clusters, svg=F, fname='group_', width=800, height=800,mar=NULL, Collapse=NULL, ...) {
 	maxG <- max( clusters )
 	ret <- list()
@@ -862,7 +862,7 @@ setGeneric('write.list', ## Name
 	}
 )
 
-setMethod('write.list', signature = c ('ExpressionSet','ExpressionSet') ,
+setMethod('write.list', signature = c ('StefansExpressionSet','StefansExpressionSet') ,
 	definition = function ( x, fname, sep=' ') {
 	z <- deparse(substitute(x))
 	cat(z, "\n", file=fname)
@@ -873,7 +873,7 @@ setMethod('write.list', signature = c ('ExpressionSet','ExpressionSet') ,
 })
 
 #' Calculates a simple anova model on the data combining all informatrion into one single model.
-#' @param x the ExpressionSet object
+#' @param x the StefansExpressionSet object
 #' @param samples.col the column in the samples table that contains the grouping string (e.g. GroupName)
 #' @param padjMethod anything the \code{\link[stats]{p.adjust}} method does support ('BH')
 #' @export 
@@ -883,7 +883,7 @@ setGeneric('simpleAnova', ## Name
 	}
 )
 
-setMethod('simpleAnova', signature = c ('ExpressionSet','ExpressionSet') ,
+setMethod('simpleAnova', signature = c ('StefansExpressionSet','StefansExpressionSet') ,
 	definition = function ( x, samples.col='GroupName', padjMethod='BH' ) {
 	x <- normalize(x)
 	significants <- apply ( x$data ,1, function(x) { anova( lm (x ~ Samples[, samples.col]))$"Pr(>F)"[1] } )
@@ -908,7 +908,7 @@ setGeneric('createStats', ## Name
 	}
 )
 
-setMethod('createStats', signature = c ('ExpressionSet','ExpressionSet') ,
+setMethod('createStats', signature = c ('StefansExpressionSet','StefansExpressionSet') ,
 	definition = function ( x, condition, files=F, A=NULL, B=NULL ) {
 	stop( 'Not implemented' )
 })
@@ -921,20 +921,20 @@ setGeneric('normalize', ## Name
 	}
 )
 
-setMethod('normalize', signature = c ('ExpressionSet','ExpressionSet') ,
+setMethod('normalize', signature = c ('StefansExpressionSet','StefansExpressionSet') ,
 	definition = function ( x ) {
 	x
 })
 
 #' probably uselecc function that makes sure all data values are numeric
-#' @param dataObj the ExpressionSet object
+#' @param dataObj the StefansExpressionSet object
 setGeneric('force.numeric', ## Name
 	function (dataObj ) { ## Argumente der generischen Funktion
 		standardGeneric('force.numeric') ## der Aufruf von standardGeneric sorgt für das Dispatching
 	}
 )
 
-setMethod('force.numeric', signature = c ('ExpressionSet','ExpressionSet') ,
+setMethod('force.numeric', signature = c ('StefansExpressionSet','StefansExpressionSet') ,
 	definition = function ( dataObj ) {
 	for ( i in 1: ncol(dataObj@data) ) { 
 		if ( !  paste(as.vector(dataObj@data[,i]), collapse=" ") == paste(as.vector(as.numeric(dataObj@data[,i])), collapse=" ") ) { 
@@ -944,8 +944,8 @@ setMethod('force.numeric', signature = c ('ExpressionSet','ExpressionSet') ,
 	dataObj
 })
 
-#' print the ExpressionSet 
-#' @param x the ExpressionSet object
+#' print the StefansExpressionSet 
+#' @param x the StefansExpressionSet object
 #' @return nothing
 #' @example 
 #' 
@@ -956,7 +956,7 @@ setGeneric('show', ## Name
 	}
 )
 
-setMethod('show', signature = c ('ExpressionSet','ExpressionSet') ,
+setMethod('show', signature = c ('StefansExpressionSet','StefansExpressionSet') ,
 	definition = function (x) {
 	cat (paste("An object of class", class(x)),"\n" )
 	cat("named ",x$name,"\n")
@@ -977,8 +977,8 @@ setMethod('show', signature = c ('ExpressionSet','ExpressionSet') ,
 
 
 
-#' write the ExpressionSet data table to disk
-#' @param x the ExpressionSet object
+#' write the StefansExpressionSet data table to disk
+#' @param x the StefansExpressionSet object
 #' @param annotation a vector of annotation data column names to include in the written table (default=none)
 #' @export 
 setGeneric('write.data', ## Name
@@ -987,7 +987,7 @@ setGeneric('write.data', ## Name
 	}
 )
 
-setMethod('write.data', signature = c ('ExpressionSet','ExpressionSet') ,
+setMethod('write.data', signature = c ('StefansExpressionSet','StefansExpressionSet') ,
 	definition = function ( x, annotation=NULL ) {
 	if ( !is.null(annotation) ) {
 		write.table( cbind( x$annotation[,annotation], x$data), file= paste( x$outpath,x$name,"_expressionValues.xls",sep=''), row.names=F, sep="\t",quote=F )
@@ -1013,7 +1013,7 @@ setGeneric('getProbesetsFromStats', ## Name
 		}
 )
 
-setMethod('getProbesetsFromStats', signature = c ('ExpressionSet','ExpressionSet') ,
+setMethod('getProbesetsFromStats', signature = c ('StefansExpressionSet','StefansExpressionSet') ,
 definition = function ( x, v=0.05, pos=6, mode='less', Comparisons=NULL ) {
 	if ( is.null(Comparisons)){	Comparisons <- names(x$toptabs) }
 	probesets <- NULL
@@ -1037,7 +1037,7 @@ setGeneric('writeStatTables', ## Name
 	}
 )
 
-setMethod('writeStatTables', signature = c ('ExpressionSet','ExpressionSet') ,
+setMethod('writeStatTables', signature = c ('StefansExpressionSet','StefansExpressionSet') ,
 	definition = function ( x, annotation=NULL, wData=F ) {
 	opath = paste(x$outpath,'stats_Pval/', sep='')
 	if ( wData ) {
@@ -1066,8 +1066,8 @@ setMethod('writeStatTables', signature = c ('ExpressionSet','ExpressionSet') ,
 	}
 })
 
-#' exports the ExpressionSet in the format \href{https://apps.childrenshospital.org/clinical/research/ingber/GEDI/gedihome.htm}[GEDI] can import.
-#' @param x the ExpressionSet object
+#' exports the StefansExpressionSet in the format \href{https://apps.childrenshospital.org/clinical/research/ingber/GEDI/gedihome.htm}[GEDI] can import.
+#' @param x the StefansExpressionSet object
 #' @param fname the filename to export the data to
 #' @param tag.col the sample name column in the samples table
 #' @param time.col the time column in the samples table
@@ -1079,7 +1079,7 @@ setGeneric('export4GEDI', ## Name
 	}
 )
 
-setMethod('export4GEDI', signature = c ('ExpressionSet','ExpressionSet') ,
+setMethod('export4GEDI', signature = c ('StefansExpressionSet','StefansExpressionSet') ,
 	definition = function ( x, fname="GEDI_output.txt", tag.col = NULL, time.col=NULL, minSample_PerTime=1 ) {
 	if ( is.null(time.col)){
 		stop ( paste( "choose time.col from:", paste( colnames(x$samples), collapse=", ") ) ) 

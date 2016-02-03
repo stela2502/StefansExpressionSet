@@ -1,10 +1,10 @@
-Package: ExpressionSet
-Title: ExpressionSet
+Package: StefansExpressionSet
+Title: StefansExpressionSet
 Version: 1.0
 Date: 2015-10-21
 Author: Stefan Lang
 Maintainer: Stefan Lang <Stefan.Lang@med.lu.se>
-Description: ExpressionSet is a simple package to analyze NGS expression data
+Description: StefansExpressionSet is a simple package to analyze NGS expression data
     sets. Expression analysis is based on the DESeq package. This package is mainly
     built to plot the results.
 Imports: reshape2, stringr, RSvgDevice, rgl, gplots, ggplot2
@@ -12,6 +12,6 @@ License: GPL-2
 Suggests:
     testthat
 Collate:
-    'ExpressionSet.R'
+    'StefansExpressionSet.R'
 LazyData: true
 RoxygenNote: 5.0.1

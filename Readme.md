@@ -1,7 +1,11 @@
 # Usage
 
-At the moment this is no working R package as I have not set up all help files and am most likely missing a ton of other things too.
+The software has lately changed from bas S3 to probably worse S4.
+On the positive site you can now install this software like that:
 
-But I can use the R libs anyhow by sourceing in all R/*.R files and the load_libs.R file.
+library(devtools)
+install_github('stela2502/StefansExpressionSet')
 
-At the moment this can be seen as a private, horribly documented piece of work.
+or
+
+install_github('stela2502/StefansExpressionSet', build_vignettes=FALSE)
