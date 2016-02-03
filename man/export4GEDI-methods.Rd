@@ -4,6 +4,7 @@
 \name{export4GEDI}
 \alias{export4GEDI}
 \alias{export4GEDI,ExpressionSet-method}
+\title{description of function export4GEDI}
 \usage{
 export4GEDI(x, fname = "GEDI_output.txt", tag.col = NULL, time.col = NULL,
   minSample_PerTime = 1)
@@ -18,7 +19,7 @@ export4GEDI(x, fname = "GEDI_output.txt", tag.col = NULL, time.col = NULL,
 \item{time.col}{the time column in the samples table}
 }
 \description{
-Convert the values in the  ExpressionSet to the format GEDI program can import.
+Convert the values in the ExpressionSet to the format GEDI program can import.
 }
 \seealso{
 \url{"http://apps.childrenshospital.org/clinical/research/ingber/GEDI/gedihome.htm"}

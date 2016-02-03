@@ -31,11 +31,22 @@ setClass(
 				simple= c( 'outpath', 'rownamescol', 'sampleNamesCol', 'simple') )
 )
 
-loadNamespace('reshape2')
-loadNamespace('ggplot2')
-loadNamespace('RSvgDevice')
-loadNamespace('gplots')
-loadNamespace('rgl')
+##perl -e ' foreach (@ARGV) { print "library($_)\nrequire($_)\n" }' 'reshape2' 'gplots' 'stringr' 'RSvgDevice' 'rgl' 'ggplot2' 
+library(reshape2)
+require(reshape2)
+library(gplots)
+require(gplots)
+library(stringr)
+require(stringr)
+library(RSvgDevice)
+require(RSvgDevice)
+library(rgl)
+require(rgl)
+library(ggplot2)
+require(ggplot2)
+
+
+
 
 #' @name PMID25158935exp
 #' @title Read counts for the expression data described in PMID25158935
@@ -321,7 +332,7 @@ setMethod('cor2cytoscape', signature = c ( 'ExpressionSet') ,
 #' @title description of function melt
 setGeneric('melt.ExpressionSet', ## Name
 		package = 'ExpressionSet',
-	function ( data, groupcol='GroupName', colCol='GroupName', probeNames="Gene.Symbol",  na.rm = FALSE, value.name = "value") { ## Argumente der generischen Funktion
+	function ( dat, groupcol='GroupName', colCol='GroupName', probeNames=NULL,  na.rm = FALSE, value.name = "value") { ## Argumente der generischen Funktion
 		standardGeneric('melt.ExpressionSet') ## der Aufruf von standardGeneric sorgt für das Dispatching
 	}
 )
@@ -329,22 +340,25 @@ setGeneric('melt.ExpressionSet', ## Name
 
 setMethod('melt.ExpressionSet',
 	 signature= ('ExpressionSet' ),
-	 function ( data, groupcol='GroupName', colCol='GroupName', probeNames="Gene.Symbol", na.rm = FALSE, value.name = "value" ) {
-	ma  <- data@data[,order(data@samples[,groupcol] )]
-	rownames(ma) <- forceAbsoluteUniqueSample(data@annotation[, probeNames] )
+	 function ( dat, groupcol='GroupName', colCol='GroupName', probeNames=NULL, na.rm = FALSE, value.name = "value" ) {
+	if ( is.null(probeNames)){
+		probeNames <- dat@rownamescol
+	}
+	ma  <- dat@data[,order(dat@samples[,groupcol] )]
+	rownames(ma) <- forceAbsoluteUniqueSample(as.vector(dat@annotation[, probeNames]) )
 	melted <- melt( cbind(rownames(ma),ma) )
-	data@samples <- data@samples[order(data@samples[,groupcol]),]
+	dat@samples <- dat@samples[order(dat@samples[,groupcol]),]
 	if ( length( which ( melted[,2] == '') ) > 0 ){
 		melted <- melted[ - which ( melted[,2] == ''),]
 	}
 	melted[,3] <- as.numeric(as.character(melted[,3]))
 	grps <- NULL
-	for ( i in as.vector(data@samples[,groupcol]) ){
-		grps <- c( grps, rep( i, nrow(data@data)))
+	for ( i in as.vector(dat@samples[,groupcol]) ){
+		grps <- c( grps, rep( i, nrow(dat@data)))
 	}
 	cgrps <- NULL
-	for ( i in as.vector(data@samples[,colCol]) ){
-		cgrps <- c( cgrps, rep( i, nrow(data@data)))
+	for ( i in as.vector(dat@samples[,colCol]) ){
+		cgrps <- c( cgrps, rep( i, nrow(dat@data)))
 	}
 	colnames(melted) <- c('ProbeName', 'SampleName', 'Expression')
 	melted$Group <- grps
@@ -370,10 +384,11 @@ setMethod('melt.ExpressionSet',
 #' @param geneNameCol the column name for the gene symbol to use in the plots
 #' @param sampleGroup the sample table column containing the grouping information
 #' @title description of function plot.probeset
-#' @example p <- plot.probeset( red, rownames(red@data)[20], geneNameCol= 'GeneID', boxplot=T)
-#' @example #produces the file '../../tmp/reducedSet_boxplot_Mybl1_expression.svg'
-#' @example p <- plot.probeset( red, rownames(red@data)[20], geneNameCol= 'GeneID', boxplot=F)
-#' @example #produces the file '../../tmp/reducedSet_points_Mybl1_expression.svg'
+#' @examples 
+#' p <- plot.probeset( red, rownames(red@data)[20], geneNameCol= 'GeneID', boxplot=T)
+#' #produces the file '../../tmp/reducedSet_boxplot_Mybl1_expression.svg'
+#' p <- plot.probeset( red, rownames(red@data)[20], geneNameCol= 'GeneID', boxplot=F)
+#' #produces the file '../../tmp/reducedSet_points_Mybl1_expression.svg'
 #' @export
 setGeneric('plot.probeset', ## Name
 	function ( x, probeset, boxplot=F, pdf=F, geneNameCol= "mgi_symbol", sampleGroup='GroupName' ) { ## Argumente der generischen Funktion
@@ -763,23 +778,27 @@ setMethod('ggplot.gene', signature = c ( 'ExpressionSet') ,
 #' @param colCol the column group in the samples table that contains the color groups
 #' @title description of function gg.heatmap.list
 setGeneric('gg.heatmap.list', ## Name
-	function (dat,glist, colrs, groupCol='GroupID', colCol='GroupID') { ## Argumente der generischen Funktion
+	function (dat,glist=NULL, colrs=NULL, groupCol='GroupID', colCol=NULL) { ## Argumente der generischen Funktion
 		standardGeneric('gg.heatmap.list') ## der Aufruf von standardGeneric sorgt für das Dispatching
 	}
 )
 
 setMethod('gg.heatmap.list', signature = c ( 'ExpressionSet') ,
-	definition = function (dat,glist=NULL, colrs=NULL, groupCol='GroupID', colCol='GroupID') {
+	definition = function (dat,glist=NULL, colrs=NULL, groupCol='GroupID', colCol=NULL) {
+	
 	if ( ! is.null(glist) ) {
 		isect <- reduce.Obj ( dat, glist)
 	}else {
 		isect <- dat
 	}
+	if ( is.null(colCol)){
+		colCol <- groupCol
+	}
 	if ( is.null(colrs) ){
 		colrs = rainbow( length(unique(isect@samples[,colCol])))
 	}
-	#browser()
-	dat.ss <- melt ( isect, probeNames=isect$rownamescol, groupcol=groupCol,colCol=colCol)
+	isect <- z.score(isect)
+	dat.ss <- melt ( isect, probeNames=isect@rownamescol, groupcol=groupCol,colCol=colCol)
 	#dat.ss <- dat[which(is.na(match(dat$Gene.Symbol,isect))==F),]
 	colnames(dat.ss) <- c( 'Gene.Symbol', 'Sample', 'Expression', 'Group', 'ColorGroup' )
 	dat.ss$z <- ave(dat.ss$Expression, dat.ss$Gene.Symbol, FUN = function (x)  {
@@ -823,9 +842,47 @@ setMethod('gg.heatmap.list', signature = c ( 'ExpressionSet') ,
 							axis.ticks.length=unit(0.6,"cm")
 					)
 					+ labs( y=''),
-			not.in = setdiff( glist, rownames(isect$data)) )
+			not.in = setdiff( glist, rownames(isect@data)) )
 })
 
+
+#' @name z.score
+#' @aliases z.score.matrix,NGSexpressionSet-method
+#' @rdname z.score.matrix-methods
+#' @docType methods
+#' @description  z score the matrix
+#' @param m the matrix of column = samples and rows = genes or an ExpressionSet
+#' @return the z scored matrix
+#' @title description of function z.score
+#' @export 
+setGeneric('z.score', ## Name
+		function (m) { ## Argumente der generischen Funktion
+			standardGeneric('z.score') ## der Aufruf von standardGeneric sorgt für das Dispatching
+		}
+)
+
+setMethod('z.score', signature = c ('matrix'),
+		definition = function (m ) {
+			rn <- rownames( m )
+			me <- apply( m, 1, mean )
+			sd <- apply( m, 1, sd )
+			sd[which(sd==0)] <- 1e-8
+			m <- (m - me) /sd
+			rownames(m) <- rn
+			m
+		})
+
+setMethod('z.score',signature = c ('ExpressionSet'),
+		definition = function (m) {
+			#m$data <- z.score( as.matrix( m$data ))
+			rn <- rownames( m@data )
+			me <- apply( m@data, 1, mean )
+			sd <- apply( m@data, 1, sd )
+			sd[which(sd==0)] <- 1e-8
+			m@data <- (m@data - me) /sd
+			rownames(m@data) <- rn
+			m
+		})
 
 #' @name plot.heatmaps
 #' @aliases plot.heatmaps,ExpressionSet-method

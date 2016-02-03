@@ -3,11 +3,11 @@
 \docType{methods}
 \name{plot.probeset}
 \alias{plot.probeset}
-\title{plot grouped probesets creates ONE plot for ONE group of probesets
-If you want a multi group plot create it yourself from the single ones.}
+\alias{plot.probeset,ExpressionSet-method}
+\title{description of function plot.probeset}
 \usage{
 plot.probeset(x, probeset, boxplot = F, pdf = F,
-  geneNameCol = "mgi_symbol")
+  geneNameCol = "mgi_symbol", sampleGroup = "GroupName")
 }
 \arguments{
 \item{x}{the ExpressionSet object}
@@ -19,9 +19,26 @@ plot.probeset(x, probeset, boxplot = F, pdf = F,
 \item{pdf}{save the file as pdf (default svg)}
 
 \item{geneNameCol}{the column name for the gene symbol to use in the plots}
+
+\item{sampleGroup}{the sample table column containing the grouping information}
+
+\item{groupcol}{the grouping column in the samples data}
+
+\item{colCol}{the coloring column in the sample data}
+
+\item{probeNames}{the column in the annotation datacontaining the gene symbol}
+
+\item{x}{the ExpressionSet object}
 }
 \description{
-plot grouped probesets creates ONE plot for ONE group of probesets
-If you want a multi group plot create it yourself from the single ones.
+This function plots the expression data grouped by the GroupName using ggplot2.
+
+Works only for one probeset.
+}
+\examples{
+p <- plot.probeset( red, rownames(red@data)[20], geneNameCol= 'GeneID', boxplot=T)
+#produces the file '../../tmp/reducedSet_boxplot_Mybl1_expression.svg'
+p <- plot.probeset( red, rownames(red@data)[20], geneNameCol= 'GeneID', boxplot=F)
+#produces the file '../../tmp/reducedSet_points_Mybl1_expression.svg'
 }
 
