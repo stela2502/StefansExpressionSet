@@ -454,7 +454,7 @@ setGeneric('drop.samples', ## Name
 setMethod('drop.samples', signature = c ( 'StefansExpressionSet') ,
 	definition = function ( x, samplenames=NULL, name='dropped_samples' ) {
 	if ( ! is.null(samplenames)){
-		red  <- new('StefansExpressionSet', name=name )
+		red  <- new(class(x)[1], name=name )
 		red@samples <- x@samples[ is.na(match(x@samples[,x@sampleNamesCol], samplenames  ) ) == T ,]
 		print ( paste( "Dropping", length(samplenames), "samples (", paste( samplenames, collapse=", "),")") )
 		for ( i in c(x@simple, 'annotation') ){
@@ -683,7 +683,7 @@ setGeneric('reduce.Obj', ## Name
 
 setMethod('reduce.Obj', signature = c ( 'StefansExpressionSet') ,
 	definition = function ( x, probeSets=c(), name="reducedSet" ) {
-	retObj <- new('StefansExpressionSet', name = name)
+	retObj <- new(class(x)[1], name = name)
 	useOnly <- match(probeSets, rownames(x@data))
 	not.matched <- probeSets[is.na(useOnly)]
 	if ( length(not.matched) > 0 ){

@@ -14,6 +14,12 @@ red <- reduce.Obj ( PMID25158935, rownames(PMID25158935@data)[1:100], name='mini
 expect_equal( dim(red@data), c(100,15) )
 expect_equal( red@name, 'minimal' )
 
+dropS <- drop.samples( red, samplenames=red@samples[1:5, red@sampleNamesCol])
+expect_equal( dim(dropS@data), c(100,10) )
+expect_equal( dim(dropS@samples), c( 10,21) )
+expect_equal( dim(dropS@annotation), c( 100,2) )
+
+
 expect_equal( as.matrix(melt(red, probeNames='GeneID')[1,]) , 
 		as.matrix(data.frame( ProbeName = 23343, SampleName= 'ERR420375', Expression = 0, Group = 'HSC', ColorGroup='HSC')[1,]) )
 
@@ -44,10 +50,6 @@ if ( file.exists( red@outpath, 'reducedSet_boxplot_Mybl1_expression.svg', sep='/
 	system ( paste ('rm ', red@outpath, 'reducedSet_boxplot_Mybl1_expression.svg',sep='' ) )
 }
 
-dropS <- drop.samples( red, samplenames=red@samples[1:5, red@sampleNamesCol])
-expect_equal( dim(dropS@data), c(100,10) )
-expect_equal( dim(dropS@samples), c( 10,21) )
-expect_equal( dim(dropS@annotation), c( 100,2) )
 
 p <- gg.heatmap.list(dropS, groupCol='GroupName')
 
