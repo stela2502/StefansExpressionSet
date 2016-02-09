@@ -3,7 +3,7 @@
 \docType{methods}
 \name{z.score}
 \alias{z.score}
-\alias{z.score.matrix,NGSexpressionSet-method}
+\alias{z.score.matrix,StefansExpressionSet-method}
 \title{description of function z.score}
 \usage{
 z.score(m)

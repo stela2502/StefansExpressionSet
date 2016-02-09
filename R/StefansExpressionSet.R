@@ -1,15 +1,26 @@
+##perl -e ' foreach (@ARGV) { print "library($_)\nrequire($_)\n" }' 'reshape2' 'gplots' 'stringr' 'RSvgDevice' 'rgl' 'ggplot2' 
+library(reshape2)
+#require(reshape2)
+require(gplots)
+require(stringr)
+require(RSvgDevice)
+require(rgl)
+require(ggplot2)
+
 #' @name StefansExpressionSet
 #' @title StefansExpressionSet
-#' @docType package
 #' @description  An S4 class to visualize Expression data.
 #' @slot data a data.frame containing the expression values for each gene x sample (gene = row)
 #' @slot samples a data.frame describing the columnanmes in the data column
 #' @slot annotation a data.frame describing the rownames in the data rows
 #' @slot outpath the default outpath for the plots and tables from this package
 #' @slot name the name for this package (all filesnames contain that)
+#' @slot zscored genes are normalized?
+#' @slot snorm samples normalized?
 #' @slot rownamescol the column name in the annotation table that represents the rownames of the data table
 #' @slot sampleNamesCol the column name in the samples table that represents the colnames of the data table
 #' @slot stats the stats list for all stats created in the object
+#' @exportClass StefansExpressionSet
 setClass( 
 		Class='StefansExpressionSet', 
 		representation = representation ( 
@@ -18,34 +29,24 @@ setClass(
 			ranks='numeric',
 			raw="data.frame",
 			annotation='data.frame',
+			snorm='logical',
 			outpath='character',
 			name='character',
 			rownamescol='character',
 			sampleNamesCol='character',
 			stats = 'list',
+			sig_genes = 'list',
+			zscored = 'logical',
 			simple = 'character'
 		),
-		prototype(outpath =NULL, name = 'StefansExpressionSet',
+		prototype(outpath ='', name = 'StefansExpressionSet',
 				sampleNamesCol=NA_character_, 
 				stats=list(),
-				simple= c( 'outpath', 'rownamescol', 'sampleNamesCol', 'simple') )
+				snorm=F,
+				zscored=F,
+				sig_genes=list(),
+				simple= c( 'outpath', 'rownamescol', 'sampleNamesCol', 'simple', 'snorm', 'zscored') )
 )
-
-##perl -e ' foreach (@ARGV) { print "library($_)\nrequire($_)\n" }' 'reshape2' 'gplots' 'stringr' 'RSvgDevice' 'rgl' 'ggplot2' 
-library(reshape2)
-require(reshape2)
-library(gplots)
-require(gplots)
-library(stringr)
-require(stringr)
-library(RSvgDevice)
-require(RSvgDevice)
-library(rgl)
-require(rgl)
-library(ggplot2)
-require(ggplot2)
-
-
 
 
 #' @name PMID25158935exp
@@ -89,14 +90,14 @@ require(ggplot2)
 #' @param annotation The annotation table from e.g. affymetrix csv data
 #' @param newOrder The samples column name for the new order (default 'Order')
 #' @title description of function StefansExpressionSet
-#' @export 
+#' @exportMethod  StefansExpressionSet
 setGeneric("StefansExpressionSet", ## Name
-		function( dat, Samples, class='StefansExpressionSet',  Analysis = NULL, name='WorkingSet', namecol='GroupName', namerow= 'GeneID', usecol='Use' , outpath = NULL){ ## Argumente der generischen Funktion
+		function( dat, Samples, class='StefansExpressionSet',  Analysis = NULL, name='WorkingSet', namecol='GroupName', namerow= 'GeneID', usecol='Use' , outpath = ''){ ## Argumente der generischen Funktion
 			standardGeneric("StefansExpressionSet") ## der Aufruf von standardGeneric sorgt für das Dispatching
 		})
 
 setMethod("StefansExpressionSet", signature = c ('data.frame'), 
-	definition = function ( dat, Samples, class='StefansExpressionSet',  Analysis = NULL, name='WorkingSet', namecol='GroupName', namerow= 'GeneID', usecol='Use' , outpath = NULL ) {
+	definition = function ( dat, Samples, class='StefansExpressionSet',  Analysis = NULL, name='WorkingSet', namecol='GroupName', namerow= 'GeneID', usecol='Use' , outpath = '' ) {
 	S <- Samples
 	if ( ! is.null(Analysis) ){
 		S <- Samples[which ( Samples$Analysis == Analysis ), ]
@@ -105,17 +106,27 @@ setMethod("StefansExpressionSet", signature = c ('data.frame'),
 		S <- Samples[which ( Samples[, usecol] == 1 ),]
 	}
 	if ( exists('filename',S) ) {
-		ret <- dat[, as.vector(S$filename) ]
-		annotation <- dat[, is.na(match( colnames(dat), as.vector(S$filename) ))==T ]
+		n <- make.names(as.vector(S$filename))
+		ret <- dat[, n ]
+		annotation <- dat[, is.na(match( colnames(dat), n ))==T ]
 	}else{
-		ret <- dat[, as.vector(S[,namecol]) ]
-		annotation <- dat[, is.na(match( colnames(dat), as.vector(S[,namecol]) ))==T ]
+		n <- make.names(as.vector(S[,namecol]))
+		ret <- dat[, n ]
+		annotation <- dat[, is.na(match( colnames(dat), n ))==T ]
 	}
 	
 	if ( exists( 'Order', S)){
 		ret <- ret[, order(S$Order)  ]
 		S <- S[order(S$Order), ]
 	}
+	
+	if ( outpath == '' ){
+		outpath = pwd()
+	}
+	if ( ! file.exists(outpath)){
+		dir.create( outpath )
+	}
+	data$outpath <- outpath
 	
 	colnames(ret) <- make.names(forceAbsoluteUniqueSample ( as.vector(S[, namecol]) ))
 	S$SampleName <- colnames(ret)
@@ -137,14 +148,8 @@ setMethod("StefansExpressionSet", signature = c ('data.frame'),
 	class(data) <- 'StefansExpressionSet'
 	data$batchRemoved=0
 	
-	if ( is.null(outpath)){
-		outpath = pwd()
-	}
-	if ( ! file.exists(outpath)){
-		dir.create( outpath )
-	}
-	data$outpath <- outpath
-	new ( class, data = data$data, samples = data$samples, name = data$name, annotation = data$annotation, rownamescol= data$rownamescol,sampleNamesCol = data$sampleNamesCol , outpath= data$outpath ) 
+	r <- new ( class, data = data$data, samples = data$samples, name = data$name, annotation = data$annotation, rownamescol= data$rownamescol,sampleNamesCol = data$sampleNamesCol , outpath= data$outpath )
+	force.numeric(r)
 })
 
 
@@ -329,6 +334,7 @@ setMethod('cor2cytoscape', signature = c ( 'StefansExpressionSet') ,
 #' @param colCol the column in the samples table to color the grouping data on
 #' @param probeNames which probenames to use (ProbeSetID or Gene.Symbol ...)
 #' @title description of function melt
+#' @export 
 setGeneric('melt.StefansExpressionSet', ## Name
 		package = 'StefansExpressionSet',
 	function ( dat, groupcol='GroupName', colCol='GroupName', probeNames=NULL,  na.rm = FALSE, value.name = "value") { ## Argumente der generischen Funktion
@@ -344,8 +350,9 @@ setMethod('melt.StefansExpressionSet',
 		probeNames <- dat@rownamescol
 	}
 	ma  <- dat@data[,order(dat@samples[,groupcol] )]
+	print ( colnames(dat@annotation) )
 	rownames(ma) <- forceAbsoluteUniqueSample(as.vector(dat@annotation[, probeNames]) )
-	melted <- melt( cbind(rownames(ma),ma) )
+	melted <- reshape2::melt( cbind(rownames(ma),ma) )
 	dat@samples <- dat@samples[order(dat@samples[,groupcol]),]
 	if ( length( which ( melted[,2] == '') ) > 0 ){
 		melted <- melted[ - which ( melted[,2] == ''),]
@@ -365,6 +372,76 @@ setMethod('melt.StefansExpressionSet',
 	melted
 })
 
+
+#' @name plot.stats.as.heatmap
+#' @aliases plot.stats.as.heatmap,StefansExpressionSet-method
+#' @rdname plot-methods
+#' @docType methods
+#' @description  create heatmap for each statistics table and each pvalue cutoff This function uses
+#' @description  internally the plot.heatmaps() function for each selected probeset list
+#' @param x the StefansExpressionSet
+#' @param pvalue a vector of pvalues to set as cut off
+#' @param Subset no idear at the moment....
+#' @param comp a list of comparisons to restric the plotting to (NULL = all)
+#' @param Subset.name no idear what that should do here....
+#' @param gene_centered collapse all genes with the same gene symbol into one value
+#' @param collaps how to collapse the data if gene_centered
+#' @param geneNameCol the name of the gene.symbol column in the annotation
+#' @title description of function plot
+#' @export 
+setGeneric('plot.stats.as.heatmap', ## Name
+		function ( x, pvalue=c( 0.1,1e-2 ,1e-3,1e-4,1e-5, 1e-6, 1e-7, 1e-8 ), Subset=NULL , Subset.name= NULL, comp=NULL, gene_centered=F, collaps=NULL,geneNameCol= "mgi_symbol") { ## Argumente der generischen Funktion
+			standardGeneric('plot.stats.as.heatmap') ## der Aufruf von standardGeneric sorgt für das Dispatching
+		}
+)
+
+setMethod('plot.stats.as.heatmap', signature = c ('StefansExpressionSet'),
+		definition = function ( x, pvalue=c( 0.1,1e-2 ,1e-3,1e-4,1e-5, 1e-6, 1e-7, 1e-8 ), Subset=NULL , Subset.name= NULL, comp=NULL, gene_centered=F, collaps=NULL,geneNameCol= "mgi_symbol") {
+			if ( !is.null(comp) ){
+				print ("At the moment it is not possible to reduce the plotting to one comparison only" )
+				return (x)
+			}
+			add = ''
+			orig.name = x@name
+			if ( gene_centered ) {
+				add = 'GenesOnly'
+			}
+			#browser()
+			if ( ! is.null(collaps)){
+				if ( nchar(add) > 1 ){
+					add = paste( 'mean', add, sep='_')
+				}else{
+					add = 'mean'
+				}
+			}
+			if ( ! is.null(Subset) ){
+				if ( is.null(Subset.name)){
+					Subset.name = 'subset_name_unset'
+				}
+				if ( nchar(add) > 1 ){
+					add = paste( add, Subset.name,sep='_')
+				}else{
+					add = Subset.name
+				}
+			}
+			if ( nchar(add) > 0 ){
+				x@name = paste( add,x@name, sep='_')
+			}
+			print ( x@name )
+			for (i in match( names(x@sig_genes), pvalue ) ){
+				try( plot.heatmaps( 
+								x, 
+								x@sig_genes[[i]],
+								names(x@sig_genes)[i],
+								analysis_name = paste (x@name, version), 
+								gene_centered = gene_centered,
+								Subset = Subset,
+								collaps = collaps,
+								geneNameCol= geneNameCol
+						), silent=F)
+			}
+			x@name = orig.name
+		})
 
 #' @name plot.probeset
 #' @aliases plot.probeset,StefansExpressionSet-method
@@ -456,14 +533,15 @@ setMethod('drop.samples', signature = c ( 'StefansExpressionSet') ,
 	definition = function ( x, samplenames=NULL, name='dropped_samples' ) {
 	if ( ! is.null(samplenames)){
 		red  <- new(class(x)[1], name=name )
+		for (n in c( slot(x,'simple'), 'annotation') ){
+			slot(red,n) <- slot(x,n)
+		}
 		red@samples <- x@samples[ is.na(match(x@samples[,x@sampleNamesCol], samplenames  ) ) == T ,]
 		print ( paste( "Dropping", length(samplenames), "samples (", paste( samplenames, collapse=", "),")") )
-		for ( i in c(x@simple, 'annotation') ){
-			slot( red, i) <- slot( x,i)
-		}
-		red@data <- x@data[, as.vector(red@samples[,red@sampleNamesCol])]
-		colnames(red@data) <- forceAbsoluteUniqueSample ( as.vector(red@samples[, red@sampleNamesCol ]) )
-		red@samples[,red@sampleNamesCol] <- colnames(red@data)
+		
+		red@data <- x@data[, make.names(as.vector(red@samples[,red@sampleNamesCol]))]
+	#	colnames(red@data) <- forceAbsoluteUniqueSample ( as.vector(red@samples[, red@sampleNamesCol ]) )
+	#	red@samples[,red@sampleNamesCol] <- colnames(red@data)
 	}
 	red
 })
@@ -699,7 +777,8 @@ setMethod('reduce.Obj', signature = c ( 'StefansExpressionSet') ,
 	retObj@data <- data.frame( x@data[ useOnly ,] )
 	rownames(retObj@data) <- probeSets
 	colnames(retObj@data) <- colnames(x@data)
-	retObj@annotation <- x@annotation[useOnly,]
+	retObj@annotation <- data.frame(x@annotation[useOnly,]) ## if I only have one column here
+	colnames(retObj@annotation) <- colnames(x@annotation)
 	if ( length( names(x@stats)) > 0){
 		for ( i in 1:length(names(x$stats))){
 			retObj@stats[[i]]= x@stats[[i]][ match(probeSets ,x@stats[[i]][,1] ),]
@@ -728,38 +807,41 @@ setMethod('reduce.Obj', signature = c ( 'StefansExpressionSet') ,
 #' @param groupCol the samples clumn that contains the grouping information
 #' @param colCol the sample column that contains the color information
 #' @title description of function ggplot.gene
+#' @export 
 setGeneric('ggplot.gene', ## Name
-	function (dat,gene, colrs, groupCol='GroupID', colCol='GroupID', boxplot=F) { ## Argumente der generischen Funktion
+	function (dat,gene, colrs=NULL, groupCol='GroupID', colCol='GroupID', boxplot=F) { ## Argumente der generischen Funktion
 		standardGeneric('ggplot.gene') ## der Aufruf von standardGeneric sorgt für das Dispatching
 	}
 )
 
 setMethod('ggplot.gene', signature = c ( 'StefansExpressionSet') ,
-	definition = function (dat,gene, colrs, groupCol='GroupID', colCol='GroupID', boxplot=F) {
+	definition = function (dat,gene, colrs=NULL, groupCol='GroupID', colCol='GroupID', boxplot=F) {
 	not.in = 'NUKL'
-	g1 <- melt(reduce.Obj ( dat, gene, name=gene ), probeNames=dat@rownamescol, groupcol=groupCol,colCol=colCol)
+	if ( is.null(colrs)){
+		colrs = rainbow( length(unique(dat@samples[,colCol])))
+	}
+	g1 <- melt.StefansExpressionSet(reduce.Obj ( dat, gene, name=gene ), probeNames=dat@rownamescol, groupcol=groupCol,colCol=colCol)
 	#g1 <- subset(dat, Gene.Symbol == gene)
 	colnames(g1) <- c( 'Gene.Symbol', 'Sample', 'Expression', 'Group', 'ColorGroup' )
 	g1$Group <- factor( g1$Group, levels=unique( as.character(g1$Group)))
 	if ( length(g1) == 0){
 		not.in = c( gene )
 	}
-	
 	if ( boxplot ){
-		list ( plot=ggplot(g1 ,aes(x=Group, y=Expression,color=Group)) 
-						+ geom_boxplot(shape=19)+theme_bw() 
-						+ scale_colour_manual( values= colrs, guide=FALSE )
-						+ theme( axis.text.x= element_text(angle=90) )
-						+ labs(title=gene, x=''),
+		list ( plot=ggplot2::ggplot(g1 ,ggplot2::aes(x=Group, y=Expression,color=Group)) 
+						+ ggplot2::geom_boxplot(shape=19)+ggplot2::theme_bw() 
+						+ ggplot2::scale_colour_manual( values= colrs, guide=FALSE )
+						+ ggplot2::theme( axis.text.x= ggplot2::element_text(angle=90) )
+						+ ggplot2::labs(title=gene, x=''),
 				not.in = not.in
 		)
 		
 	}else{
-		list ( plot=ggplot(g1,aes(x=Group, y=Expression,color=Group)) 
-						+ geom_jitter(shape=19)+theme_bw()
-						+ scale_colour_manual( values= colrs, guide=FALSE )
-						+ theme( axis.text.x= element_text(angle=90) )
-						+ labs(title=gene, x=''),
+		list ( plot=ggplot2::ggplot(g1,ggplot2::aes(x=Group, y=Expression,color=Group)) 
+						+ ggplot2::geom_jitter(shape=19)+ggplot2::theme_bw()
+						+ ggplot2::scale_colour_manual( values= colrs, guide=FALSE )
+						+ ggplot2::theme( axis.text.x= ggplot2::element_text(angle=90) )
+						+ ggplot2::labs(title=gene, x=''),
 				not.in = not.in
 		)
 	}
@@ -776,6 +858,7 @@ setMethod('ggplot.gene', signature = c ( 'StefansExpressionSet') ,
 #' @param groupCol the column group in the samples table that contains the grouping strings
 #' @param colCol the column group in the samples table that contains the color groups
 #' @title description of function gg.heatmap.list
+#' @export 
 setGeneric('gg.heatmap.list', ## Name
 	function (dat,glist=NULL, colrs=NULL, groupCol='GroupID', colCol=NULL) { ## Argumente der generischen Funktion
 		standardGeneric('gg.heatmap.list') ## der Aufruf von standardGeneric sorgt für das Dispatching
@@ -796,8 +879,8 @@ setMethod('gg.heatmap.list', signature = c ( 'StefansExpressionSet') ,
 	if ( is.null(colrs) ){
 		colrs = rainbow( length(unique(isect@samples[,colCol])))
 	}
-	isect <- z.score(isect)
-	dat.ss <- melt ( isect, probeNames=isect@rownamescol, groupcol=groupCol,colCol=colCol)
+	if ( ! isect@gnorm ) {isect <- z.score(isect)}
+	dat.ss <- melt.StefansExpressionSet ( isect, probeNames=isect@rownamescol, groupcol=groupCol,colCol=colCol)
 	#dat.ss <- dat[which(is.na(match(dat$Gene.Symbol,isect))==F),]
 	colnames(dat.ss) <- c( 'Gene.Symbol', 'Sample', 'Expression', 'Group', 'ColorGroup' )
 	dat.ss$z <- ave(dat.ss$Expression, dat.ss$Gene.Symbol, FUN = function (x)  {
@@ -815,7 +898,7 @@ setMethod('gg.heatmap.list', signature = c ( 'StefansExpressionSet') ,
 	
 	#dat.ss$z[which(dat.ss$z < -5)] <- -5
 	#dat.ss$z[which(dat.ss$z > 5)] <- 5
-	samp.cast <- dcast(dat.ss,Gene.Symbol~Sample,mean,value.var="z")
+	samp.cast <- reshape2::dcast(dat.ss,Gene.Symbol~Sample,mean,value.var="z")
 	samp.mat <- as.matrix(samp.cast[,2:ncol(samp.cast)])
 	ord.genes <-
 			as.vector(samp.cast[hclust(dist(samp.mat),method="ward.D")$order,1])
@@ -827,26 +910,28 @@ setMethod('gg.heatmap.list', signature = c ( 'StefansExpressionSet') ,
 							unique(as.character(Group))))
 	dat.ss$colrss <- colrs[dat.ss$Group]
 	ss <-dat.ss[which(dat.ss$Gene.Symbol==dat.ss$Gene.Symbol[1]),]
-	brks= c( -20.1, quantile(dat.ss$z[which(dat.ss$z != -20)],seq(0,1,by=0.1)) )
+	brks= c( -20.1, as.vector(quantile(dat.ss$z[which(dat.ss$z != -20)],seq(0,1,by=0.1)) ))
+	brks = unique(brks)
+	print ( brks )
 	brks[length(brks)] = brks[length(brks)] + 0.1
 	dat.ss$z <- cut( dat.ss$z, breaks= brks)
 	
-	list ( plot = ggplot(dat.ss, aes(x=Sample,y=Gene.Symbol))
-					+ geom_tile(aes(fill=z))
-					+ scale_fill_manual( values = c( 'gray', bluered(10)) ) 
-					+ theme(
+	list ( plot = ggplot2::ggplot(dat.ss, ggplot2::aes(x=Sample,y=Gene.Symbol))
+					+ ggplot2::geom_tile(ggplot2::aes(fill=z))
+					+ ggplot2::scale_fill_manual( values = c( 'gray', gplots::bluered(length(brks) -2  )) ) 
+					+ ggplot2::theme(
 							legend.position= 'bottom',
-							axis.text.x=element_blank(),
-							axis.ticks.x=element_line(color=ss$colrss),
-							axis.ticks.length=unit(0.6,"cm")
+							axis.text.x=ggplot2::element_blank(),
+							axis.ticks.x=ggplot2::element_line(color=ss$colrss),
+							axis.ticks.length=ggplot2::unit(0.6,"cm")
 					)
-					+ labs( y=''),
+					+ ggplot2::labs( y=''),
 			not.in = setdiff( glist, rownames(isect@data)) )
 })
 
 
 #' @name z.score
-#' @aliases z.score.matrix,NGSexpressionSet-method
+#' @aliases z.score.matrix,StefansExpressionSet-method
 #' @rdname z.score.matrix-methods
 #' @docType methods
 #' @description  z score the matrix
@@ -873,6 +958,7 @@ setMethod('z.score', signature = c ('matrix'),
 
 setMethod('z.score',signature = c ('StefansExpressionSet'),
 		definition = function (m) {
+			if (! m@zscored ){
 			#m$data <- z.score( as.matrix( m$data ))
 			rn <- rownames( m@data )
 			me <- apply( m@data, 1, mean )
@@ -880,6 +966,8 @@ setMethod('z.score',signature = c ('StefansExpressionSet'),
 			sd[which(sd==0)] <- 1e-8
 			m@data <- (m@data - me) /sd
 			rownames(m@data) <- rn
+			m@zscored = TRUE
+			}
 			m
 		})
 
@@ -1080,7 +1168,7 @@ setMethod('groups.boxplot', signature = c ( 'StefansExpressionSet') ,
 })
 
 #' @name collaps
-#' @aliases collaps,NGSexpressionSet-method
+#' @aliases collaps,StefansExpressionSet-method
 #' @rdname collaps-methods
 #' @docType methods
 #' @description  This function will collpase the data in the StefansExpressionSet to only contain one value
@@ -1210,6 +1298,7 @@ setMethod('normalize', signature = c ('StefansExpressionSet') ,
 #' @description  The moethod forces the values in the data matrix to be numbers.
 #' @param dataObj the StefansExpressionSet object
 #' @title description of function force.numeric
+#' @export 
 setGeneric('force.numeric', ## Name
 	function (dataObj ) { ## Argumente der generischen Funktion
 		standardGeneric('force.numeric') ## der Aufruf von standardGeneric sorgt für das Dispatching
@@ -1235,7 +1324,7 @@ setMethod('force.numeric', signature = c ('StefansExpressionSet') ,
 #' @return nothing
 #' @title description of function show
 #' @export 
-setMethod('show', signature = c ('StefansExpressionSet') ,
+setMethod('show', signature(object='StefansExpressionSet') ,
 	definition = function (object) {
 	cat (paste("An object of class", class(object)),"\n" )
 	cat("named ",object@name,"\n")
@@ -1279,7 +1368,7 @@ setMethod('write.data', signature = c ( 'StefansExpressionSet') ,
 #' @rdname writeStatTables-methods
 #' @docType methods
 #' @description  export the statistic files
-#' @param x the NGSexpressionSet
+#' @param x the StefansExpressionSet
 #' @title description of function writeStatTables
 #' @export 
 setGeneric('writeStatTables', ## Name

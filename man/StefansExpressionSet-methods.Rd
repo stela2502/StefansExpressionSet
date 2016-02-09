@@ -8,7 +8,7 @@
 \usage{
 StefansExpressionSet(dat, Samples, class = "StefansExpressionSet",
   Analysis = NULL, name = "WorkingSet", namecol = "GroupName",
-  namerow = "GeneID", usecol = "Use", outpath = NULL)
+  namerow = "GeneID", usecol = "Use", outpath = "")
 }
 \arguments{
 \item{dat}{data frame or matrix containing all expression data}

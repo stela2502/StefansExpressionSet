@@ -6,8 +6,8 @@
 \alias{ggplot.gene,StefansExpressionSet-method}
 \title{description of function ggplot.gene}
 \usage{
-ggplot.gene(dat, gene, colrs, groupCol = "GroupID", colCol = "GroupID",
-  boxplot = F)
+ggplot.gene(dat, gene, colrs = NULL, groupCol = "GroupID",
+  colCol = "GroupID", boxplot = F)
 }
 \arguments{
 \item{dat}{the StefansExpressionSet object}

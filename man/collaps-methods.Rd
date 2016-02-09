@@ -3,7 +3,7 @@
 \docType{methods}
 \name{collaps}
 \alias{collaps}
-\alias{collaps,NGSexpressionSet-method}
+\alias{collaps,StefansExpressionSet-method}
 \title{description of function collaps}
 \usage{
 collaps(dataObj, by = c("median", "mean", "sd", "sum"))

@@ -9,7 +9,7 @@
 writeStatTables(x, annotation = NULL, wData = F)
 }
 \arguments{
-\item{x}{the NGSexpressionSet}
+\item{x}{the StefansExpressionSet}
 }
 \description{
 export the statistic files

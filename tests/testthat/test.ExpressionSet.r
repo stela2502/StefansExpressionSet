@@ -1,7 +1,7 @@
 
-PMID25158935 <- StefansExpressionSet( PMID25158935exp, PMID25158935samples,  Analysis = NULL, name='PMID25158935', namecol='Sample', namerow= 'GeneID', usecol=NULL , outpath = '../../tmp/')
+PMID25158935 <- NGSexpressionSet( PMID25158935exp, PMID25158935samples,  Analysis = NULL, name='PMID25158935', namecol='Sample', namerow= 'GeneID', usecol=NULL , outpath = '../../tmp/')
 
-expect_equal(class(PMID25158935)[1], 'StefansExpressionSet' )
+expect_equal(class(PMID25158935)[1], 'NGSexpressionSet' )
 expect_equal( dim(PMID25158935@data), c(24062,15) )
 
 expect_equal( dim(PMID25158935@samples), c( 15,21) )
