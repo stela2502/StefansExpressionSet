@@ -21,7 +21,7 @@ require(ggplot2)
 #' @slot sampleNamesCol the column name in the samples table that represents the colnames of the data table
 #' @slot stats the stats list for all stats created in the object
 #' @exportClass StefansExpressionSet
-setClass( 
+setClass(
 		Class='StefansExpressionSet', 
 		representation = representation ( 
 			data='data.frame',
