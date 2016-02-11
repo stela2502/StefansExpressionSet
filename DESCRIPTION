@@ -20,5 +20,6 @@ Suggests:
 Collate:
     'StefansExpressionSet.R'
     'Accessors.R'
+    'Clusters.R'
 LazyData: true
 RoxygenNote: 5.0.1
