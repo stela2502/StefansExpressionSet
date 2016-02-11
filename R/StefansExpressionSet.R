@@ -126,6 +126,7 @@ setMethod("StefansExpressionSet", signature = c ('data.frame'),
 	if ( ! file.exists(outpath)){
 		dir.create( outpath )
 	}
+	data <- list ( 'data' = data.frame(ret), samples = S, name= name, annotation = annotation, rownamescol = namerow )
 	data$outpath <- outpath
 	
 	colnames(ret) <- make.names(forceAbsoluteUniqueSample ( as.vector(S[, namecol]) ))
@@ -143,7 +144,6 @@ setMethod("StefansExpressionSet", signature = c ('data.frame'),
 	}
 	write.table (cbind(rownames(ret), ret ), file=paste(name, '_DataValues',".xls", sep=''), sep='\t',  row.names=F,quote=F )
 	write.table (S, file=paste(name,'_Sample_Description', ".xls", sep=''), sep='\t',  row.names=F,quote=F )
-	data <- list ( 'data' = data.frame(ret), samples = S, name= name, annotation = annotation, rownamescol = namerow )
 	data$sampleNamesCol <- namecol
 	class(data) <- 'StefansExpressionSet'
 	data$batchRemoved=0
