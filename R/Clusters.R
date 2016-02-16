@@ -42,7 +42,7 @@ setGeneric('difference', ## Name
 	}
 )
 
-setMethod('difference', signature = c ('Clusters'),
+setMethod('difference', signature = c ('data.frame'),
 	definition = function ( x, clusters, groups.n ) {
 	ret = 0 
 	for ( i in 1:groups.n  ) {
@@ -71,16 +71,16 @@ setGeneric('quality_of_fit', ## Name
 setMethod('quality_of_fit', signature = c ('StefansExpressionSet'),
 	definition = function ( x, what='cells', col='groupID' ) {
 	
-	test <- x$data
+	test <- x@data
 	test[which(test ==  0 ) ] = NA
 	if ( what=='cells') {
-		clusters <- x$samples[,col]
-		ret <- list ( 'single' = apply(test,2, difference, clusters, max(clusters) ) )
+		clusters <- x@samples[,col]
+		ret <- list ( 'single' = apply(test,2, difference, as.character(clusters), max(clusters) ) )
 		ret$sum = round(sum(ret$single))
 	}
 	else if ( what=='genes') {
-		clusters <- x$annotation[,col]
-		ret <- list ( 'single' = apply(test,1, difference, clusters, max(clusters) ) )
+		clusters <- x@annotation[,col]
+		ret <- list ( 'single' = apply(test,1, difference, as.charcter(clusters), max(clusters) ) )
 		ret$sum = round(sum(ret$single))
 	}
 	else {
