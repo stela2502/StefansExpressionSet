@@ -331,13 +331,14 @@ setMethod('cor2cytoscape', signature = c ( 'StefansExpressionSet') ,
 #' @description  met an StefansExpressionSet to be plotted using ggplot2 functions
 #' @param data the StefansExpressionSet object
 #' @param groupcol the column in the samples table to group the expression on
-#' @param colCol the column in the samples table to color the grouping data on
+#' @param colCol samples column names(s) to color the grouping data
+#' @param rowCol annotation column name(s) describing the gene groups
 #' @param probeNames which probenames to use (ProbeSetID or Gene.Symbol ...)
 #' @title description of function melt
 #' @export 
 setGeneric('melt.StefansExpressionSet', ## Name
 		package = 'StefansExpressionSet',
-	function ( dat, groupcol='GroupName', colCol='GroupName', probeNames=NULL,  na.rm = FALSE, value.name = "value") { ## Argumente der generischen Funktion
+	function ( dat, groupcol='GroupName', colCol=NULL, rowCol=NULL, probeNames=NULL,  na.rm = FALSE, value.name = "value") { ## Argumente der generischen Funktion
 		standardGeneric('melt.StefansExpressionSet') ## der Aufruf von standardGeneric sorgt für das Dispatching
 	}
 )
@@ -345,7 +346,7 @@ setGeneric('melt.StefansExpressionSet', ## Name
 
 setMethod('melt.StefansExpressionSet',
 	 signature= ('StefansExpressionSet' ),
-	 function ( dat, groupcol='GroupName', colCol='GroupName', probeNames=NULL, na.rm = FALSE, value.name = "value" ) {
+	 function ( dat, groupcol='GroupName', colCol=NULL,  rowCol=NULL, probeNames=NULL, na.rm = FALSE, value.name = "value" ) {
 	if ( is.null(probeNames)){
 		probeNames <- dat@rownamescol
 	}
@@ -368,9 +369,78 @@ setMethod('melt.StefansExpressionSet',
 	}
 	colnames(melted) <- c('ProbeName', 'SampleName', 'Expression')
 	melted$Group <- grps
-	melted$ColorGroup <- cgrps
+	melted <- addSampleColGroup( dat, melted, colName= colCol)
+	melted <- addGeneColGroup( dat, melted, colName= rowCol)
 	melted
 })
+
+#' @name addSampleColGroup
+#' @aliases addSampleColGroup,StefansExpressionSet-method
+#' @rdname addSampleColGroup-methods
+#' @docType methods
+#' @description an internal method adding new color columns to the melted dataset
+#' @param x  the StefansExpressionSet object
+#' @param melted the already melted matrix
+#' @param colName the colnames to add to the matrix (defult=NULL)
+#' @title description of function addSampleColGroup
+setGeneric('addSampleColGroup', ## Name
+		function ( x, melted, colName=NULL ) { ## Argumente der generischen Funktion
+			standardGeneric('addSampleColGroup') ## der Aufruf von standardGeneric sorgt für das Dispatching
+		}
+)
+
+setMethod('addSampleColGroup', signature = c ('StefansExpressionSet'),
+		definition = function ( x, melted, colName=NULL ) {
+			if ( ! is.null(colName) ) {
+				datarows = nrow(x@data)
+				grps <- NULL
+				for ( GNid in 1:length(colName)){
+					le <- datarows + GNid -1
+					melted_new <- NULL
+					for (sid in 1:datarows) {
+						melted_new <- rbind( melted_new, as.matrix(melted[(1+le*(sid-1)):(le*sid),]) )
+						line <- as.vector( t(melted[le*sid,]))
+						melted_new <- rbind(melted_new,  matrix(c('SampleGroup', as.character(line[2]), as.character(x@samples[sid,n[GNid]]), as.character(line[4]) ), nrow=1) )
+					}
+					melted <- data.frame(melted_new,row.names= 1:nrow(melted_new))
+				}
+			}
+			melted
+		} )
+#' @name addGeneColGroup
+#' @aliases addGeneColGroup,StefansExpressionSet-method
+#' @rdname addGeneColGroup-methods
+#' @docType methods
+#' @description an internal function to add row level clusters to a merged data table
+#' @param x the StefansExpressionSet
+#' @param melted the melted table
+#' @param colName the annotation column names to use for the coloring default=NULL
+#' @title description of function addGeneColGroup
+setGeneric('addGeneColGroup', ## Name
+		function ( x, melted, colName=NULL ) { ## Argumente der generischen Funktion
+			standardGeneric('addGeneColGroup') ## der Aufruf von standardGeneric sorgt für das Dispatching
+		}
+)
+
+setMethod('addGeneColGroup', signature = c ('StefansExpressionSet'),
+		definition = function ( x, melted, colName=NULL ) {
+			if ( ! is.null(colName)) {
+				grps <- NULL
+				datarows = nrow(x@data)
+				ret <- NULL
+				for ( GNid in 1:length(n)){
+					add  <- as.matrix(melted[1:datarows,])
+					add[,3] <- as.vector(x@annotation[,colName[GNid]])
+					add[,4] <-'GeneGroup'
+					ret <- rbind( ret, add )
+				}
+			}else {
+				ret <- melted
+			}
+			ret
+		} )
+
+
 
 
 #' @name plot.stats.as.heatmap
@@ -879,7 +949,7 @@ setMethod('gg.heatmap.list', signature = c ( 'StefansExpressionSet') ,
 	if ( is.null(colrs) ){
 		colrs = rainbow( length(unique(isect@samples[,colCol])))
 	}
-	if ( ! isect@gnorm ) {isect <- z.score(isect)}
+	if ( ! isect@zscored ) {isect <- z.score(isect)}
 	dat.ss <- melt.StefansExpressionSet ( isect, probeNames=isect@rownamescol, groupcol=groupCol,colCol=colCol)
 	#dat.ss <- dat[which(is.na(match(dat$Gene.Symbol,isect))==F),]
 	colnames(dat.ss) <- c( 'Gene.Symbol', 'Sample', 'Expression', 'Group', 'ColorGroup' )
@@ -916,17 +986,33 @@ setMethod('gg.heatmap.list', signature = c ( 'StefansExpressionSet') ,
 	brks[length(brks)] = brks[length(brks)] + 0.1
 	dat.ss$z <- cut( dat.ss$z, breaks= brks)
 	
-	list ( plot = ggplot2::ggplot(dat.ss, ggplot2::aes(x=Sample,y=Gene.Symbol))
-					+ ggplot2::geom_tile(ggplot2::aes(fill=z))
-					+ ggplot2::scale_fill_manual( values = c( 'gray', gplots::bluered(length(brks) -2  )) ) 
-					+ ggplot2::theme(
-							legend.position= 'bottom',
-							axis.text.x=ggplot2::element_blank(),
-							axis.ticks.x=ggplot2::element_line(color=ss$colrss),
-							axis.ticks.length=ggplot2::unit(0.6,"cm")
-					)
-					+ ggplot2::labs( y=''),
-			not.in = setdiff( glist, rownames(isect@data)) )
+	p = ( ggplot2::ggplot(dat.ss, ggplot2::aes(x=SampleName,y=ProbeName))
+				+ ggplot2::geom_tile(ggplot2::aes(fill=z)) 
+				+ ggplot2::scale_fill_manual( values =  c( 'gray', gplots::bluered(length(brks) -2  )) ) 
+				+ ggplot2::theme(
+						legend.position= 'bottom',
+						axis.text.x=ggplot2::element_blank(),
+#axis.ticks.x=element_line(color=ss$colrss),
+						axis.ticks.length=ggplot2::unit(0.00,"cm")
+				)+ labs( y='') )
+	if ( ncol(dat.ss) == 5 ){
+		p <- p + ggplot2::facet_grid( ColorGroup ~ Group,scales="free", space='free')
+	}else if ( ncol(dat.ss) == 4 ) {
+		p <- p + ggplot2::facet_grid( . ~ Group,scales="free", space='free')
+	}
+	list ( plot = p, not.in = setdiff( glist, rownames(isect@data)) )
+	
+#	list ( plot = ggplot2::ggplot(dat.ss, ggplot2::aes(x=Sample,y=Gene.Symbol))
+#					+ ggplot2::geom_tile(ggplot2::aes(fill=z))
+#					+ ggplot2::scale_fill_manual( values = c( 'gray', gplots::bluered(length(brks) -2  )) ) 
+#					+ ggplot2::theme(
+#							legend.position= 'bottom',
+#							axis.text.x=ggplot2::element_blank(),
+#							axis.ticks.x=ggplot2::element_line(color=ss$colrss),
+#							axis.ticks.length=ggplot2::unit(0.6,"cm")
+#					)
+#					+ ggplot2::labs( y=''),
+#			not.in = setdiff( glist, rownames(isect@data)) )
 })
 
 
@@ -1337,6 +1423,25 @@ setMethod('show', signature(object='StefansExpressionSet') ,
 })
 
 
+#' @name export.data
+#' @aliases export.data,StefansExpressionSet-method
+#' @rdname export.data-methods
+#' @docType methods
+#' @description  write the StefansExpressionSet data, annotation and samples tables to disk
+#' @param x the StefansExpressionSet object
+#' @title description of function write.data
+#' @export 
+setGeneric('export.data', ## Name
+		function ( x ) { ## Argumente der generischen Funktion
+			standardGeneric('export.data') ## der Aufruf von standardGeneric sorgt für das Dispatching
+		}
+)
+
+setMethod('export.data', signature = c ( 'StefansExpressionSet') ,
+		definition = function ( x ) {
+			write.table(cbind ( x@annotation, x@data ), file=paste(x@outpath,x@name,"_expressionValues.xls",sep=''),sep='\t', row.names=F,quote=F )
+			write.table( x@samples, file=paste( x@outpath, x@name, "_sampleInformation.xls",sep='' ), sep='\t', row.names=F,quote=F )
+		})
 
 #' @name write.data
 #' @aliases write.data,StefansExpressionSet-method

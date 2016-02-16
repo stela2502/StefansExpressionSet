@@ -6,13 +6,15 @@
 \alias{melt,StefansExpressionSet-method}
 \title{description of function melt}
 \usage{
-melt.StefansExpressionSet(dat, groupcol = "GroupName", colCol = "GroupName",
-  probeNames = NULL, na.rm = FALSE, value.name = "value")
+melt.StefansExpressionSet(dat, groupcol = "GroupName", colCol = NULL,
+  rowCol = NULL, probeNames = NULL, na.rm = FALSE, value.name = "value")
 }
 \arguments{
 \item{groupcol}{the column in the samples table to group the expression on}
 
-\item{colCol}{the column in the samples table to color the grouping data on}
+\item{colCol}{samples column names(s) to color the grouping data}
+
+\item{rowCol}{annotation column name(s) describing the gene groups}
 
 \item{probeNames}{which probenames to use (ProbeSetID or Gene.Symbol ...)}
 

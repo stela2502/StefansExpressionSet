@@ -2,10 +2,10 @@
 #' @aliases addCluster,Clusters-method
 #' @rdname addCluster-methods
 #' @docType methods
-#' @description 
+#' @description this function add new column to samples and annotation data NOT checking the column order
 #' @param x  the StefansExpressionSet object
 #' @param userGroups  the userGroups table 
-#' @param col  the column in the userGroups table that contains the group ids default='groupID'
+#' @param col the column in the userGroups table that contains the group ids default='groupID'
 #' @param what one of 'cells' or 'genes'. Where to add the group.  default= 'cells'
 #' @title description of function addCluster
 #' @export 
@@ -15,7 +15,7 @@ setGeneric('addCluster', ## Name
 	}
 )
 
-setMethod('addCluster', signature = c ('Clusters'),
+setMethod('addCluster', signature = c ('StefansExpressionSet'),
 	definition = function (x, userGroups, col='groupID', what= 'cells' ) {
 	if ( what == 'cells' ) {
 		cbind ( x@samples, userGroups[match( x@samples[,x@sampleNamesCol], userGroups[,1] ),col] )
@@ -31,12 +31,11 @@ setMethod('addCluster', signature = c ('Clusters'),
 #' @aliases difference,Clusters-method
 #' @rdname difference-methods
 #' @docType methods
-#' @description 
-#' @param x  TEXT MISSING
-#' @param clusters  TEXT MISSING
-#' @param groups.n  TEXT MISSING
+#' @description this code has to be revised! NOT WORKING
+#' @param x the StefansExpressionSet object
+#' @param clusters the grouoing strings
+#' @param groups.n the max number of groups
 #' @title description of function difference
-#' @export 
 setGeneric('difference', ## Name
 	function ( x, clusters, groups.n ) { ## Argumente der generischen Funktion
 		standardGeneric('difference') ## der Aufruf von standardGeneric sorgt für das Dispatching
@@ -57,10 +56,10 @@ setMethod('difference', signature = c ('Clusters'),
 #' @aliases quality_of_fit,Clusters-method
 #' @rdname quality_of_fit-methods
 #' @docType methods
-#' @description 
-#' @param x  TEXT MISSING
-#' @param what  TEXT MISSING default='cells'
-#' @param col  TEXT MISSING default='groupID'
+#' @description this calculated a quality of fit for the expression data
+#' @param x the StefansExpressionSet object
+#' @param what where to group the data on (cells or genes; default='cells')
+#' @param col which samples/annoation column to use for the grouping (default='groupID')
 #' @title description of function quality_of_fit
 #' @export 
 setGeneric('quality_of_fit', ## Name
@@ -69,7 +68,7 @@ setGeneric('quality_of_fit', ## Name
 	}
 )
 
-setMethod('quality_of_fit', signature = c ('Clusters'),
+setMethod('quality_of_fit', signature = c ('StefansExpressionSet'),
 	definition = function ( x, what='cells', col='groupID' ) {
 	
 	test <- x$data
