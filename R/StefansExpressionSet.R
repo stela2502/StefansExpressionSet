@@ -351,7 +351,6 @@ setMethod('melt.StefansExpressionSet',
 		probeNames <- dat@rownamescol
 	}
 	ma  <- dat@data[,order(dat@samples[,groupcol] )]
-	print ( colnames(dat@annotation) )
 	rownames(ma) <- forceAbsoluteUniqueSample(as.vector(dat@annotation[, probeNames]) )
 	melted <- reshape2::melt( cbind(rownames(ma),ma) )
 	dat@samples <- dat@samples[order(dat@samples[,groupcol]),]
@@ -400,7 +399,7 @@ setMethod('addSampleColGroup', signature = c ('StefansExpressionSet'),
 					for (sid in 1:datarows) {
 						melted_new <- rbind( melted_new, as.matrix(melted[(1+le*(sid-1)):(le*sid),]) )
 						line <- as.vector( t(melted[le*sid,]))
-						melted_new <- rbind(melted_new,  matrix(c('SampleGroup', as.character(line[2]),
+						melted_new <- rbind(melted_new,  matrix(c(colName[GNid] , as.character(line[2]),
 												as.character(x@samples[sid,colName[GNid]]), as.character(line[4]) ), nrow=1) )
 					}
 					melted <- data.frame(melted_new,row.names= 1:nrow(melted_new))
