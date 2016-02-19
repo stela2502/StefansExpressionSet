@@ -3,6 +3,7 @@
 export(addAnnotation)
 export(addCluster)
 export(coexprees4gene)
+export(collaps)
 export(cor2cytoscape)
 export(corMat)
 export(describe.probeset)

@@ -6,12 +6,15 @@
 \alias{collaps,StefansExpressionSet-method}
 \title{description of function collaps}
 \usage{
-collaps(dataObj, by = c("median", "mean", "sd", "sum"))
+collaps(dataObj, by = c("median", "mean", "sd", "sum"),
+  groupCol = "GroupID")
 }
 \arguments{
 \item{dataObj}{the StefansExpressionSet}
 
 \item{by}{collapsing method c('median','mean','sd','sum', or own function )}
+
+\item{groupCol}{the sample names you want to group on}
 }
 \description{
 This function will collpase the data in the StefansExpressionSet to only contain one value

@@ -607,7 +607,7 @@ setMethod('drop.samples', signature = c ( 'StefansExpressionSet') ,
 			slot(red,n) <- slot(x,n)
 		}
 		red@samples <- x@samples[ is.na(match(x@samples[,x@sampleNamesCol], samplenames  ) ) == T ,]
-		print ( paste( "Dropping", length(samplenames), "samples (", paste( samplenames, collapse=", "),")") )
+		#print ( paste( "Dropping", length(samplenames), "samples (", paste( samplenames, collapse=", "),")") )
 		
 		red@data <- x@data[, make.names(as.vector(red@samples[,red@sampleNamesCol]))]
 	#	colnames(red@data) <- forceAbsoluteUniqueSample ( as.vector(red@samples[, red@sampleNamesCol ]) )
@@ -1261,16 +1261,18 @@ setMethod('groups.boxplot', signature = c ( 'StefansExpressionSet') ,
 #' @description  per sample group.
 #' @param dataObj the StefansExpressionSet
 #' @param by collapsing method c('median','mean','sd','sum', or own function )
+#' @param groupCol the sample names you want to group on
 #' @title description of function collaps
+#' @export 
 setGeneric('collaps', ## Name
-		function (dataObj, by=c('median','mean','sd','sum' ) ) { ## Argumente der generischen Funktion
+		function (dataObj, by=c('median','mean','sd','sum' ), groupCol='GroupID' ) { ## Argumente der generischen Funktion
 			standardGeneric('collaps') ## der Aufruf von standardGeneric sorgt für das Dispatching
 		}
 )
 
 setMethod('collaps', signature = c ('StefansExpressionSet'),
-		definition = function (dataObj, by=c('median','mean','sd','sum' ) ) {
-			u <- unique(as.vector(dataObj@samples$GroupName))
+		definition = function (dataObj, by=c('median','mean','sd','sum', 'var' ), groupCol='GroupID' ) {
+			u <- unique(as.vector(dataObj@samples[,groupCol]))
 			m <- length(u)
 			mm <-  matrix ( rep(0,m * nrow(dataObj@data)), ncol=m)
 			colnames(mm) <- u
@@ -1283,7 +1285,8 @@ setMethod('collaps', signature = c ('StefansExpressionSet'),
 					median = f<- function (x ) { median(x) },
 					mean = f <- function(x) { mean(x) },
 					sd = f <- function(x) { sd(x) },
-					sum = f <-function(x) { sum(x)}
+					sum = f <-function(x) { sum(x)},
+					var = f <- function(x) { var(x) }
 			);
 			}
 			if ( is.null(f) ) {
@@ -1291,14 +1294,19 @@ setMethod('collaps', signature = c ('StefansExpressionSet'),
 			}
 			new_samples <- NULL
 			for ( i in u ){
-				all <- which(as.vector(dataObj$samples$GroupName) == i )
-				new_samples <- rbind ( new_samples, dataObj$samples[all[1],] )
-				mm[,i] <- apply( dataObj$data[ , all],1,f)
+				all <- which(as.vector(dataObj@samples[, groupCol]) == i )
+				new_samples <- rbind ( new_samples, dataObj@samples[all[1],] )
+				mm[,i] <- apply( dataObj@data[ , all],1,f)
 			}
-			dataObj$name = paste( dataObj$name, what, sep='_')
-			dataObj$data <- mm
-			dataObj$samples <- new_samples
-			dataObj
+			name = paste( unlist(strsplit( paste( dataObj@name, groupCol, by, sep='_') , '\\s')) , collapse='_')
+			try ( { ret <- drop.samples ( dataObj,
+					samplenames= setdiff( 
+							dataObj@samples[,dataObj@sampleNamesCol] , 
+							new_samples[,dataObj@sampleNamesCol] 
+					), 
+					name= name
+			) }, silent=TRUE )
+			ret
 })
 
 
