@@ -20,6 +20,7 @@ require(ggplot2)
 #' @slot rownamescol the column name in the annotation table that represents the rownames of the data table
 #' @slot sampleNamesCol the column name in the samples table that represents the colnames of the data table
 #' @slot stats the stats list for all stats created in the object
+#' @slot usedObj here a set of used and probably lateron important objects can be saved. Be very carful using any of them!
 #' @exportClass StefansExpressionSet
 setClass(
 		Class='StefansExpressionSet', 
@@ -37,7 +38,8 @@ setClass(
 			stats = 'list',
 			sig_genes = 'list',
 			zscored = 'logical',
-			simple = 'character'
+			simple = 'character',
+			usedObj = 'list'
 		),
 		prototype(outpath ='', name = 'StefansExpressionSet',
 				sampleNamesCol=NA_character_, 
@@ -45,6 +47,7 @@ setClass(
 				snorm=F,
 				zscored=F,
 				sig_genes=list(),
+				usedObj=- list(),
 				simple= c( 'outpath', 'rownamescol', 'sampleNamesCol', 'simple', 'snorm', 'zscored') )
 )
 
