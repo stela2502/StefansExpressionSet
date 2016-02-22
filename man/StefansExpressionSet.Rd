@@ -29,5 +29,7 @@ An S4 class to visualize Expression data.
 \item{\code{sampleNamesCol}}{the column name in the samples table that represents the colnames of the data table}
 
 \item{\code{stats}}{the stats list for all stats created in the object}
+
+\item{\code{usedObj}}{here a set of used and probably lateron important objects can be saved. Be very carful using any of them!}
 }}
 

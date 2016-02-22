@@ -47,7 +47,7 @@ setClass(
 				snorm=F,
 				zscored=F,
 				sig_genes=list(),
-				usedObj=- list(),
+				usedObj= list(),
 				simple= c( 'outpath', 'rownamescol', 'sampleNamesCol', 'simple', 'snorm', 'zscored') )
 )
 
