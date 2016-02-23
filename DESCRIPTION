@@ -7,7 +7,7 @@ Maintainer: Stefan Lang <Stefan.Lang@med.lu.se>
 Description: StefansExpressionSet is a simple package to analyze NGS expression data
     sets. Expression analysis is based on the DESeq package. This package is mainly
     built to plot the results.
-Imports: 
+Depends: 
 	reshape2, 
 	stringr, 
 	RSvgDevice, 
