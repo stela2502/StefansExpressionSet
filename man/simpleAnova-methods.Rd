@@ -6,12 +6,12 @@
 \alias{simpleAnova,StefansExpressionSet-method}
 \title{description of function simpleAnova}
 \usage{
-simpleAnova(x, samples.col = "GroupName", padjMethod = "BH")
+simpleAnova(x, groupCol = "GroupName", padjMethod = "BH")
 }
 \arguments{
 \item{x}{the StefansExpressionSet object}
 
-\item{samples.col}{the samples table column that contains the grouping information}
+\item{groupCol}{the samples table column that contains the grouping information}
 
 \item{padjMethod}{the p value correction method as described in  \code{\link[stats]{p.adjust}}}
 }
