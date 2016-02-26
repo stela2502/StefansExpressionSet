@@ -1322,28 +1322,29 @@ setMethod('collaps', signature = c ('StefansExpressionSet'),
 #' @description  or general trends in the dataset. This function adds the results into the stats slot
 #' @description  of the StefansExpressionSet object.
 #' @param x the StefansExpressionSet object
-#' @param samples.col the samples table column that contains the grouping information
+#' @param groupCol the samples table column that contains the grouping information
 #' @param padjMethod the p value correction method as described in  \code{\link[stats]{p.adjust}}
 #' @title description of function simpleAnova
 setGeneric('simpleAnova', ## Name
-	function ( x, samples.col='GroupName', padjMethod='BH' ) { ## Argumente der generischen Funktion
+	function ( x, groupCol='GroupName', padjMethod='BH' ) { ## Argumente der generischen Funktion
 		standardGeneric('simpleAnova') ## der Aufruf von standardGeneric sorgt für das Dispatching
 	}
 )
 
 setMethod('simpleAnova', signature = c ( 'StefansExpressionSet') ,
-	definition = function ( x, samples.col='GroupName', padjMethod='BH' ) {
+	definition = function ( x, groupCol='GroupName', padjMethod='BH' ) {
 	x <- normalize(x)
-	significants <- apply ( x@data ,1, function(x) { anova( lm (x ~ Samples[, samples.col]))$"Pr(>F)"[1] } )
+	significants <- apply ( x@data ,1, function(x) { anova( lm (x ~ x@Samples[, samples.col]))$"Pr(>F)"[1] } )
 	adj.p <- p.adjust( significants, method = padjMethod)
 	res <- cbind(significants,adj.p )
 	res <- data.frame(cbind( rownames(res), res ))
 	colnames(res) <- c('genes', 'pvalue', paste('padj',padjMethod) )
-	res <- list ( 'simpleAnova' = res )
-	if ( exists( 'stats', where=x )) {
-		x@stats <- c( x@stats, res)
-	}else {
-		x@stats <- res
+	if ( length (x@stats) == 0 ){
+		x@stats <- list ( 'simpleAnova' = res )
+	}
+	else {
+		x@stats[[length(x@stats)+1]] <- res
+		names(x@stats)[length(x@stats)] = 'simpleAnova'
 	}
 	x
 })
