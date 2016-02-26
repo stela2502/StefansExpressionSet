@@ -853,7 +853,7 @@ setMethod('reduce.Obj', signature = c ( 'StefansExpressionSet') ,
 	retObj@annotation <- data.frame(x@annotation[useOnly,]) ## if I only have one column here
 	colnames(retObj@annotation) <- colnames(x@annotation)
 	if ( length( names(x@stats)) > 0){
-		for ( i in 1:length(names(x$stats))){
+		for ( i in 1:length(names(x@stats))){
 			retObj@stats[[i]]= x@stats[[i]][ match(probeSets ,x@stats[[i]][,1] ),]
 		}
 		names(retObj@stats) <- names(x@stats)
@@ -1335,7 +1335,7 @@ setGeneric('simpleAnova', ## Name
 setMethod('simpleAnova', signature = c ( 'StefansExpressionSet') ,
 	definition = function ( x, groupCol='GroupName', padjMethod='BH' ) {
 	x <- normalize(x)
-	significants <- apply ( x@data ,1, function(x) { anova( lm (x ~ x@Samples[, samples.col]))$"Pr(>F)"[1] } )
+	significants <- apply ( x@data ,1, function(a) { anova( lm (a ~ a@Samples[, samples.col]))$"Pr(>F)"[1] } )
 	adj.p <- p.adjust( significants, method = padjMethod)
 	res <- cbind(significants,adj.p )
 	res <- data.frame(cbind( rownames(res), res ))
