@@ -1325,6 +1325,7 @@ setMethod('collaps', signature = c ('StefansExpressionSet'),
 #' @param groupCol the samples table column that contains the grouping information
 #' @param padjMethod the p value correction method as described in  \code{\link[stats]{p.adjust}}
 #' @title description of function simpleAnova
+#' @export 
 setGeneric('simpleAnova', ## Name
 	function ( x, groupCol='GroupName', padjMethod='BH' ) { ## Argumente der generischen Funktion
 		standardGeneric('simpleAnova') ## der Aufruf von standardGeneric sorgt für das Dispatching
