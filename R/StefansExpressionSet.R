@@ -1309,6 +1309,7 @@ setMethod('collaps', signature = c ('StefansExpressionSet'),
 					), 
 					name= name
 			) }, silent=TRUE )
+			ret@data <- mm
 			ret
 })
 
