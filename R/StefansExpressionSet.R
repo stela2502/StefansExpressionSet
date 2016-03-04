@@ -1309,7 +1309,8 @@ setMethod('collaps', signature = c ('StefansExpressionSet'),
 					), 
 					name= name
 			) }, silent=TRUE )
-			ret@data <- mm
+			colnames(mm) <- as.vector(new_samples[, dataObj@sampleNamesCol])
+			ret@data <- data.frame(mm)
 			ret
 })
 
