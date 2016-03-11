@@ -6,8 +6,8 @@
 \alias{ggplot.gene,StefansExpressionSet-method}
 \title{description of function ggplot.gene}
 \usage{
-ggplot.gene(dat, gene, colrs = NULL, groupCol = "GroupID",
-  colCol = "GroupID", boxplot = F)
+ggplot.gene(dat, gene, colrs = NULL, groupCol = "GroupID", colCol = NULL,
+  boxplot = F, log2 = F)
 }
 \arguments{
 \item{dat}{the StefansExpressionSet object}
@@ -19,6 +19,8 @@ ggplot.gene(dat, gene, colrs = NULL, groupCol = "GroupID",
 \item{groupCol}{the samples clumn that contains the grouping information}
 
 \item{colCol}{the sample column that contains the color information}
+
+\item{log2}{log2 transform data before plotting (default = F)}
 }
 \description{
 Plot one gene in the StefansExpressionSet as boxplot or points plot (using ggplot2)

@@ -354,7 +354,7 @@ setMethod('melt.StefansExpressionSet',
 		probeNames <- dat@rownamescol
 	}
 	ma  <- dat@data[,order(dat@samples[,groupcol] )]
-	rownames(ma) <- forceAbsoluteUniqueSample(as.vector(dat@annotation[, probeNames]) )
+	#rownames(ma) <- forceAbsoluteUniqueSample(as.vector(dat@annotation[, probeNames]) )
 	melted <- reshape2::melt( cbind(rownames(ma),ma) )
 	dat@samples <- dat@samples[order(dat@samples[,groupcol]),]
 	if ( length( which ( melted[,2] == '') ) > 0 ){
@@ -394,16 +394,19 @@ setGeneric('addSampleColGroup', ## Name
 setMethod('addSampleColGroup', signature = c ('StefansExpressionSet'),
 		definition = function ( x, melted, colName=NULL ) {
 			if ( ! is.null(colName) ) {
-				datarows = nrow(x@data)
+				genes = nrow(x@data)
+				samples = ncol(x@data)
 				grps <- NULL
 				for ( GNid in 1:length(colName)){
-					le <- datarows + GNid -1
-					melted_new <- NULL
-					for (sid in 1:datarows) {
-						melted_new <- rbind( melted_new, as.matrix(melted[(1+le*(sid-1)):(le*sid),]) )
-						line <- as.vector( t(melted[le*sid,]))
-						melted_new <- rbind(melted_new,  matrix(c(colName[GNid] , as.character(line[2]),
-												as.character(x@samples[sid,colName[GNid]]), as.character(line[4]) ), nrow=1) )
+					le <- genes + GNid -1
+					melted_new <- matrix(nrow=(nrow(melted)+GNid*samples), ncol=ncol(melted) )
+					for ( sid in 0:(samples-1)) {
+						for ( i in (1+(sid*genes)):((sid+1)*genes) ) {
+							melted_new[ (i+GNid * sid),] <- as.vector(t(melted[ i,]))
+						}
+						l <- melted[((sid+1)*genes),]
+						l[c(1,3)] <- c(colName[GNid], as.character(x@samples[sid+1,colName[GNid]]) )
+						melted_new[ (genes+GNid)*(sid+1), ] <- as.vector(t(l))
 					}
 					melted <- data.frame(melted_new,row.names= 1:nrow(melted_new))
 				}
@@ -479,7 +482,6 @@ setMethod('plot.stats.as.heatmap', signature = c ('StefansExpressionSet'),
 			if ( gene_centered ) {
 				add = 'GenesOnly'
 			}
-			#browser()
 			if ( ! is.null(collaps)){
 				if ( nchar(add) > 1 ){
 					add = paste( 'mean', add, sep='_')
@@ -651,7 +653,6 @@ setMethod('restrictSamples', signature = c ( 'StefansExpressionSet') ,
 			'onlyless' = S <- x@samples[which ( x@samples[,column]  < value ), ],
 			'equals' = S <- x@samples[which ( x@samples[,column] ==  value), ]
 	)
-	browser()
 	if ( nrow(S) < nrow(x@samples)){
 		x <- drop.samples( x, S[,x@sampleNamesCol], name=name)
 	}
@@ -879,23 +880,39 @@ setMethod('reduce.Obj', signature = c ( 'StefansExpressionSet') ,
 #' @param colrs the grouping colors for the x axis (samples)
 #' @param groupCol the samples clumn that contains the grouping information
 #' @param colCol the sample column that contains the color information
+#' @param log2 log2 transform data before plotting (default = F)
 #' @title description of function ggplot.gene
 #' @export 
 setGeneric('ggplot.gene', ## Name
-	function (dat,gene, colrs=NULL, groupCol='GroupID', colCol='GroupID', boxplot=F) { ## Argumente der generischen Funktion
+	function (dat,gene, colrs=NULL, groupCol='GroupID', colCol=NULL, boxplot=F, log2=F) { ## Argumente der generischen Funktion
 		standardGeneric('ggplot.gene') ## der Aufruf von standardGeneric sorgt für das Dispatching
 	}
 )
 
 setMethod('ggplot.gene', signature = c ( 'StefansExpressionSet') ,
-	definition = function (dat,gene, colrs=NULL, groupCol='GroupID', colCol='GroupID', boxplot=F) {
+	definition = function (dat,gene, colrs=NULL, groupCol='GroupID', colCol=NULL, boxplot=F, log2=F) {
 	not.in = 'NUKL'
 	if ( is.null(colrs)){
-		colrs = rainbow( length(unique(dat@samples[,colCol])))
+		if ( is.null(colCol) ) {
+			colrs = rainbow( length(unique(dat@samples[,groupCol])))
+		}
+		else {
+			colrs = rainbow( length(unique(dat@samples[,colCol])))
+		}	
 	}
-	g1 <- melt.StefansExpressionSet(reduce.Obj ( dat, gene, name=gene ), probeNames=dat@rownamescol, groupcol=groupCol,colCol=colCol)
+	dat <- reduce.Obj ( dat, gene, name=gene )
+	if ( log2 ) {
+		dat@data <- log2(dat@data+1)
+	}
+	g1 <- melt.StefansExpressionSet( dat, probeNames=dat@rownamescol, groupcol=groupCol,colCol=colCol)
 	#g1 <- subset(dat, Gene.Symbol == gene)
-	colnames(g1) <- c( 'Gene.Symbol', 'Sample', 'Expression', 'Group', 'ColorGroup' )
+	colnames(g1) <- c( 'Gene.Symbol', 'Sample', 'Expression', 'Group', 'ColorGroup' ) [1:ncol(g1)]
+	if ( log2 ) {
+		exprsname <- 'Expression (log2)'
+	}
+	else{
+		exprsname <- 'Expression'
+	}
 	g1$Group <- factor( g1$Group, levels=unique( as.character(g1$Group)))
 	if ( length(g1) == 0){
 		not.in = c( gene )
@@ -905,7 +922,7 @@ setMethod('ggplot.gene', signature = c ( 'StefansExpressionSet') ,
 						+ ggplot2::geom_boxplot(shape=19)+ggplot2::theme_bw() 
 						+ ggplot2::scale_colour_manual( values= colrs, guide=FALSE )
 						+ ggplot2::theme( axis.text.x= ggplot2::element_text(angle=90) )
-						+ ggplot2::labs(title=gene, x=''),
+						+ ggplot2::labs(title=gene, x='', y=exprsname),
 				not.in = not.in
 		)
 		
@@ -914,7 +931,7 @@ setMethod('ggplot.gene', signature = c ( 'StefansExpressionSet') ,
 						+ ggplot2::geom_jitter(shape=19)+ggplot2::theme_bw()
 						+ ggplot2::scale_colour_manual( values= colrs, guide=FALSE )
 						+ ggplot2::theme( axis.text.x= ggplot2::element_text(angle=90) )
-						+ ggplot2::labs(title=gene, x=''),
+						+ ggplot2::labs(title=gene, x='', y=exprsname),
 				not.in = not.in
 		)
 	}
