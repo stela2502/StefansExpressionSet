@@ -117,6 +117,10 @@ setMethod("StefansExpressionSet", signature = c ('data.frame'),
 		ret <- dat[, n ]
 		annotation <- dat[, is.na(match( colnames(dat), n ))==T ]
 	}
+	if ( class(annotation) == 'factor'){
+		annotation <- data.frame( annotation )
+		colnames(annotation) <- namerow
+	}
 	
 	if ( exists( 'Order', S)){
 		ret <- ret[, order(S$Order)  ]

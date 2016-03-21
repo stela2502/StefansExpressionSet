@@ -5,9 +5,6 @@ On the positive site you can now install this software like that:
 
 library(devtools)
 
-source("https://bioconductor.org/biocLite.R")
-biocLite(c("DESeq", 'Rsubread') )
-
 install_github('stela2502/StefansExpressionSet')
 
 or
