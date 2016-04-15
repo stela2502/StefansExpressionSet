@@ -133,11 +133,7 @@ setMethod("StefansExpressionSet", signature = c ('data.frame'),
 	if ( ! file.exists(outpath)){
 		dir.create( outpath )
 	}
-	data <- list ( 'data' = data.frame(ret), samples = S, name= name, annotation = annotation, rownamescol = namerow )
-	data$outpath <- outpath
-	
-	colnames(ret) <- make.names(forceAbsoluteUniqueSample ( as.vector(S[, namecol]) ))
-	S$SampleName <- colnames(ret)
+	ret <- data.frame(ret)
 	if ( is.null(dim(annotation))){
 		## this xcould be a problem... hope we at least have a vector
 		if ( length(annotation) == nrow(ret)) {
@@ -149,6 +145,12 @@ setMethod("StefansExpressionSet", signature = c ('data.frame'),
 	}else{
 		rownames(ret) <- annotation[,namerow]
 	}
+	data <- list ( 'data' = ret, samples = S, name= name, annotation = annotation, rownamescol = namerow )
+	data$outpath <- outpath
+	
+	colnames(ret) <- make.names(forceAbsoluteUniqueSample ( as.vector(S[, namecol]) ))
+	S$SampleName <- colnames(ret)
+	
 	write.table (cbind(rownames(ret), ret ), file=paste(name, '_DataValues',".xls", sep=''), sep='\t',  row.names=F,quote=F )
 	write.table (S, file=paste(name,'_Sample_Description', ".xls", sep=''), sep='\t',  row.names=F,quote=F )
 	data$sampleNamesCol <- namecol
@@ -976,19 +978,7 @@ setMethod('gg.heatmap.list', signature = c ( 'StefansExpressionSet') ,
 	if ( ! isect@zscored ) {isect <- z.score(isect)}
 	dat.ss <- melt.StefansExpressionSet ( isect, probeNames=isect@rownamescol, groupcol=groupCol,colCol=colCol)
 	#dat.ss <- dat[which(is.na(match(dat$Gene.Symbol,isect))==F),]
-	colnames(dat.ss) <- c( 'Gene.Symbol', 'Sample', 'Expression', 'Group', 'ColorGroup' )
-	dat.ss$z <- ave(dat.ss$Expression, dat.ss$Gene.Symbol, FUN = function (x)  {
-				n <- which(x==0)
-				if ( length(x) - length(n) > 1 ){
-					x[-n] <- scale(as.vector(t(x[-n])))
-				}
-				else {
-					x[] = -20
-				}
-				x[n] <- -20
-				x
-			}
-	)
+	colnames(dat.ss) <- c( 'Gene.Symbol', 'Sample', 'Expression', 'Group', 'ColorGroup' )[1:ncol(dat.ss)]
 	
 	#dat.ss$z[which(dat.ss$z < -5)] <- -5
 	#dat.ss$z[which(dat.ss$z > 5)] <- 5
@@ -1004,7 +994,7 @@ setMethod('gg.heatmap.list', signature = c ( 'StefansExpressionSet') ,
 							unique(as.character(Group))))
 	dat.ss$colrss <- colrs[dat.ss$Group]
 	ss <-dat.ss[which(dat.ss$Gene.Symbol==dat.ss$Gene.Symbol[1]),]
-	brks= c( -20.1, as.vector(quantile(dat.ss$z[which(dat.ss$z != -20)],seq(0,1,by=0.1)) ))
+	brks= c( -20.1, as.vector(quantile(dat.ss$z[which(dat.ss$z != min(dat.ss$z))],seq(0,1,by=0.1)) ))
 	brks = unique(brks)
 	print ( brks )
 	brks[length(brks)] = brks[length(brks)] + 0.1
