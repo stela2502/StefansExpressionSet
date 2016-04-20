@@ -80,7 +80,6 @@ setClass(
 #' @slot rownamescol the column name in the annotation table that represents the rownames of the data table
 #' @slot sampleNamesCol the column name in the samples table that represents the colnames of the data table
 #' @slot stats the stats list for all stats created in the object
-#' @importClassesFrom StefansExpressionSet StefansExpressionSet
 #' @exportClass NGSexpressionSet
 setClass( 
 		Class='NGSexpressionSet', 

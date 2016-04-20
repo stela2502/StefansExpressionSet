@@ -1,7 +1,7 @@
-#' @name rfCluster
-#' @aliases 'rfCluster,SingleCellsNGS-method
-#' @title rfCluster
-#' @name rfCluster-methods
+#' @name rfCluster_col
+#' @aliases 'rfCluster_col,StefansExpressionSet-method
+#' @title rfCluster_col
+#' @name rfCluster_col-methods
 #' @docType methods
 #' @description This fucntion uses the RFclust.SGE to create fandomForest based unsupervised clusters on a subset of the data.
 #' @description Default is on 200 cells using all (provided) genes with 500 forests and 500 trees per forest for 5 repetitions.
@@ -19,18 +19,17 @@
 #' @param k the numer of expected clusters (metter more than to view)
 #' @param subset how many cells should be randomly selected for the unsupervised clustering (default = 200)
 #' @param name if you want to run multiple RFclusterings on e.g. using different input genes you need to specify a name (default ='RFclust')
-#' @param pics create a heatmap for each grouping that has been accessed (in the outpath folder; default = FALSE)
 #' @param nforest the numer of forests to grow for each rep (defualt = 500)
 #' @param ntree the numer of trees per forest (default = 500)
 #' @return a SingleCellsNGS object including the results and storing the RF object in the usedObj list (bestColname)
 #' @export 
-setGeneric('rfCluster',
-		function ( x, rep=5, SGE=F, email, k=16, slice=30, subset=200, pics=F ,nforest=500, ntree=500, name='RFclust'){
-			standardGeneric('rfCluster')
+setGeneric('rfCluster_col',
+		function ( x, rep=5, SGE=F, email, k=16, slice=30, subset=200,nforest=500, ntree=500, name='RFclust'){
+			standardGeneric('rfCluster_col')
 		}
 )
-setMethod('rfCluster', signature = c ('SingleCellsNGS'),
-		definition = function ( x, rep=5, SGE=F, email, k=16, slice=30, subset=200, pics=F ,nforest=500, ntree=1000, name='RFclust') {
+setMethod('rfCluster_col', signature = c ('StefansExpressionSet'),
+		definition = function ( x, rep=5, SGE=F, email, k=16, slice=30, subset=200 ,nforest=500, ntree=1000, name='RFclust') {
 			summaryCol=paste( 'All_groups', name,sep='_')
 			usefulCol=paste ('Usefull_groups',name, sep='_')
 			n= paste(x@name, name,sep='_')
@@ -57,8 +56,11 @@ setMethod('rfCluster', signature = c ('SingleCellsNGS'),
 						dir.create( opath )
 					}
 					total <- ncol(x@data)
-					if ( total-subset <= 20 ) {
+					if ( total-subset <= 20  && rep > 1) {
 						stop( paste( 'You have only', total, 'samples in this dataset and request to draw random',subset, "samples, which leaves less than 20 cells to draw on random!") )
+					}
+					else if ( total < subset ){
+						stop ( paste("You can not ask for more than the max of",total, "samples in the test dataset!") )			
 					}
 					if ( is.null(x@usedObj[['rfExpressionSets']])){
 						x@usedObj[['rfExpressionSets']] <- list()
@@ -93,49 +95,57 @@ setMethod('rfCluster', signature = c ('SingleCellsNGS'),
 										is.na(match ( colnames(x@usedObj[["rfExpressionSets"]][[i]]@samples), paste('group n=',a) ))==T 
 								]
 					}
-					groups <- createGroups( x@usedObj[['rfObj']][[i]], k=k, name=tname )
-					x@usedObj[['rfExpressionSets']][[i]]@samples <- cbind ( x@usedObj[['rfExpressionSets']][[i]]@samples, groups[,3:(2+length(k))] )
+					x <- createRFgrouping_col( x, RFname=tname,  k=10, single_res_col = paste( single_res_col, i) )
 					
-					le <- ncol(x@usedObj[['rfExpressionSets']][[i]]@samples)
-					colnames(x@usedObj[['rfExpressionSets']][[i]]@samples)[(le-length(k)+1):le] <- paste('group n=',k)
-					
-					## create the required RF object
-					m <- max(k)
-					x@usedObj[['rfExpressionSets']][[i]] <- bestGrouping( x@usedObj[['rfExpressionSets']][[i]], group=paste('group n=', m), bestColname = paste('OptimalGrouping',m ,name) )
-					## the 'predictive RFobj group n=' object is created by the bestGrouping call
-					x@samples[, paste( single_res_col, i) ] <-
-							predict( x@usedObj[['rfExpressionSets']][[i]]@usedObj[[paste( 'predictive RFobj group n=',m) ]], t(as.matrix(x@data)) )
-					if ( pics ){
-						fn <- paste(OPATH,'/heatmap_rfExpressionSets_',i,'.png', sep='')
-						png ( file=fn, width=800, height=1600 )
-						gg.heatmap.list( x, groupCol=paste( single_res_col , i) )
-						dev.off()
-						print ( paste('heatmap stored in', fn) )
-					}
 					print ( paste("Done with cluster",i))
 					processed = TRUE
 				}
 			}
-			if ( processed ) {
-				try ( {combine <- identifyBestGrouping( x, c( paste(single_res_col, 1:rep)) )} , silent =T)
-				if ( all.equal(as.vector(combine$res), rep('', rep)) ) {
-					print( 'No really usful grouping of the data obtained - I recommend re-run with more trees/forests and a new name')
-					x <- combine$x
-				}
-				else {
-					x <- combine$x
-					colnames(x@samples)[which( colnames(x@samples) == names(combine$res)[1] )] <- usefulCol
-					if ( pics ){
-						fn <- paste(OPATH,'/heatmap_',str_replace( usefulCol, '\\s', '_'),'.png', sep='')
-						png ( file=fn, width=800, height=1600 )
-						gg.heatmap.list( x, groupCol= usefulCol )
-						dev.off()
-						print ( paste('heatmap stored in', fn ))
-					}
-				}
-				x@usedObj$combinationAnalysis <- list ( 'initial_significants' = combine$names, 'merged_significants' = combine$res )				
-			}
 			x		
 		}
 )
+
+
+
+
+#' @name createRFgrouping_col
+#' @aliases createRFgrouping_col,StefansExpressionSet-method
+#' @rdname createRFgrouping_col-methods
+#' @docType methods
+#' @description Create a sample grouping data from one RFclust.SGE object
+#' @param x the StefansExpressionSet object
+#' @param RFname the name of the RFclust.SGE object in the StefansExpressionSet object. This object has to be populized with data!
+#' @param k the number of wanted groups ( default = 10)
+#' @param single_res_col the new column in the samples table default= paste('RFgrouping', RFname)
+#' @param colFunc a function giving the colours back for the grouping (gets the amount of groups) default = function(x){rainbow(x)}
+#' @title description of function createRFgrouping_col
+#' @export 
+setGeneric('createRFgrouping_col', ## Name
+		function ( x, RFname, k=10, single_res_col = paste('StefansExpressionSet',RFname), colFunc=NULL) { ## Argumente der generischen Funktion
+			standardGeneric('createRFgrouping_col') ## der Aufruf von standardGeneric sorgt für das Dispatching
+		}
+)
+
+setMethod('createRFgrouping_col', signature = c ('StefansExpressionSet'),
+		definition = function ( x, RFname, k=10, single_res_col = paste('RFgrouping',RFname), colFunc=NULL) {
+			if ( is.na( match( RFname, names(x@usedObj[['rfObj']])))){
+				stop( paste("the RFname",RFname,"is not defined in this object; defined grouings are:",paste(names(x@usedObj[['rfObj']]), collapse=" ",sep=', ') ) )
+			}
+			groups <- createGroups( x@usedObj[['rfObj']][[RFname]], k=k, name=RFname )
+			x@usedObj[['rfExpressionSets']][[RFname]]@samples <- 
+					cbind ( x@usedObj[['rfExpressionSets']][[RFname]]@samples, groups[,3:(2+length(k))] )
+			le <- ncol(x@usedObj[['rfExpressionSets']][[RFname]]@samples)
+			colnames(x@usedObj[['rfExpressionSets']][[RFname]]@samples)[(le-length(k)+1):le] <- 
+					paste('group n=',k)
+			m <- max(k)
+			## create the predictive random forest object
+			x@usedObj[['rfExpressionSets']][[RFname]] <- 
+					bestGrouping( x@usedObj[['rfExpressionSets']][[RFname]], group=paste('group n=', m), bestColname = paste('OptimalGrouping',m ,RFname) )
+			x@samples[, paste( single_res_col) ] <-
+					predict( x@usedObj[['rfExpressionSets']][[RFname]]@usedObj[[paste( 'predictive RFobj group n=',m) ]], t(as.matrix(x@data)) )
+			x <- colors_4( x, single_res_col )
+			x
+		} 
+)
+
 

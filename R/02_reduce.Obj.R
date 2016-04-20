@@ -17,7 +17,7 @@ setGeneric('reduce.Obj', ## Name
 setMethod('reduce.Obj', signature = c ( 'StefansExpressionSet') ,
 	definition = function ( x, probeSets=c(), name="reducedSet" ) {
 	retObj <- new(class(x)[1], name = name)
-	useOnly <- match(probeSets, rownames(x@data))
+	useOnly <- match(tolower(probeSets), tolower(rownames(x@data)))
 	not.matched <- probeSets[is.na(useOnly)]
 	if ( length(not.matched) > 0 ){
 		print (paste('Problematic genes:', paste(not.matched,sep=', ')))

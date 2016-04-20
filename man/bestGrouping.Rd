@@ -2,11 +2,12 @@
 % Please edit documentation in R/Grouping.bestGrouping.R
 \docType{methods}
 \name{bestGrouping}
-\alias{'bestGrouping,SingleCellsNGS-method}
+\alias{'bestGrouping,StefansExpressionSet-method}
 \alias{bestGrouping}
 \title{description of function randomForest}
 \usage{
-bestGrouping(x, group, bestColname = "QualifiedGrouping", cutoff = 0.5)
+bestGrouping(x, group, bestColname = "QualifiedGrouping", cutoff = 0.5,
+  rows = FALSE)
 }
 \arguments{
 \item{x}{the single cells ngs object}
@@ -16,6 +17,8 @@ bestGrouping(x, group, bestColname = "QualifiedGrouping", cutoff = 0.5)
 \item{bestColname}{the column name to store the best grouping in}
 
 \item{cutoff}{the cutoff percentage where all groups showing less than this percentacge of remapped samples are dropped}
+
+\item{rows}{create predictive model for rows not columns (default = FALSE)}
 }
 \value{
 a distRF object to be analyzed by pamNew

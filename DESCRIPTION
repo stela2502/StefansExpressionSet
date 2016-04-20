@@ -1,6 +1,6 @@
 Package: StefansExpressionSet
 Title: StefansExpressionSet
-Version: 1.0
+Version: 1.5
 Date: 2015-10-21
 Author: Stefan Lang
 Maintainer: Stefan Lang <Stefan.Lang@med.lu.se>
@@ -12,14 +12,11 @@ Depends:
 	stringr, 
 	RSvgDevice, 
 	rgl, 
-	gplots, 
+	gplots,
+    RFclust.SGE,
 	ggplot2
 License: GPL-2
 Suggests:
     testthat
-Collate:
-    'StefansExpressionSet.R'
-    'Accessors.R'
-    'Clusters.R'
 LazyData: true
 RoxygenNote: 5.0.1

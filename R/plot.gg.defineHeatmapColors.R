@@ -49,31 +49,6 @@ setMethod('defineHeatmapColors', signature = c ( 'SingleCellsNGS') ,
 		}
 )
 
-#' @name minValueExpr
-#' @aliases minValueExpr,SingleCellsNGS-method
-#' @rdname minValueExpr-methods
-#' @docType methods
-#' @description just get me the min value for the object
-#' @param x data object
-#' @title description of function gg.heatmap.list
-#' @return a list with the modified merged table and the colors vector
-setGeneric('minValueExpr', ## Name
-		function (x) { ## Argumente der generischen Funktion
-			standardGeneric('minValueExpr') ## der Aufruf von standardGeneric sorgt für das Dispatching
-		}
-)
-
-setMethod('minValueExpr', signature = c ( 'SingleCellsNGS') ,
-		definition = function (x ){
-			m <- 0
-			if ( x@zscored ) {
-				m <- -20
-			}
-			m
-		}
-)
-
-
 
 setMethod('defineHeatmapColors', signature = c ( 'StefansExpressionSet') ,
 		definition = function (x, melted, colrs=NULL ){
@@ -107,3 +82,36 @@ setMethod('defineHeatmapColors', signature = c ( 'StefansExpressionSet') ,
 		}
 )
 
+#' @name minValueExpr
+#' @aliases minValueExpr,SingleCellsNGS-method
+#' @rdname minValueExpr-methods
+#' @docType methods
+#' @description just get me the min value for the object
+#' @param x data object
+#' @title description of function gg.heatmap.list
+#' @return a list with the modified merged table and the colors vector
+#' @export
+setGeneric('minValueExpr', ## Name
+		function (x) { ## Argumente der generischen Funktion
+			standardGeneric('minValueExpr') ## der Aufruf von standardGeneric sorgt für das Dispatching
+		}
+)
+
+setMethod('minValueExpr', signature = c ( 'SingleCellsNGS') ,
+		definition = function (x ){
+			m <- 0
+			if ( x@zscored ) {
+				m <- -20
+			}
+			m
+		}
+)
+setMethod('minValueExpr', signature = c ( 'StefansExpressionSet') ,
+		definition = function (x ){
+			m <- 0
+			if ( x@zscored ) {
+				m <- -324772345234 # do not use!
+			}
+			m
+		}
+)

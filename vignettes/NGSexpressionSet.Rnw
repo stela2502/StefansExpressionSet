@@ -3,6 +3,20 @@
 
 \begin{document}
 
+\section{Initial comments}
+
+If you have used the NGSexpressionSet from my GitHub account and are now moving
+to this updated summary class instead, you have to change the package atribute
+for your old objects like that before you can use them again!
+
+<<change_package_name>>=
+## not run
+if ( FALSE) {
+	attr(class(oldObject),'package') <- 'StefansExpressionSet'
+}
+@
+
+
 
 \section{Introduction}
 
@@ -83,6 +97,12 @@ list of genes and "drop.samples" which does - guess what - drop samples.
 			name='3 samples dropped'
 	)
 	dropped
+	subs <- reduce.Obj ( PMID25158935,
+			rownames(PMID25158935@data)[
+					order( apply( PMID25158935@data, 1, sd), decreasing=T ) [ 1:100 ] 
+			], 
+			'max_sd_genes' 
+	)
 @
 
 An additional function 'restrictSamples' removes samples based on a match on
@@ -134,18 +154,170 @@ But unfortunaltely this is broken! Need to fix that :-(
 	colnames(PMID25158935@samples)
 	## and the GroupName might be the best to start from
 	table(PMID25158935@samples$GroupName)
-	subs <- reduce.Obj ( PMID25158935,
-			rownames(PMID25158935@data)[
-					order( apply( PMID25158935@data, 1, sd), decreasing=T ) [ 1:1000 ] 
-				], 
-			'max sd genes' 
-					)
-	withStats <- createStats( subs, 'GroupName' )
+	#withStats <- createStats( subs, 'GroupName' )
 @
+
+
+\section{Grouping}
+
+The grouping part of this object is under development at the moment and likely to gain new functions.
+The underlying logics in the future grouping will be, that whichever grouping process you ask for, 
+the results will be added to the respective description table slot (samples or annotation) and will 
+be accessible for potting later on. \\
+I am planning to implement most of the Rscexv grouping functions here too. But that will take time.
+
+
+\subsection{rfCluster\_col}
+
+The most interesting grouping function is rfCluster\_col(). It utilizes a
+unsupervised random foret to calculate the distance matrix for the data. As this process is very computer intensive the function 
+allows the calculation to be run on a sun grid engine cluster. But you can also use that on you local computer.
+
+\subsubsection{Usage}
+
+This function has been developed to cluster single cell data with hundreads or
+thousands of samples.
+
+The rfCluster\_col run will create a lot of outout data that you can delete
+after the grouping process is finished. The files are in the objects outpath/RFclust.mp/
+folder.
+The files starting with runRFclust are all connected with the spawned
+calculation threads; the objects name'\_RFclust\_*ID*.RData' files are the
+subset of the original data for one run and the other *.RData files are the
+saved random forest distributions.
+
+The random forest output is read into the object after a second run of the same
+function call. Make sure you use the right StefansExpressionSet object for that!
+
+<<rfCluster_col, cache=TRUE>>=
+	subs  
+	subs.C <- rfCluster_col(subs, 
+			rep=1, # one analysis only
+			SGE=F, # Do not use the SGE extension 
+			email='not@important.without.SGE', # necessary 
+			k=3, #how many clusters to find
+			slice=4, # how many processes to span per run
+			subset=nrow(subs@samples), # use the whole dataset
+			nforest=5, # how many forets per rep - set that to 500
+			ntree=100, # how many trees per forest - set that to 1000
+			name='RFclust' # the name of this analysis (rename if re-run)
+	)
+	
+Sys.sleep(50)
+subs.C <- rfCluster_col(subs.C, ## <- this change is important!! 
+		rep=1, # one analysis only
+		SGE=F, # Do not use the SGE extension 
+		email='not@important.without.SGE', # necessary 
+		k=3, #how many clusters to find
+		slice=4, # how many processes to span per run
+		subset=nrow(subs@samples), # use the whole dataset
+		nforest=5, # how many forets per rep - set that to 500
+		ntree=100, # how many trees per forest - set that to 1000
+		name='RFclust' # the name of this analysis (rename if re-run)
+)
+
+table(
+	apply( 
+		subs.C@samples[,c('GroupName', 'RFgrouping RFclust 1')],
+		1, 
+		paste, 
+		collapse= "/gr.")
+)
+
+@
+
+Once this grouping has been run and the object keeps unchanged, you can create a
+different grouping based on the same random forest distribution.
+In order to do that you need the createRFgrouping\_col() function.
+
+<<createRFgrouping_samples>>=
+subs.C <- createRFgrouping_col ( subs.C, 
+		'max_sd_genes_RFclust_1' , 
+		k=2, 
+		single_res_col = 'Our new grouing'
+)
+	
+table(
+	apply( 
+	   subs.C@samples[,c('GroupName', 'Our new grouing')],
+	   1, 
+	   paste, 
+	   collapse= "/gr.")
+	)
+@
+
+
+\subsubsection{TODO}
+
+Reduce the memory requirement for the final distance matrix reading process.
+
+
+\subsection{rfCluster\_row}
+
+The rfCluster\_col does cluster samples and the rfCluster\_row clusters genes in
+this object. Otherwise the handling is exactly the same. Apart from the fact,
+that we have way less samples than genes. Therefore it is extremely important to
+first select a group of interesting genes from the dataset and run the
+clustering from there.
+
+All in all this function is not tested enough to be called stable.
+
+<<rfCluster_row, cache=TRUE>>=
+	subs  
+	subs.C <- rfCluster_row(subs.C, 
+			rep=1, # one analysis only
+			SGE=F, # Do not use the SGE extension 
+			email='not@important.without.SGE', # necessary 
+			k=3, #how many clusters to find
+			slice=4, # how many processes to span per run
+			subset=nrow(subs@samples), # use the whole dataset
+			nforest=5, # how many forets per rep - set that to 500
+			ntree=100, # how many trees per forest - set that to 1000
+			name='RFclust_row' # the name of this analysis (rename if re-run)
+	)
+	
+Sys.sleep(50)
+subs.C <- rfCluster_row(subs.C, ## <- this change is important!! 
+		rep=1, # one analysis only
+		SGE=F, # Do not use the SGE extension 
+		email='not@important.without.SGE', # necessary 
+		k=3, #how many clusters to find
+		slice=4, # how many processes to span per run
+		subset=nrow(subs@samples), # use the whole dataset
+		nforest=5, # how many forets per rep - set that to 500
+		ntree=100, # how many trees per forest - set that to 1000
+		name='RFclust_row' # the name of this analysis (rename if re-run)
+)
+
+table(subs.C@annotation[,'RFgrouping RFclust_row 1'])
+
+@
+
+Once this grouping has been run and the object keeps unchanged, you can create a
+different grouping based on the same random forest distribution.
+In order to do that you need the createRFgrouping\_row() function.
+
+<<createRFgrouping_row>>=
+subs.C <- createRFgrouping_row ( subs.C, 
+		'max_sd_genes_RFclust_row_1' , 
+		k=2, 
+		single_res_row = 'Our new grouing'
+)
+	
+table(subs.C@annotation[,c( 'Our new grouing')])
+@
+
 
 \section{Plotting}
 
 This is the second most important part of the object.
+
+\subsection{ggplot2}
+
+I will first explain how to create the ggplot2 plots also used for our shiny
+server. The function ggplot.gene is described in figure \ref{ggplot.gene} on
+page \pageref{ggplot.gene}; the function gg.heatmap.list is described in figure
+\ref{gg.heatmap.list} on page \pageref{gg.heatmap.list}.
 
 \begin{figure}
 \label{ggplot.gene}
@@ -162,13 +334,73 @@ This is the second most important part of the object.
 @
 \end{figure}
 
-I will first explain how to create the ggplot2 plots also used for our shiny
-server. The function ggplot.gene is described in figure \ref{ggplot.gene} on
-page \pageref{ggplot.gene}; the function gg.heatmap.list is described in figure
-\ref{gg.heatmap.list} on page \pageref{gg.heatmap.list}.
+I have created the gg.heatmap.list function in a way, that you can also add
+column - and row -grouping information to the plot. The first level you have
+already seen in the groupCol='GroupName' option, but you can enhance that by
+adding more variables to the groupCol (the first will be used for the facets).
 
 
-\section{Grouping}
+But as you see in figure \ref{gg.heatmap.list2} on page
+\pageref{gg.heatmap.list2} the ggplot2 based heatmap.3 is far from perfect at
+the moment.
+Instead of putting a lot of time into this function I have implemented a call to
+heatmap.3 into the object.
+\begin{figure}
+\label{gg.heatmap.list2}
+<<gg.heatmap.list.moreColGroups>>=
+	gg.heatmap.list (subs.C, 
+			groupCol=c( 'GroupName' ),
+			colCol= c( 'RFgrouping RFclust 1' )
+	)
+@
+\end{figure}
 
+\subsection{heatmap.3}
+
+The heatmap.3 function is called internally by the complexHeatmap() function.
+As the name suggests - this function is far from simple and I recommend reading
+of the internal R documentation (?complexHeatmap at the promt).
+
+\begin{figure}
+\label{complexHeatmap}
+<<complexHeatmap>>=
+# the color information is stored in the subs.C@usedObj[['colorRange']] list
+# and we miss the GroupName colours ...
+subs.C <- colors_4( subs.C, 'GroupName', 
+		colFunc=function(x) { c( 'green','yellow', 'orange', 'red', 'purple') } 
+)
+subs.C <- colors_4( subs.C, 'RFgrouping RFclust 1' )
+complexHeatmap (subs.C,  
+	ofile=NULL, 
+	colGroups=c('RFgrouping RFclust 1','GroupName'),
+	rowGroups='RFgrouping RFclust_row 1',
+	pdf=FALSE, 
+	subpath='', 
+	main = paste('complexHeatmap in action + RF gene grouping based on', nrow(subs@samples), 'genes'),
+	heapmapCols= function(x){ c("darkgrey",bluered(x))} 
+)
+@
+\end{figure}
+
+
+\begin{figure}
+\label{complexHeatmap}
+<<complexHeatmap2>>=
+# the color information is stored in the subs.C@usedObj[['colorRange']] list
+# and we miss the GroupName colours ...
+subs.C <- colors_4( subs.C, 'GroupName', 
+		colFunc=function(x) { c( 'green','yellow', 'orange', 'red', 'purple') } 
+)
+subs.C <- colors_4( subs.C, 'RFgrouping RFclust 1' )
+complexHeatmap (subs.C,  
+	ofile=NULL, 
+	colGroups=c('RFgrouping RFclust 1','GroupName'),
+	pdf=FALSE, 
+	subpath='', 
+	main = 'complexHeatmap in action no gene grouping',
+	heapmapCols= function(x){ c("darkgrey",bluered(x))} 
+)
+@
+\end{figure}
 
 \end{document}
