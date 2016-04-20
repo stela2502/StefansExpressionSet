@@ -68,7 +68,7 @@ setMethod('rfCluster_row', signature = c ('StefansExpressionSet'),
 					}
 					
 					if ( length( x@usedObj[['rfExpressionSets_row']] ) < i  ) {
-						x@usedObj[['rfExpressionSets_row']][[ i ]] <- t(reduce.Obj( x, rownames(x@data)[sample(c(1:total),subset)], tname ))
+						x@usedObj[['rfExpressionSets_row']][[ i ]] <- transpose(reduce.Obj( x, rownames(x@data)[sample(c(1:total),subset)], tname ))
 						x@usedObj[['rfObj_row']][[ i ]] <- RFclust.SGE ( dat=x@usedObj[['rfExpressionSets_row']][[ i ]]@data, SGE=SGE, slice=slice, email=email, tmp.path=opath, name= tname )
 					}
 					names(x@usedObj[['rfExpressionSets_row']]) [i] <- tname
@@ -87,7 +87,7 @@ setMethod('rfCluster_row', signature = c ('StefansExpressionSet'),
 					## read in the results
 					try ( x@usedObj[['rfObj_row']][[ i ]] <- runRFclust ( x@usedObj[['rfObj_row']][[ i]] , nforest=nforest, ntree=ntree, name=tname ) )
 					if ( is.null(x@usedObj[["rfExpressionSets_row"]][[i]]@usedObj[['transposed']])){
-						x@usedObj[["rfExpressionSets_row"]][[i]] = t( x@usedObj[["rfExpressionSets_row"]][[i]] )
+						x@usedObj[["rfExpressionSets_row"]][[i]] = transpose( x@usedObj[["rfExpressionSets_row"]][[i]] )
 					}
 					if ( ! is.null(x@usedObj[['rfObj_row']][[ i ]]@RFfiles[[tname]]) ){
 						stop( "please re-run this function later - the clustring process has not finished!")

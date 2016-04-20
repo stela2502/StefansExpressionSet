@@ -1,12 +1,18 @@
-#' @name t
-#' @aliases t,02_transpose-method
-#' @rdname t-methods
+#' @name transpose
+#' @aliases transpose,02_transpose-method
+#' @rdname transpose-methods
 #' @docType methods
 #' @description transpose the object DELETING all stats and usedObj!
 #' @param x the StefansExpressionSet object
 #' @title description of function t
 #' @export 
-setMethod('t', signature = c ('StefansExpressionSet'),
+setGeneric('transpose', ## Name
+		function (x) { ## Argumente der generischen Funktion
+			standardGeneric('transpose') ## der Aufruf von standardGeneric sorgt für das Dispatching
+		}
+)
+
+setMethod('transpose', signature = c ('StefansExpressionSet'),
 		definition = function (x) {
 			if ( is.null(x@usedObj[['transposed']])){
 				x@usedObj[['transposed']] = FALSE

@@ -204,6 +204,7 @@ function call. Make sure you use the right StefansExpressionSet object for that!
 	)
 	
 Sys.sleep(50)
+
 subs.C <- rfCluster_col(subs.C, ## <- this change is important!! 
 		rep=1, # one analysis only
 		SGE=F, # Do not use the SGE extension 
@@ -260,7 +261,9 @@ that we have way less samples than genes. Therefore it is extremely important to
 first select a group of interesting genes from the dataset and run the
 clustering from there.
 
-All in all this function is not tested enough to be called stable.
+All in all this function is not tested enough to be called stable in the way
+that you get good results back! The results from this run are shown in figure
+\ref{complexHeatmap} on page \pageref{complexHeatmap}.
 
 <<rfCluster_row, cache=TRUE>>=
 	subs  
@@ -270,20 +273,21 @@ All in all this function is not tested enough to be called stable.
 			email='not@important.without.SGE', # necessary 
 			k=3, #how many clusters to find
 			slice=4, # how many processes to span per run
-			subset=nrow(subs@samples), # use the whole dataset
+			subset=nrow(subs@samples)+1, # use the whole dataset
 			nforest=5, # how many forets per rep - set that to 500
 			ntree=100, # how many trees per forest - set that to 1000
 			name='RFclust_row' # the name of this analysis (rename if re-run)
 	)
 	
 Sys.sleep(50)
+
 subs.C <- rfCluster_row(subs.C, ## <- this change is important!! 
 		rep=1, # one analysis only
 		SGE=F, # Do not use the SGE extension 
 		email='not@important.without.SGE', # necessary 
 		k=3, #how many clusters to find
 		slice=4, # how many processes to span per run
-		subset=nrow(subs@samples), # use the whole dataset
+		subset=nrow(subs@samples)+1, # use the whole dataset
 		nforest=5, # how many forets per rep - set that to 500
 		ntree=100, # how many trees per forest - set that to 1000
 		name='RFclust_row' # the name of this analysis (rename if re-run)
@@ -384,7 +388,7 @@ complexHeatmap (subs.C,
 
 
 \begin{figure}
-\label{complexHeatmap}
+\label{complexHeatmap2}
 <<complexHeatmap2>>=
 # the color information is stored in the subs.C@usedObj[['colorRange']] list
 # and we miss the GroupName colours ...
