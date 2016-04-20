@@ -68,7 +68,7 @@ setMethod('rfCluster_row', signature = c ('StefansExpressionSet'),
 					}
 					
 					if ( length( x@usedObj[['rfExpressionSets_row']] ) < i  ) {
-						x@usedObj[['rfExpressionSets_row']][[ i ]] <- reduce.Obj( x, rownames(x@data)[sample(c(1:total),subset)], tname )
+						x@usedObj[['rfExpressionSets_row']][[ i ]] <- t(reduce.Obj( x, rownames(x@data)[sample(c(1:total),subset)], tname ))
 						x@usedObj[['rfObj_row']][[ i ]] <- RFclust.SGE ( dat=x@usedObj[['rfExpressionSets_row']][[ i ]]@data, SGE=SGE, slice=slice, email=email, tmp.path=opath, name= tname )
 					}
 					names(x@usedObj[['rfExpressionSets_row']]) [i] <- tname
@@ -86,6 +86,9 @@ setMethod('rfCluster_row', signature = c ('StefansExpressionSet'),
 					
 					## read in the results
 					try ( x@usedObj[['rfObj_row']][[ i ]] <- runRFclust ( x@usedObj[['rfObj_row']][[ i]] , nforest=nforest, ntree=ntree, name=tname ) )
+					if ( is.null(x@usedObj[["rfExpressionSets_row"]][[i]]@usedObj[['transposed']])){
+						x@usedObj[["rfExpressionSets_row"]][[i]] = t( x@usedObj[["rfExpressionSets_row"]][[i]] )
+					}
 					if ( ! is.null(x@usedObj[['rfObj_row']][[ i ]]@RFfiles[[tname]]) ){
 						stop( "please re-run this function later - the clustring process has not finished!")
 					}
@@ -95,6 +98,7 @@ setMethod('rfCluster_row', signature = c ('StefansExpressionSet'),
 										is.na(match ( colnames(x@usedObj[["rfExpressionSets_row"]][[i]]@annotation), paste('group n=',a) ))==T 
 								]
 					}
+					
 					x <- createRFgrouping_row( x, RFname=tname,  k=10, single_res_row = paste( single_res_row, i) )
 					
 					print ( paste("Done with cluster",i))
@@ -132,17 +136,25 @@ setMethod('createRFgrouping_row', signature = c ('StefansExpressionSet'),
 				stop( paste("the RFname",RFname,"is not defined in this object; defined grouings are:",paste(names(x@usedObj[['rfObj_row']]), collapse=" ",sep=', ') ) )
 			}
 			groups <- createGroups( x@usedObj[['rfObj_row']][[RFname]], k=k, name=RFname )
-			x@usedObj[['rfExpressionSets_row']][[RFname]]@annotation <- 
-					cbind ( x@usedObj[['rfExpressionSets_row']][[RFname]]@annotation, groups[,3:(2+length(k))] )
-			le <- ncol(x@usedObj[['rfExpressionSets_row']][[RFname]]@annotation)
-			colnames(x@usedObj[['rfExpressionSets_row']][[RFname]]@annotation)[(le-length(k)+1):le] <- 
+			
+			x@usedObj[['rfExpressionSets_row']][[RFname]]@samples <- 
+					cbind ( x@usedObj[['rfExpressionSets_row']][[RFname]]@samples, groups[,3:(2+length(k))] )
+			le <- ncol(x@usedObj[['rfExpressionSets_row']][[RFname]]@samples)
+			colnames(x@usedObj[['rfExpressionSets_row']][[RFname]]@samples)[(le-length(k)+1):le] <- 
 					paste('group n=',k)
 			m <- max(k)
 			## create the predictive random forest object
 			x@usedObj[['rfExpressionSets_row']][[RFname]] <- 
-					bestGrouping( x@usedObj[['rfExpressionSets_row']][[RFname]], group=paste('group n=', m), bestColname = paste('OptimalGrouping',m ,RFname), rows=TRUE )
+					bestGrouping( 
+							x@usedObj[['rfExpressionSets_row']][[RFname]], 
+							group=paste('group n=', m), 
+							bestColname = paste('OptimalGrouping',m ,RFname)
+			)
 			x@annotation[, paste( single_res_row) ] <-
-					predict( x@usedObj[['rfExpressionSets_row']][[RFname]]@usedObj[[paste( 'predictive RFobj group n=',m) ]], as.matrix(x@data) )
+					predict( 
+							x@usedObj[['rfExpressionSets_row']][[RFname]]@usedObj[[paste( 'predictive RFobj group n=',m) ]], 
+							as.matrix(x@data) 
+					)
 			x <- colors_4( x, single_res_row )
 			x
 		} 

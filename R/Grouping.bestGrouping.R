@@ -8,25 +8,20 @@
 #' @param group a vector of sample columns that should be checked (the most complex is used only)
 #' @param bestColname the column name to store the best grouping in
 #' @param cutoff the cutoff percentage where all groups showing less than this percentacge of remapped samples are dropped
-#' @param rows create predictive model for rows not columns (default = FALSE)
 #' @title description of function randomForest
 #' @return a distRF object to be analyzed by pamNew
 #' @export 
 setGeneric('bestGrouping',
-		function ( x, group , bestColname='QualifiedGrouping', cutoff=0.5, rows=FALSE){
+		function ( x, group , bestColname='QualifiedGrouping', cutoff=0.5){
 			standardGeneric('bestGrouping')
 		}
 )
 setMethod('bestGrouping', signature = c ('StefansExpressionSet'),
-		definition = function (x, group, bestColname='QualifiedGrouping' , cutoff=0.5, rows=FALSE) {
+		definition = function (x, group, bestColname='QualifiedGrouping' , cutoff=0.5) {
 			uObj <- paste( 'predictive RFobj', group )
 			rf <- NULL
 			if (  is.null( x@usedObj[[uObj]])){
-				if ( rows ) {
-					x@usedObj[[uObj]] <- randomForest( x= as.matrix(x@data), y=factor(x@annotation[, group]),ntree=2000 )
-				}else {
-					x@usedObj[[uObj]] <- randomForest( x= t(as.matrix(x@data)), y=factor(x@samples[, group]),ntree=2000 )
-				}
+				x@usedObj[[uObj]] <- randomForest( x= t(as.matrix(x@data)), y=factor(x@samples[, group]),ntree=2000 )
 			}
 #			t <- table( observed= x@samples[,group ], predicted = x@usedObj[[uObj]]$predicted )
 #			i <- 0
