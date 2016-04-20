@@ -136,7 +136,6 @@ setMethod('createRFgrouping_row', signature = c ('StefansExpressionSet'),
 				stop( paste("the RFname",RFname,"is not defined in this object; defined grouings are:",paste(names(x@usedObj[['rfObj_row']]), collapse=" ",sep=', ') ) )
 			}
 			groups <- createGroups( x@usedObj[['rfObj_row']][[RFname]], k=k, name=RFname )
-			browser()
 			x@usedObj[['rfExpressionSets_row']][[RFname]]@samples <- 
 					cbind ( x@usedObj[['rfExpressionSets_row']][[RFname]]@samples, groups[,3:(2+length(k))] )
 			le <- ncol(x@usedObj[['rfExpressionSets_row']][[RFname]]@samples)
