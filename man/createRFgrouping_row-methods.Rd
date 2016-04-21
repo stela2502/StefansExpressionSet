@@ -6,8 +6,8 @@
 \alias{createRFgrouping_row,StefansExpressionSet-method}
 \title{description of function createRFgrouping_row}
 \usage{
-createRFgrouping_row(x, RFname, k = 10, single_res_row = paste("RFgrouping",
-  RFname), colFunc = NULL)
+createRFgrouping_row(x, RFname = "notExisting", k = 10,
+  single_res_row = paste("RFgrouping", RFname), colFunc = NULL)
 }
 \arguments{
 \item{x}{the StefansExpressionSet object}

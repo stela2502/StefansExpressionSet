@@ -45,6 +45,10 @@ setMethod('reduce.Obj', signature = c ( 'StefansExpressionSet') ,
 	if ( ncol( x@raw ) > 0 ) {
 		retObj@raw = x@raw[useOnly,]
 	}
+	## copy over some usedObj datasets
+	for ( n in c('colorRange') ) {
+		retObj@usedObj[[n]] <- x@usedObj[[n]]
+	}
 	retObj
 })
 

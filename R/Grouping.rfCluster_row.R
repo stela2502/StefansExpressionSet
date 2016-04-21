@@ -125,13 +125,13 @@ setMethod('rfCluster_row', signature = c ('StefansExpressionSet'),
 #' @title description of function createRFgrouping_row
 #' @export 
 setGeneric('createRFgrouping_row', ## Name
-		function ( x, RFname, k=10, single_res_row = paste('RFgrouping',RFname), colFunc=NULL) { ## Argumente der generischen Funktion
+		function ( x, RFname='notExisting', k=10, single_res_row = paste('RFgrouping',RFname), colFunc=NULL) { ## Argumente der generischen Funktion
 			standardGeneric('createRFgrouping_row') ## der Aufruf von standardGeneric sorgt für das Dispatching
 		}
 )
 
 setMethod('createRFgrouping_row', signature = c ('StefansExpressionSet'),
-		definition = function ( x, RFname, k=10, single_res_row = paste('RFgrouping',RFname), colFunc=NULL) {
+		definition = function ( x, RFname='notExisting', k=10, single_res_row = paste('RFgrouping',RFname), colFunc=NULL) {
 			if ( is.na( match( RFname, names(x@usedObj[['rfObj_row']])))){
 				stop( paste("the RFname",RFname,"is not defined in this object; defined grouings are:",paste(names(x@usedObj[['rfObj_row']]), collapse=" ",sep=', ') ) )
 			}

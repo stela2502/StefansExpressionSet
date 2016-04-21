@@ -22,11 +22,12 @@ setMethod('drop.samples', signature = c ( 'StefansExpressionSet') ,
 			slot(red,n) <- slot(x,n)
 		}
 		red@samples <- x@samples[ is.na(match(x@samples[,x@sampleNamesCol], samplenames  ) ) == T ,]
-		#print ( paste( "Dropping", length(samplenames), "samples (", paste( samplenames, collapse=", "),")") )
 		
 		red@data <- x@data[, make.names(as.vector(red@samples[,red@sampleNamesCol]))]
-	#	colnames(red@data) <- forceAbsoluteUniqueSample ( as.vector(red@samples[, red@sampleNamesCol ]) )
-	#	red@samples[,red@sampleNamesCol] <- colnames(red@data)
+		
+		for ( n in c('colorRange') ) {
+			retObj@usedObj[[n]] <- x@usedObj[[n]]
+		}
 	}
 	red
 })
