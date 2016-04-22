@@ -35,7 +35,7 @@ setMethod('group.hclust', signature = c ('StefansExpressionSet'),
 				)
 				colnames(d) <- c(paste( name, 'order' ), paste( name, groups, 'groups' ))
 				x@annotation <- cbind(x@annotation, d[,cols] )
-				x <- colors_4 ( x, paste( name, groups, 'groups' ), function( x ) { rainbow(x) } )
+				x <- colors_4 ( x, paste( name, groups, 'groups' ) )
 			}
 			else { stop ( 'not implemented') }
 			x

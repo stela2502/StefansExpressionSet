@@ -31,12 +31,26 @@ setMethod("StefansExpressionSet", signature = c ('data.frame'),
 			}
 			if ( exists('filename',S) ) {
 				n <- make.names(as.vector(S$filename))
-				ret <- dat[, n ]
-				annotation <- dat[, is.na(match( colnames(dat), n ))==T ]
+				mat <- match( as.vector(S$filename), colnames(dat))
+				if ( sum(is.na(mat)) > 0 ) {
+					stop(paste( 'The files', 
+						paste( as.vector(S$filename)[is.na(mat)], collapse=', '),
+						'Do not have data column in the "dat" data.frame' ) 
+					)
+				}
+				ret <- dat[, mat ]
+				annotation <- dat[, is.na(match( colnames(dat), as.vector(S$filename) ))==T ]
 			}else{
 				n <- make.names(as.vector(S[,namecol]))
-				ret <- dat[, n ]
-				annotation <- dat[, is.na(match( colnames(dat), n ))==T ]
+				mat <- match( as.vector(S[,namecol]), colnames(dat))
+				if ( sum(is.na(mat)) > 0 ) {
+					stop(paste( 'The samples', 
+						paste( as.vector(S[,namecol])[is.na(mat)], collapse=', '),
+						'Do not have data column in the "dat" data.frame' ) 
+					)
+				}
+				ret <- dat[, mat ]
+				annotation <- dat[, is.na(match( colnames(dat), as.vector(S[,namecol]) ))==T ]
 			}
 			if ( class(annotation) == 'factor'){
 				annotation <- data.frame( annotation )

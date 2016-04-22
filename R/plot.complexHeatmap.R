@@ -41,7 +41,9 @@ setMethod('complexHeatmap', signature = c ('StefansExpressionSet'),
 				x <- reorder.samples(x, colGroups[1] )
 				for ( i in colGroups ){
 					if ( is.na(match( i, names(colColors))) ){
-						stop( paste( "No colours for the grouping", i, "in the colour objects:", paste(names(colColors)) ) )
+						x <- colors_4( x, i )
+						colGroups[[i]] <- x@usedObj[['colorRange']][[i]]
+						#stop( paste( "No colours for the grouping", i, "in the colour objects:", paste(names(colColors), collapse= ' , ') ) )
 					}
 					ColSideColors <- cbind(ColSideColors, colColors[[ match( i, names(colColors)) ]][x@samples[, i]] )
 				}
