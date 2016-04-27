@@ -143,7 +143,7 @@ setMethod('createRFgrouping_col', signature = c ('StefansExpressionSet'),
 					bestGrouping( x@usedObj[['rfExpressionSets']][[RFname]], group=paste('group n=', m), bestColname = paste('OptimalGrouping',m ,RFname) )
 			x@samples[, paste( single_res_col) ] <-
 					predict( x@usedObj[['rfExpressionSets']][[RFname]]@usedObj[[paste( 'predictive RFobj group n=',m) ]], t(as.matrix(x@data)) )
-			x@samples[, paste( single_res_row) ] <- factor( x@samples[, paste( single_res_row) ], levels= 1:m )
+			x@samples[, paste( single_res_col) ] <- factor( x@samples[, paste( single_res_col) ], levels= 1:m )
 			x <- colors_4( x, single_res_col )
 			x
 		} 

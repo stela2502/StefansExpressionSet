@@ -1,5 +1,5 @@
 \documentclass{article}
-
+\usepackage{hyperref}
 
 \begin{document}
 
@@ -16,7 +16,10 @@ if ( FALSE) {
 }
 @
 
+\subsection{Install}
 
+You can install the package from github. More information can be found at
+\href{https://github.com/stela2502/StefansExpressionSet}{my GitHub page}.
 
 \section{Introduction}
 
@@ -27,8 +30,9 @@ flexible enought for all workflows.
 The overall aim of this package is to (1) keep all analysis results in one
 object and (2) simplify the plotting by using the previousely stored objects.
 
-The auim of this document is not to explain all options for the functions, but
-to give one working example.
+The aim of this document is not to explain all options for the functions, but
+to give one working example of my workflow. Please use the R help system
+to get more information on all functions - if necessary.
 
 But not too much here lets start.
 
@@ -41,44 +45,38 @@ But not too much here lets start.
 \section{Get your data into the object}
 
 The package comes with example data; A data.frame containing count data
-published in PMID25158935 re-mapped and re-quantified using DEseq (\Sexpr{dim(PMID25158935exp)}) and one
-data.frame containing the sample information
-(\Sexpr{dim(PMID25158935samples)}):
+published in PMID25158935 re-mapped and re-quantified using DEseq
+(dim:\Sexpr{dim(PMID25158935exp)}) and one data.frame containing the sample
+information (dim:\Sexpr{dim(PMID25158935samples)}):
 
 <<counts>>=
-	head(PMID25158935exp)
+	PMID25158935exp[1:5,1:7]
 @
 
 These two tables are loaded into a NGSexpressionSet object using the command:
 <<createObject>>=
-	PMID25158935 <- NGSexpressionSet( 
-			PMID25158935exp, 
-			PMID25158935samples, 
-			Analysis = NULL, 
-			name='PMID25158935', 
-			namecol='Sample',	
-			namerow= 'GeneID', 
-			usecol=NULL , 
-			outpath = ''
-	)
+PMID25158935 <- NGSexpressionSet( PMID25158935exp, 
+	PMID25158935samples, Analysis = NULL, name='PMID25158935',
+	namecol='Sample', namerow= 'GeneID', usecol=NULL , 
+	outpath = ''
+)
 @
 
-Here you already see, that the object is tailored to my needs:
-The options Analysis and usecol can be used to subselect samples in the samples
-table and create a smaller than possible object from the count data.
-Please use the R help system to get more information on all functions.
-And the object does print like that:
+This function call is already very workflow focused as the options Analysis and
+usecol can be used to subselect samples in the samples table and create a
+smaller than possible object from the count data. 
+
+The object does print like that:
 
 <<objPrint>>=
 	PMID25158935
 @
 
-This should be quite straight forward.
 
 \section{Subsetting the object}
 
 This is the main purpose why I created the class in the first place. An easy way
-to consitantly subsett multiple tables at the same time.
+to consitently subset multiple tables at the same time.
 
 I have implemented two functions: "reduce.Obj" which subsets the object to a
 list of genes and "drop.samples" which does - guess what - drop samples.
@@ -109,38 +107,46 @@ An additional function 'restrictSamples' removes samples based on a match on
 a variable in the samples table.
 
 <<restrictSamples>>=
-	dropped <- restrictSamples(
-			PMID25158935, 
-			column ='Characteristics.cell.type',
-			value= 'multipotent progenitor',
-			mode='grep',
-			name='only HSC left'
-	)
-	dropped
+levels( PMID25158935@samples[,'Characteristics.cell.type'])
+dropped <- restrictSamples(
+	PMID25158935, 
+	column ='Characteristics.cell.type',
+	value= 'multipotent progenitor',
+	mode='grep',
+	name='only HSC left'
+)
+dropped
 @
 
 \section{Unconventional checks}
 
 I have implemented a rather unconventional check for the NGS data objects:
 reads.taken(). This function checks the percentage of reads consumed by the top
-5 percent of genes and thereby creates a measurement of the library depth.
+5 percent of genes and thereby creates a measurement of the library complexity.
+I have seen very complex NGS libraries with about 60-70\% reads consumed by the
+top 5\% genes and very shallow libraries where all 100\% of reads were specific
+to the top 5\% genes.
 
-I have created a rule of thub: a good (mouse) expression dataset should
-not use more than 77\% of the reads in the top 5\% of the genes.
+My rule of thub: a good (mouse) expression dataset should not use more than 77\%
+of the reads in the top 5\% of the genes.
 
 <<reads.taken>>=
 	reads.taken(PMID25158935)$reads.taken
 @
 
-And this dataset is a very good one. And as I am lasy there is another function,
-that directly gives the names for the bad samples back: check.depth()
+Here comes an example of my workflow combination: I have implemented a function,
+that gives back the 'failed' samples for the reads.taken function: check.depth.
+In the default version the function checks whether the 5\% reads taken value is
+higher than the default cutoff of 77\%. But this test is uninformative in this
+extremely good dataset. Therefore I had to lower the cutoff value to 0.62 here.
+The sample names can be directly fead into the drop.samples function to
+subset the data.
 
 <<check.depth>>=
-	check.depth(PMID25158935,cutoff=0.62 )
+check.depth(PMID25158935,cutoff=0.62 )
+drop.samples(PMID25158935, check.depth(PMID25158935,cutoff=0.62))
 @
 
-You see I have lowered the cutoff so that I find bad samples in this extremely
-good dataset.
 
 
 \section{Statistics}
@@ -160,29 +166,35 @@ But unfortunaltely this is broken! Need to fix that :-(
 
 \section{Grouping}
 
-The grouping part of this object is under development at the moment and likely to gain new functions.
-The underlying logics in the future grouping will be, that whichever grouping process you ask for, 
-the results will be added to the respective description table slot (samples or annotation) and will 
-be accessible for potting later on. \\
-I am planning to implement most of the Rscexv grouping functions here too. But that will take time.
+The underlying logics in the grouping is that all grouping functions add the
+grouoing results directly into either the samples or annotation tables, add a
+color for this grouping to the StefansExpressionSet object and return the
+object, not the grouping.
+
+The aim for the final object is to have a wide set of grouping functionallity in
+the object ranging from simple hclust calls to more complex PCA based approaches
+to my favorite grouping, the random forest unsupervised grouping. Not all is
+implemented.
 
 \subsection{group.hclust}
 
 This function uses the hclust algorithm to cluster the data and add the grouping
-information into the samples resp. annotation tables.
-Please read the documentation on the R command line for all the different
-options.
+information into the samples resp. annotation tables. Please try to keep the
+grouing names unique as new groups with the same name will replace old ones
+and you are not able to change colors for a single groups if they share one
+name.
+Please read the documentation on the R command line for all the different options.
 
 <<hclust_sample>>=
-subs <- group.hclust ( subs, groups=4, name='hclust', type='gene' )
+subs <- group.hclust ( subs, groups=4, name='hclust genes', type='gene' )
 
-table(subs@annotation[,c('hclust 4 groups')])
+table(subs@annotation[,c('hclust genes 4 groups')])
 
-subs <- group.hclust ( subs, groups=4, name='hclust', type='sample' )
+subs <- group.hclust ( subs, groups=4, name='hclust samples', type='sample' )
 
 table(
   apply(
-	subs@samples[,c('GroupName', 'hclust 4 groups')],
+	subs@samples[,c('GroupName', 'hclust samples 4 groups')],
 	1, 	paste, 	collapse= "/gr.")
 )
 @
@@ -239,10 +251,8 @@ subs.C <- rfCluster_col(subs.C, ## <- this change is important!!
 		name='RFclust' # the name of this analysis (rename if re-run)
 )
 
-table(
-	apply( 
-		subs.C@samples[,c('GroupName', 'RFgrouping RFclust 1')],
-		1, paste, collapse= "/gr.")
+table(apply(
+subs.C@samples[,c('GroupName', 'RFgrouping RFclust 1')],1, paste, collapse= "/gr.")
 )
 
 @
@@ -251,17 +261,15 @@ Once this grouping has been run and the object keeps unchanged, you can create a
 different grouping based on the same random forest distribution.
 In order to do that you need the createRFgrouping\_col() function.
 
-<<createRFgrouping_samples, cache=TRUE>>=
+<<createRFgrouping_samples, cache=TRUE, dependson=c('rfCluster_col')>>=
 subs.C <- createRFgrouping_col ( subs.C, 
-		'max_sd_genes_RFclust_1' , 
-		k=2, 
-		single_res_col = 'Our new grouing'
+	'max_sd_genes_RFclust_1' , 
+	k=2, 
+	single_res_col = 'Our new grouing'
 )
-table(
-  apply( 
-   subs.C@samples[,c('GroupName', 'Our new grouing')],
-   1, paste, collapse= "/gr.")
-  )
+table(apply( 
+subs.C@samples[,c('GroupName', 'Our new grouing')], 1, paste, collapse= "/gr.")
+)
 @
 
 
@@ -282,32 +290,32 @@ All in all this function is not tested enough to be called stable in the way
 that you get good results back! The results from this run are shown in figure
 \ref{complexHeatmap} on page \pageref{complexHeatmap}.
 
-<<rfCluster_row, cache=TRUE>>=
-	subs  
-	subs.C <- rfCluster_row(subs.C, 
-			rep=1, # one analysis only
-			SGE=F, # Do not use the SGE extension 
-			email='not@important.without.SGE', # necessary 
-			k=3, #how many clusters to find
-			slice=4, # how many processes to span per run
-			subset=nrow(subs@samples)+1, # use the whole dataset
-			nforest=5, # how many forets per rep - set that to 500
-			ntree=100, # how many trees per forest - set that to 1000
-			name='RFclust_row' # the name of this analysis (rename if re-run)
-	)
+<<rfCluster_row, cache=TRUE, dependson=c('rfCluster_col')>>=
+subs  
+subs.C <- rfCluster_row(subs.C, 
+	rep=1, # one analysis only
+	SGE=F, # Do not use the SGE extension 
+	email='not@important.without.SGE', # necessary 
+	k=3, #how many clusters to find
+	slice=4, # how many processes to span per run
+	subset=nrow(subs@samples)+1, # use the whole dataset
+	nforest=5, # how many forets per rep - set that to 500
+	ntree=100, # how many trees per forest - set that to 1000
+	name='RFclust_row' # the name of this analysis (rename if re-run)
+)
 	
-Sys.sleep(50)
+Sys.sleep(51)
 
 subs.C <- rfCluster_row(subs.C, ## <- this change is important!! 
-		rep=1, # one analysis only
-		SGE=F, # Do not use the SGE extension 
-		email='not@important.without.SGE', # necessary 
-		k=3, #how many clusters to find
-		slice=4, # how many processes to span per run
-		subset=nrow(subs@samples)+1, # use the whole dataset
-		nforest=5, # how many forets per rep - set that to 500
-		ntree=100, # how many trees per forest - set that to 1000
-		name='RFclust_row' # the name of this analysis (rename if re-run)
+	rep=1, # one analysis only
+	SGE=F, # Do not use the SGE extension 
+	email='not@important.without.SGE', # necessary 
+	k=3, #how many clusters to find
+	slice=4, # how many processes to span per run
+	subset=nrow(subs@samples)+1, # use the whole dataset
+	nforest=5, # how many forets per rep - set that to 500
+	ntree=100, # how many trees per forest - set that to 1000
+	name='RFclust_row' # the name of this analysis (rename if re-run)
 )
 
 table(subs.C@annotation[,'RFgrouping RFclust_row 1'])
@@ -318,11 +326,9 @@ Once this grouping has been run and the object keeps unchanged, you can create a
 different grouping based on the same random forest distribution.
 In order to do that you need the createRFgrouping\_row() function.
 
-<<createRFgrouping_row>>=
-subs.C <- createRFgrouping_row ( subs.C, 
-		'max_sd_genes_RFclust_row_1' , 
-		k=2, 
-		single_res_row = 'Our new grouing'
+<<createRFgrouping_row, cache=TRUE, dependson=c('rfCluster_row')>>=
+subs.C <- createRFgrouping_row ( 
+subs.C, 'max_sd_genes_RFclust_row_1' , k=2, single_res_row = 'Our new grouing'
 )
 	
 table(subs.C@annotation[,c( 'Our new grouing')])
@@ -401,7 +407,7 @@ visualize the effect of the random forest gene grouping.
 subs.C <- colors_4( subs.C, 'GroupName', 
 		colFunc=function(x) { c( 'green','yellow', 'orange', 'red', 'purple') } 
 )
-subs.C <- colors_4( subs.C, 'RFgrouping RFclust 1' )
+#subs.C <- colors_4( subs.C, 'RFgrouping RFclust 1' )
 complexHeatmap (subs.C,  
 	ofile=NULL, 
 	colGroups=c('RFgrouping RFclust 1','GroupName'),
@@ -423,7 +429,7 @@ complexHeatmap (subs.C,
 subs.C <- colors_4( subs.C, 'GroupName', 
 		colFunc=function(x) { c( 'green','yellow', 'orange', 'red', 'purple') } 
 )
-subs.C <- colors_4( subs.C, 'RFgrouping RFclust 1' )
+#subs.C <- colors_4( subs.C, 'RFgrouping RFclust_col 1' )
 complexHeatmap (subs.C,  
 	ofile=NULL, 
 	colGroups=c('RFgrouping RFclust 1','GroupName'),
@@ -446,22 +452,22 @@ the stored colours match the amout of groups described in the respective
 grouping.
 
 <<colour_example>>=
-subs.C@usedObj[['colorRange']][['RFgrouping RFclust 1']]
+subs.C@usedObj[['colorRange']][['RFgrouping RFclust_row 1']]
 @
 
 The most simple way to change the colors is to change these vectors by hand; the
 most secure way is to use the inbuit color\_4 function:
 
 <<colors_4>>=
-subs.C <- colors_4(subs.C, 'RFgrouping RFclust 1', function(x){ bluered(x) } )
-subs.C@usedObj[['colorRange']][['RFgrouping RFclust 1']]
+subs.C <- colors_4(subs.C, 'RFgrouping RFclust_row 1', function(x){ bluered(x) } )
+subs.C@usedObj[['colorRange']][['RFgrouping RFclust_row 1']]
 @
 
 The groupings can also be plotted to a separate legend using the plot.legend
 function:
 <<plot.legend.example, eval=FALSE>>=
 ## this will create a file 'x@outpath/PlotSomething_hist_4_groups.pdf'
-plot.legend( subs, 'hist 4 groups', file="PlotSomething", pdf=T )
+plot.legend( subs, 'hclust samples 4 groups', file="PlotSomething", pdf=T )
 @
 The output figure can be seen in figure \ref{legendExample} on page
 \pageref{legendExample}.
@@ -471,7 +477,7 @@ The output figure can be seen in figure \ref{legendExample} on page
 \label{legendExample}
 <<plot.legend>>=
 ## this will create a file 'x@outpath/PlotSomething_hist_4_groups.pdf'
-plot.legend( subs, 'hclust 4 groups' )
+plot.legend( subs, 'hclust samples 4 groups' )
 @
 \end{figure}
 
