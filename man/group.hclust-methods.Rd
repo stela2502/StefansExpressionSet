@@ -6,7 +6,8 @@
 \alias{group.hclust,StefansExpressionSet-method}
 \title{description of function group.hclust}
 \usage{
-group.hclust(x, groups, name, type = "genes")
+group.hclust(x, groups, name, type = "genes", distfun = function(a) {    
+  dist(a) }, hclustMethod = "ward.D2")
 }
 \arguments{
 \item{x}{the StefansExpressionSet object}
@@ -15,7 +16,7 @@ group.hclust(x, groups, name, type = "genes")
 
 \item{name}{the new column name created as  paste( name, groups, 'groups' )}
 
-\item{type}{a gene or sample grouping?}
+\item{type}{a 'gene' or 'sample' grouping?}
 }
 \description{
 Create a groping based on a hclust run like hclust(dist(x@data),method="ward.D2")

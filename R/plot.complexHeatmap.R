@@ -84,6 +84,12 @@ setMethod('complexHeatmap', signature = c ('StefansExpressionSet'),
 				}else{
 					png( file=paste(file.path(x@outpath,ofile),'png',sep='.'), width=1600, height=800)
 				}
+				for ( v in colGroups ) {
+					plot.legend( file=paste(ofile, 'col'), colname=v, pdf=pdf, col=colColors[[v]] )
+				}
+				for ( v in rowGroups ) {
+					plot.legend( file=paste(ofile, 'row'), colname=v, pdf=pdf, col=rowColors[[v]] )
+				}
 			}
 			
 			heatmap.3(

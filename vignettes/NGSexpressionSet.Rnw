@@ -166,12 +166,34 @@ the results will be added to the respective description table slot (samples or a
 be accessible for potting later on. \\
 I am planning to implement most of the Rscexv grouping functions here too. But that will take time.
 
+\subsection{group.hclust}
+
+This function uses the hclust algorithm to cluster the data and add the grouping
+information into the samples resp. annotation tables.
+Please read the documentation on the R command line for all the different
+options.
+
+<<hclust_sample>>=
+subs <- group.hclust ( subs, groups=4, name='hclust', type='gene' )
+
+table(subs@annotation[,c('hclust 4 groups')])
+
+subs <- group.hclust ( subs, groups=4, name='hclust', type='sample' )
+
+table(
+  apply(
+	subs@samples[,c('GroupName', 'hclust 4 groups')],
+	1, 	paste, 	collapse= "/gr.")
+)
+@
 
 \subsection{rfCluster\_col}
 
-The most interesting grouping function is rfCluster\_col(). It utilizes a
-unsupervised random foret to calculate the distance matrix for the data. As this process is very computer intensive the function 
-allows the calculation to be run on a sun grid engine cluster. But you can also use that on you local computer.
+The most interesting grouping function is rfCluster\_col(). It utilizes an
+unsupervised random forest to calculate the distance matrix for the data. As
+this process is very computer intensive the function allows the calculation to
+be run on a sun grid engine cluster (SGE), but you can also use the clustering
+method on you local computer.
 
 \subsubsection{Usage}
 
@@ -190,7 +212,7 @@ The random forest output is read into the object after a second run of the same
 function call. Make sure you use the right StefansExpressionSet object for that!
 
 <<rfCluster_col, cache=TRUE>>=
-	subs  
+	subs
 	subs.C <- rfCluster_col(subs, 
 			rep=1, # one analysis only
 			SGE=F, # Do not use the SGE extension 
@@ -220,9 +242,7 @@ subs.C <- rfCluster_col(subs.C, ## <- this change is important!!
 table(
 	apply( 
 		subs.C@samples[,c('GroupName', 'RFgrouping RFclust 1')],
-		1, 
-		paste, 
-		collapse= "/gr.")
+		1, paste, collapse= "/gr.")
 )
 
 @
@@ -231,20 +251,17 @@ Once this grouping has been run and the object keeps unchanged, you can create a
 different grouping based on the same random forest distribution.
 In order to do that you need the createRFgrouping\_col() function.
 
-<<createRFgrouping_samples>>=
+<<createRFgrouping_samples, cache=TRUE>>=
 subs.C <- createRFgrouping_col ( subs.C, 
 		'max_sd_genes_RFclust_1' , 
 		k=2, 
 		single_res_col = 'Our new grouing'
 )
-	
 table(
-	apply( 
-	   subs.C@samples[,c('GroupName', 'Our new grouing')],
-	   1, 
-	   paste, 
-	   collapse= "/gr.")
-	)
+  apply( 
+   subs.C@samples[,c('GroupName', 'Our new grouing')],
+   1, paste, collapse= "/gr.")
+  )
 @
 
 
@@ -316,7 +333,7 @@ table(subs.C@annotation[,c( 'Our new grouing')])
 
 This is the second most important part of the object.
 
-\subsection{ggplot2}
+\subsection{Heatmap using ggplot2}
 
 I will first explain how to create the ggplot2 plots also used for our shiny
 server. The function ggplot.gene is described in figure \ref{ggplot.gene} on
@@ -338,32 +355,43 @@ page \pageref{ggplot.gene}; the function gg.heatmap.list is described in figure
 @
 \end{figure}
 
-I have created the gg.heatmap.list function in a way, that you can also add
-column - and row -grouping information to the plot. The first level you have
-already seen in the groupCol='GroupName' option, but you can enhance that by
-adding more variables to the groupCol (the first will be used for the facets).
+%I have created the gg.heatmap.list function in a way, that you can also add
+%column - and row -grouping information to the plot. The first level you have
+%already seen in the groupCol='GroupName' option, but you can enhance that by
+%adding more variables to the groupCol (the first will be used for the facets).
+%
+%
+%But as you see in figure \ref{gg.heatmap.list2} on page
+%\pageref{gg.heatmap.list2} the ggplot2 based heatmap.3 is far from perfect at
+%the moment.
+%Instead of putting a lot of time into this function I have implemented a call to
+%heatmap.3 into the object.
+%\begin{figure}
+%\label{gg.heatmap.list2}
+%<<gg.heatmap.list.moreColGroups>>=
+%	gg.heatmap.list (subs.C, 
+%			groupCol=c( 'GroupName' ),
+%			colCol= c( 'RFgrouping RFclust 1' )
+%	)
+%@
+%\end{figure}
 
-
-But as you see in figure \ref{gg.heatmap.list2} on page
-\pageref{gg.heatmap.list2} the ggplot2 based heatmap.3 is far from perfect at
-the moment.
-Instead of putting a lot of time into this function I have implemented a call to
-heatmap.3 into the object.
-\begin{figure}
-\label{gg.heatmap.list2}
-<<gg.heatmap.list.moreColGroups>>=
-	gg.heatmap.list (subs.C, 
-			groupCol=c( 'GroupName' ),
-			colCol= c( 'RFgrouping RFclust 1' )
-	)
-@
-\end{figure}
-
-\subsection{heatmap.3}
+\subsection{Heatmap using heatmap.3}
 
 The heatmap.3 function is called internally by the complexHeatmap() function.
 As the name suggests - this function is far from simple and I recommend reading
-of the internal R documentation (?complexHeatmap at the promt).
+the internal R documentation (?complexHeatmap at the promt).
+
+In short the function is selecting a number of colujmn (sample) and row (gene)
+grouping variables and creates the colour bars from this information. The data
+is going to be sorted after the first variable in both the rowGroups and
+colGroups variables. If you want to enforce additional ordering you need to
+order the data yourself using the reorder.samples or reorder.genes functions.
+
+Here I show two calls to the function: one plotting with both column and row
+groups (figure \ref{complexHeatmap} on püage \pageref{complexHeatmap}) and one
+with only column groups (figure \ref{complexHeatmap2} on page \pageref{complexHeatmap2}). Two plots mainly to
+visualize the effect of the random forest gene grouping.
 
 \begin{figure}
 \label{complexHeatmap}
@@ -406,5 +434,46 @@ complexHeatmap (subs.C,
 )
 @
 \end{figure}
+
+
+\subsection{Grouping colours}
+
+The grouping colours are stored in the usedObj slot of the StefansExpressionSet
+object in the list entry 'colorRange' using the column name to store a color
+vector.
+This colour vector can be changed at any time. The only prerequisite is, that
+the stored colours match the amout of groups described in the respective
+grouping.
+
+<<colour_example>>=
+subs.C@usedObj[['colorRange']][['RFgrouping RFclust 1']]
+@
+
+The most simple way to change the colors is to change these vectors by hand; the
+most secure way is to use the inbuit color\_4 function:
+
+<<colors_4>>=
+subs.C <- colors_4(subs.C, 'RFgrouping RFclust 1', function(x){ bluered(x) } )
+subs.C@usedObj[['colorRange']][['RFgrouping RFclust 1']]
+@
+
+The groupings can also be plotted to a separate legend using the plot.legend
+function:
+<<plot.legend.example, eval=FALSE>>=
+## this will create a file 'x@outpath/PlotSomething_hist_4_groups.pdf'
+plot.legend( subs, 'hist 4 groups', file="PlotSomething", pdf=T )
+@
+The output figure can be seen in figure \ref{legendExample} on page
+\pageref{legendExample}.
+
+
+\begin{figure}
+\label{legendExample}
+<<plot.legend>>=
+## this will create a file 'x@outpath/PlotSomething_hist_4_groups.pdf'
+plot.legend( subs, 'hclust 4 groups' )
+@
+\end{figure}
+
 
 \end{document}

@@ -7,7 +7,7 @@
 #' @param x the StefansExpressionSet object
 #' @param groups how many groups should I identify
 #' @param name the new column name created as  paste( name, groups, 'groups' )
-#' @param type a gene or sample grouping?
+#' @param type a 'gene' or 'sample' grouping?
 #' @title description of function group.hclust
 #' @export 
 setGeneric('group.hclust', ## Name
@@ -31,10 +31,29 @@ setMethod('group.hclust', signature = c ('StefansExpressionSet'),
 				}
 				d = data.frame( 
 						x@usedObj[['hclust_gene']][[ name ]]$order, 
-						cutree(x@usedObj[['hclust_gene']][[ name ]],k=groups) 
+						factor(cutree(x@usedObj[['hclust_gene']][[ name ]],k=groups), labels=1:groups )
 				)
 				colnames(d) <- c(paste( name, 'order' ), paste( name, groups, 'groups' ))
 				x@annotation <- cbind(x@annotation, d[,cols] )
+				x <- colors_4 ( x, paste( name, groups, 'groups' ) )
+			}
+			else if ( type == 'sample' ){
+				if ( is.null( x@usedObj[['hclust_sample']])){
+					x@usedObj[['hclust_sample']] = list()
+				}
+				#hclust(dist(isect@data),method="ward.D2")$order
+				cols = 2 
+				if ( is.null(x@usedObj[['hclust_sample']][[ name ]]) ){
+					x@usedObj[['hclust_sample']][[ name ]] <- hclust(distfun(t(x@data)),method=hclustMethod)	
+					#	x@usedObj[['hclust_sample']][[ name ]] <- hclust(as.dist( 1- cor(t(x@data), method='pearson') ),method="ward.D2")
+					cols= 1:2
+				}
+				d = data.frame( 
+						x@usedObj[['hclust_sample']][[ name ]]$order, 
+						factor(cutree(x@usedObj[['hclust_sample']][[ name ]],k=groups) , labels=1:groups )
+				)
+				colnames(d) <- c(paste( name, 'order' ), paste( name, groups, 'groups' ))
+				x@samples <- cbind(x@samples, d[,cols] )
 				x <- colors_4 ( x, paste( name, groups, 'groups' ) )
 			}
 			else { stop ( 'not implemented') }

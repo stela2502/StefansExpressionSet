@@ -154,6 +154,7 @@ setMethod('createRFgrouping_row', signature = c ('StefansExpressionSet'),
 							x@usedObj[['rfExpressionSets_row']][[RFname]]@usedObj[[paste( 'predictive RFobj group n=',m) ]], 
 							as.matrix(x@data) 
 					)
+			x@annotation[, paste( single_res_row) ] <- factor( x@annotation[, paste( single_res_row) ], levels= 1:m )
 			x <- colors_4( x, single_res_row )
 			x
 		} 
