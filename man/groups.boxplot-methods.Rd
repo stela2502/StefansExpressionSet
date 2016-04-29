@@ -6,22 +6,22 @@
 \alias{groups.boxplot,StefansExpressionSet-method}
 \title{description of function groups.boxplot}
 \usage{
-groups.boxplot(x, SampleCol = "GroupName", clusters, svg = F,
+groups.boxplot(x, groupCol = "GroupName", clusters, svg = F,
   fname = "group_", width = 800, height = 800, mar = NULL,
   Collapse = NULL, ...)
 }
 \arguments{
 \item{x}{the ExpresionSet object}
 
-\item{SampleCol}{the column in the samples table that contains the sample grouping information}
-
-\item{clusters}{the gene level clusters. The function plots one boxplot for each cluster.}
+\item{groupCol}{the column in the samples table that contains the sample grouping information}
 
 \item{svg}{create the single boxplots as svg or (default png) files}
 
 \item{fname}{the filename extension files are created by paste(x@outpath,fname,<GroupID>,"_boxplot")}
 
 \item{Collapse}{if set will lead to a collapse of the sample groups into one value per gene. Supports all \code{\link{collaps}} by options.}
+
+\item{groupRow}{the column in the annotation table hat contains the gene grouping information}
 }
 \description{
 This function can be used to get an overview of the different gene level groups in

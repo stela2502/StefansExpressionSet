@@ -6,12 +6,14 @@
 \alias{plot.heatmaps,StefansExpressionSet-method}
 \title{description of function plot.heatmaps}
 \usage{
-plot.heatmaps(dataOBJ, gene.names = NULL, pvalue = 1,
-  analysis_name = NULL, gene_centered = F, Subset = NULL,
-  collaps = NULL, geneNameCol = "mgi_symbol", pdf = F, ...)
+plot.heatmaps(dataOBJ, groupCol = "GroupName", gene.names = NULL,
+  pvalue = 1, analysis_name = NULL, Subset = NULL, collaps = NULL,
+  pdf = F, ...)
 }
 \arguments{
 \item{dataOBJ}{the StefansExpressionSet object}
+
+\item{groupCol}{the column in the samples table to group the samples on}
 
 \item{gene.names}{the rownames(dataObj@data) level gene names}
 
@@ -19,14 +21,12 @@ plot.heatmaps(dataOBJ, gene.names = NULL, pvalue = 1,
 
 \item{analysis_name}{the name for the outfiles}
 
-\item{gene_centered}{in case there are multiple probesets for each gene - sum the data or display each probset}
-
 \item{Subset}{an optional list of strings matching to the gene symbols used to select genes of interest}
 
 \item{collaps}{collaps the sample groups into a single column of the heatmap using one of collaps=c('median', 'mean')}
 }
 \description{
-A flexible heatmapping function that depends on heatmap.2 and allows for many data
+An rather ancient, but flexible heatmapping function that depends on heatmap.2 and allows for many data
 
 selection/conversion options
 }

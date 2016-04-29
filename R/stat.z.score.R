@@ -62,8 +62,9 @@ setMethod('z.score', signature = c ('matrix'),
 setMethod('z.score',signature = c ('StefansExpressionSet'),
 		definition = function (m) {
 			if (! m@zscored ){
-			m@data <- data.frame(z.score( as.matrix( m@data )))
-			m@zscored = TRUE
+				m@raw <- m@data
+				m@data <- data.frame(z.score( as.matrix( m@data )))
+				m@zscored = TRUE
 			}
 			m
 		})

@@ -20,11 +20,10 @@ setGeneric('simpleAnova', ## Name
 setMethod('simpleAnova', signature = c ( 'StefansExpressionSet') ,
 		definition = function ( x, groupCol='GroupName', padjMethod='BH' ) {
 			x <- normalize(x)
-			significants <- apply ( x@data ,1, function(a) { anova( lm (a ~ a@Samples[, samples.col]))$"Pr(>F)"[1] } )
+			significants <- apply ( x@data ,1, function(a) { anova( lm (a ~ x@samples[,groupCol ]))$"Pr(>F)"[1] } )
 			adj.p <- p.adjust( significants, method = padjMethod)
-			res <- cbind(significants,adj.p )
-			res <- data.frame(cbind( rownames(res), res ))
-			colnames(res) <- c('genes', 'pvalue', paste('padj',padjMethod) )
+			res <- data.frame( genes= rownames(x@data), pvalue= significants,  adj.p )
+			colnames(res)[3] <- paste('padj',padjMethod)
 			if ( length (x@stats) == 0 ){
 				x@stats <- list ( 'simpleAnova' = res )
 			}

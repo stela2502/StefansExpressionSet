@@ -20,7 +20,7 @@ setMethod('normalize', signature = c ('NGSexpressionSet'),
 		definition = function (  object, readCounts=NULL, to_gene_length=FALSE, geneLengthCol='transcriptLength' ) {
 			if ( ! object@snorm ){
 				if ( is.null( readCounts ) ) {
-					readCounts <- as.vector( DESeq::estimateSizeFactorsForMatrix ( object@data) )
+					readCounts <- as.vector( DESeq::estimateSizeFactorsForMatrix ( as.matrix(object@data)) )
 				}
 				browser()
 				object@samples$SizeFactor <- readCounts
