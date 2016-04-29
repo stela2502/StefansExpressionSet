@@ -26,7 +26,6 @@ setMethod('group.hclust', signature = c ('StefansExpressionSet'),
 				cols = 2 
 				if ( is.null(x@usedObj[['hclust_gene']][[ name ]]) ){
 					x@usedObj[['hclust_gene']][[ name ]] <- hclust(distfun(x@data),method=hclustMethod)	
-				#	x@usedObj[['hclust_gene']][[ name ]] <- hclust(as.dist( 1- cor(t(x@data), method='pearson') ),method="ward.D2")
 					cols= 1:2
 				}
 				d = data.frame( 
@@ -34,6 +33,9 @@ setMethod('group.hclust', signature = c ('StefansExpressionSet'),
 						factor(cutree(x@usedObj[['hclust_gene']][[ name ]],k=groups), labels=1:groups )
 				)
 				colnames(d) <- c(paste( name, 'order' ), paste( name, groups, 'groups' ))
+				if(is.na( match( "d[, cols]", colnames(x@annotation)) )==F ){
+					colnames(x@annotation)[match( "d[, cols]", colnames(x@annotation))] <- colnames(d)[2]
+				}
 				x@annotation <- cbind(x@annotation, d[,cols] )
 				x <- colors_4 ( x, paste( name, groups, 'groups' ) )
 			}
@@ -54,6 +56,9 @@ setMethod('group.hclust', signature = c ('StefansExpressionSet'),
 				)
 				colnames(d) <- c(paste( name, 'order' ), paste( name, groups, 'groups' ))
 				x@samples <- cbind(x@samples, d[,cols] )
+				if(is.na( match( "d[, cols]", colnames(x@samples)) )==F ){
+					colnames(x@samples)[match( "d[, cols]", colnames(x@samples))] <- colnames(d)[2]
+				}
 				x <- colors_4 ( x, paste( name, groups, 'groups' ) )
 			}
 			else { stop ( 'not implemented') }
