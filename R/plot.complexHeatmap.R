@@ -101,6 +101,11 @@ setMethod('complexHeatmap', signature = c ('StefansExpressionSet'),
 			)
 			if ( ! is.null(ofile)){
 				dev.off()
+				pdf( file=paste(file.path(x@outpath,ofile),'_legend_values.pdf',sep='.'), width=8, height=4)
+				Z <- as.matrix(1:(length(brks)-2))
+				image(Z, col=heapmapCols(length(brks)-2),axes = FALSE, main='color key')
+				axis( 1, at=c(0,0.1,1), labels=c('NA','low','high'))
+				dev.off()
 			}
 			
 		}

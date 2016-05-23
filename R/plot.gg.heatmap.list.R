@@ -33,7 +33,7 @@ setMethod('gg.heatmap.list', signature = c ( 'StefansExpressionSet') ,
 			colnames(dat.ss) <- c( 'Gene.Symbol', 'Sample', 'Expression', 'Group', 
 					paste('ColorGroup', 1:10) )[1:ncol(dat.ss)]
 			r <- defineHeatmapColors(dat, dat.ss )
-			dat.ss <- r$melted
+			dat.ss <- r$melted ## cut was applied
 			ord.genes <- rownames(isect@data)[hclust(dist(isect@data),method="ward.D2")$order]
 			if ( ! is.null(colCol) ){
 				ord.genes <- c( ord.genes,colCol  )

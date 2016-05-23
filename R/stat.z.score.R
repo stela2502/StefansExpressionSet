@@ -41,6 +41,7 @@ setMethod('z.score', signature = c ('SingleCellsNGS'),
 									x}
 						)
 				)
+				ret[which(is.na(ret)==T)] <- -20
 				m@data <- data.frame(ret)
 				colnames(m@data)<- colnames(m@raw)
 				m@zscored = TRUE
