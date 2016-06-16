@@ -16,7 +16,9 @@ setMethod('force.numeric', signature = c ('StefansExpressionSet') ,
 	definition = function ( dataObj ) {
 	for ( i in 1: ncol(dataObj@data) ) { 
 		if ( !  paste(as.vector(dataObj@data[,i]), collapse=" ") == paste(as.vector(as.numeric(dataObj@data[,i])), collapse=" ") ) { 
-			dataObj@data[,i] <- as.vector(as.numeric(dataObj@data[,i]))
+			if ( is.factor( dataObj@data[,i]) ){
+				dataObj@data[,i] <- as.numeric(as.vector(dataObj@data[,i]))
+			}
 		}
 	}
 	dataObj

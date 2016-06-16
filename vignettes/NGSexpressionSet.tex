@@ -1,0 +1,824 @@
+\documentclass{article}\usepackage[]{graphicx}\usepackage[]{color}
+%% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}
+\usepackage{hyperref}
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\begin{document}
+
+\section{Initial comments}
+
+If you have used the NGSexpressionSet from my GitHub account and are now moving
+to this updated summary class instead, you have to change the package atribute
+for your old objects like that before you can use them again!
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{## not run}
+\hlkwa{if} \hlstd{(} \hlnum{FALSE}\hlstd{) \{}
+        \hlkwd{attr}\hlstd{(}\hlkwd{class}\hlstd{(oldObject),}\hlstr{'package'}\hlstd{)} \hlkwb{<-} \hlstr{'StefansExpressionSet'}
+\hlstd{\}}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\subsection{Install}
+
+You can install the package from github. More information can be found at
+\href{https://github.com/stela2502/StefansExpressionSet}{my GitHub page}.
+
+\section{Introduction}
+
+The NGSexpressionSet R S4 class has been produced to make my live easier. It is
+not developed for a larger audience and therefore some functions might not be
+flexible enought for all workflows.
+
+The overall aim of this package is to (1) keep all analysis results in one
+object and (2) simplify the plotting by using the previousely stored objects.
+
+The aim of this document is not to explain all options for the functions, but
+to give one working example of my workflow. Please use the R help system
+to get more information on all functions - if necessary.
+
+But not too much here lets start.
+
+
+
+
+\section{Get your data into the object}
+
+The package comes with example data; A data.frame containing count data
+published in PMID25158935 re-mapped and re-quantified using DEseq
+(dim:24062, 17) and one data.frame containing the sample
+information (dim:15, 20):
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+        \hlstd{PMID25158935exp[}\hlnum{1}\hlopt{:}\hlnum{5}\hlstd{,}\hlnum{1}\hlopt{:}\hlnum{7}\hlstd{]}
+\end{alltt}
+\begin{verbatim}
+##   GeneID Length ERR420371 ERR420372 ERR420373 ERR420374 ERR420375
+## 1   Xkr4   3634         0         0         0         0         0
+## 2    Rp1   9747         0         0         0         0         0
+## 3  Sox17   4095         0         0         0         0         0
+## 4 Mrpl15   4201     24888     26974     30814     26962     19968
+## 5 Lypla1   2433     46203     21090     68584     28491     26469
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+These two tables are loaded into a NGSexpressionSet object using the command:
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{PMID25158935} \hlkwb{<-} \hlkwd{NGSexpressionSet}\hlstd{( PMID25158935exp,}
+        \hlstd{PMID25158935samples,} \hlkwc{Analysis} \hlstd{=} \hlkwa{NULL}\hlstd{,} \hlkwc{name}\hlstd{=}\hlstr{'PMID25158935'}\hlstd{,}
+        \hlkwc{namecol}\hlstd{=}\hlstr{'Sample'}\hlstd{,} \hlkwc{namerow}\hlstd{=} \hlstr{'GeneID'}\hlstd{,} \hlkwc{usecol}\hlstd{=}\hlkwa{NULL} \hlstd{,}
+        \hlkwc{outpath} \hlstd{=} \hlstr{''}
+\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+This function call is already very workflow focused as the options Analysis and
+usecol can be used to subselect samples in the samples table and create a
+smaller than possible object from the count data. 
+
+The object does print like that:
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+        \hlstd{PMID25158935}
+\end{alltt}
+\begin{verbatim}
+## An object of class NGSexpressionSet 
+## named  PMID25158935 
+## with 24062 genes and 15  samples. 
+## Annotation datasets (24062,2): 'GeneID', 'Length'   
+## Sample annotation (15,20): 'Source.Name', 'Comment.ENA_SAMPLE', 'Provider', 'Characteristics.organism', 'Characteristics.strain', 'Characteristics.cell.type', 'Material.Type.1', 'Comment.LIBRARY_LAYOUT', 'Comment.LIBRARY_SOURCE', 'Comment.LIBRARY_STRATEGY', 'Comment.LIBRARY_SELECTION', 'Performer', 'GroupName', 'Technology.Type', 'Comment.ENA_EXPERIMENT', 'Scan.Name', 'Sample', 'Comment.FASTQ_URI', 'Factor.Value.cell.type', 'bam filename'
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+\section{Subsetting the object}
+
+This is the main purpose why I created the class in the first place. An easy way
+to consitently subset multiple tables at the same time.
+
+I have implemented two functions: "reduce.Obj" which subsets the object to a
+list of genes and "drop.samples" which does - guess what - drop samples.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+        \hlstd{reduced} \hlkwb{<-} \hlkwd{reduce.Obj}\hlstd{(PMID25158935,}
+                        \hlkwd{sample}\hlstd{(}\hlkwd{rownames}\hlstd{(PMID25158935}\hlopt{@}\hlkwc{data}\hlstd{),} \hlnum{100}\hlstd{),}
+                        \hlkwc{name}\hlstd{=}\hlstr{"100 genes"} \hlstd{)}
+        \hlstd{reduced}
+\end{alltt}
+\begin{verbatim}
+## An object of class NGSexpressionSet 
+## named  100 genes 
+## with 100 genes and 15  samples. 
+## Annotation datasets (100,2): 'GeneID', 'Length'   
+## Sample annotation (15,20): 'Source.Name', 'Comment.ENA_SAMPLE', 'Provider', 'Characteristics.organism', 'Characteristics.strain', 'Characteristics.cell.type', 'Material.Type.1', 'Comment.LIBRARY_LAYOUT', 'Comment.LIBRARY_SOURCE', 'Comment.LIBRARY_STRATEGY', 'Comment.LIBRARY_SELECTION', 'Performer', 'GroupName', 'Technology.Type', 'Comment.ENA_EXPERIMENT', 'Scan.Name', 'Sample', 'Comment.FASTQ_URI', 'Factor.Value.cell.type', 'bam filename'
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+        \hlstd{dropped} \hlkwb{<-} \hlkwd{drop.samples}\hlstd{(}
+                        \hlstd{PMID25158935,}
+                        \hlkwd{colnames}\hlstd{(PMID25158935}\hlopt{@}\hlkwc{data}\hlstd{)[}\hlnum{1}\hlopt{:}\hlnum{3}\hlstd{],}
+                        \hlkwc{name}\hlstd{=}\hlstr{'3 samples dropped'}
+        \hlstd{)}
+        \hlstd{dropped}
+\end{alltt}
+\begin{verbatim}
+## An object of class NGSexpressionSet 
+## named  3 samples dropped 
+## with 24062 genes and 12  samples. 
+## Annotation datasets (24062,2): 'GeneID', 'Length'   
+## Sample annotation (12,20): 'Source.Name', 'Comment.ENA_SAMPLE', 'Provider', 'Characteristics.organism', 'Characteristics.strain', 'Characteristics.cell.type', 'Material.Type.1', 'Comment.LIBRARY_LAYOUT', 'Comment.LIBRARY_SOURCE', 'Comment.LIBRARY_STRATEGY', 'Comment.LIBRARY_SELECTION', 'Performer', 'GroupName', 'Technology.Type', 'Comment.ENA_EXPERIMENT', 'Scan.Name', 'Sample', 'Comment.FASTQ_URI', 'Factor.Value.cell.type', 'bam filename'
+\end{verbatim}
+\begin{alltt}
+        \hlstd{subs} \hlkwb{<-} \hlkwd{reduce.Obj} \hlstd{( PMID25158935,}
+                        \hlkwd{rownames}\hlstd{(PMID25158935}\hlopt{@}\hlkwc{data}\hlstd{)[}
+                                        \hlkwd{order}\hlstd{(} \hlkwd{apply}\hlstd{( PMID25158935}\hlopt{@}\hlkwc{data}\hlstd{,} \hlnum{1}\hlstd{, sd),} \hlkwc{decreasing}\hlstd{=T ) [} \hlnum{1}\hlopt{:}\hlnum{100} \hlstd{]}
+                        \hlstd{],}
+                        \hlstr{'max_sd_genes'}
+        \hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+An additional function 'restrictSamples' removes samples based on a match on
+a variable in the samples table.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{levels}\hlstd{( PMID25158935}\hlopt{@}\hlkwc{samples}\hlstd{[,}\hlstr{'Characteristics.cell.type'}\hlstd{])}
+\end{alltt}
+\begin{verbatim}
+## [1] "hematopoietic stem cells"               
+## [2] "multipotent progenitor cell, fraction 1"
+## [3] "multipotent progenitor cell, fraction 2"
+## [4] "multipotent progenitor cell, fraction 3"
+## [5] "multipotent progenitor cell, fraction 4"
+\end{verbatim}
+\begin{alltt}
+\hlstd{dropped} \hlkwb{<-} \hlkwd{restrictSamples}\hlstd{(}
+        \hlstd{PMID25158935,}
+        \hlkwc{column} \hlstd{=}\hlstr{'Characteristics.cell.type'}\hlstd{,}
+        \hlkwc{value}\hlstd{=} \hlstr{'multipotent progenitor'}\hlstd{,}
+        \hlkwc{mode}\hlstd{=}\hlstr{'grep'}\hlstd{,}
+        \hlkwc{name}\hlstd{=}\hlstr{'only HSC left'}
+\hlstd{)}
+\hlstd{dropped}
+\end{alltt}
+\begin{verbatim}
+## An object of class NGSexpressionSet 
+## named  only HSC left 
+## with 24062 genes and 4  samples. 
+## Annotation datasets (24062,2): 'GeneID', 'Length'   
+## Sample annotation (4,20): 'Source.Name', 'Comment.ENA_SAMPLE', 'Provider', 'Characteristics.organism', 'Characteristics.strain', 'Characteristics.cell.type', 'Material.Type.1', 'Comment.LIBRARY_LAYOUT', 'Comment.LIBRARY_SOURCE', 'Comment.LIBRARY_STRATEGY', 'Comment.LIBRARY_SELECTION', 'Performer', 'GroupName', 'Technology.Type', 'Comment.ENA_EXPERIMENT', 'Scan.Name', 'Sample', 'Comment.FASTQ_URI', 'Factor.Value.cell.type', 'bam filename'
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\section{Unconventional checks}
+
+I have implemented a rather unconventional check for the NGS data objects:
+reads.taken(). This function checks the percentage of reads consumed by the top
+5 percent of genes and thereby creates a measurement of the library complexity.
+I have seen very complex NGS libraries with about 60-70\% reads consumed by the
+top 5\% genes and very shallow libraries where all 100\% of reads were specific
+to the top 5\% genes.
+
+My rule of thub: a good (mouse) expression dataset should not use more than 77\%
+of the reads in the top 5\% of the genes.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+        \hlkwd{reads.taken}\hlstd{(PMID25158935)}\hlopt{$}\hlstd{reads.taken}
+\end{alltt}
+\begin{verbatim}
+## ERR420375 ERR420376 ERR420384 ERR420380 ERR420379 ERR420372 ERR420377 
+## 0.6037290 0.6224907 0.6136839 0.5901804 0.6105994 0.6235713 0.6033397 
+## ERR420383 ERR420373 ERR420381 ERR420371 ERR420382 ERR420374 ERR420378 
+## 0.6164420 0.6189190 0.6131443 0.6052369 0.6086387 0.6098405 0.6159916 
+## ERR420385 
+## 0.6115526
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+Here comes an example of my workflow combination: I have implemented a function,
+that gives back the 'failed' samples for the reads.taken function: check.depth.
+In the default version the function checks whether the 5\% reads taken value is
+higher than the default cutoff of 77\%. But this test is uninformative in this
+extremely good dataset. Therefore I had to lower the cutoff value to 0.62 here.
+The sample names can be directly fead into the drop.samples function to
+subset the data.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{check.depth}\hlstd{(PMID25158935,}\hlkwc{cutoff}\hlstd{=}\hlnum{0.62} \hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## [1] "ERR420376" "ERR420372"
+\end{verbatim}
+\begin{alltt}
+\hlkwd{drop.samples}\hlstd{(PMID25158935,} \hlkwd{check.depth}\hlstd{(PMID25158935,}\hlkwc{cutoff}\hlstd{=}\hlnum{0.62}\hlstd{))}
+\end{alltt}
+\begin{verbatim}
+## An object of class NGSexpressionSet 
+## named  dropped_samples 
+## with 24062 genes and 13  samples. 
+## Annotation datasets (24062,2): 'GeneID', 'Length'   
+## Sample annotation (13,20): 'Source.Name', 'Comment.ENA_SAMPLE', 'Provider', 'Characteristics.organism', 'Characteristics.strain', 'Characteristics.cell.type', 'Material.Type.1', 'Comment.LIBRARY_LAYOUT', 'Comment.LIBRARY_SOURCE', 'Comment.LIBRARY_STRATEGY', 'Comment.LIBRARY_SELECTION', 'Performer', 'GroupName', 'Technology.Type', 'Comment.ENA_EXPERIMENT', 'Scan.Name', 'Sample', 'Comment.FASTQ_URI', 'Factor.Value.cell.type', 'bam filename'
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+
+\section{Statistics}
+
+The statistic analysis is also keeping my workload low: One call runs them all.
+
+But unfortunaltely this is broken! Need to fix that :-(
+)
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+        \hlcom{## from these values I can choose to create statistics:}
+        \hlkwd{colnames}\hlstd{(PMID25158935}\hlopt{@}\hlkwc{samples}\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+##  [1] "Source.Name"               "Comment.ENA_SAMPLE"       
+##  [3] "Provider"                  "Characteristics.organism" 
+##  [5] "Characteristics.strain"    "Characteristics.cell.type"
+##  [7] "Material.Type.1"           "Comment.LIBRARY_LAYOUT"   
+##  [9] "Comment.LIBRARY_SOURCE"    "Comment.LIBRARY_STRATEGY" 
+## [11] "Comment.LIBRARY_SELECTION" "Performer"                
+## [13] "GroupName"                 "Technology.Type"          
+## [15] "Comment.ENA_EXPERIMENT"    "Scan.Name"                
+## [17] "Sample"                    "Comment.FASTQ_URI"        
+## [19] "Factor.Value.cell.type"    "bam filename"
+\end{verbatim}
+\begin{alltt}
+        \hlcom{## and the GroupName might be the best to start from}
+        \hlkwd{table}\hlstd{(PMID25158935}\hlopt{@}\hlkwc{samples}\hlopt{$}\hlstd{GroupName)}
+\end{alltt}
+\begin{verbatim}
+## 
+##  HSC MPP1 MPP2 MPP3 MPP4 
+##    4    3    3    3    2
+\end{verbatim}
+\begin{alltt}
+        \hlcom{#withStats <- createStats( subs, 'GroupName' )}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+
+\section{Grouping}
+
+The underlying logics in the grouping is that all grouping functions add the
+grouoing results directly into either the samples or annotation tables, add a
+color for this grouping to the StefansExpressionSet object and return the
+object, not the grouping.
+
+The aim for the final object is to have a wide set of grouping functionallity in
+the object ranging from simple hclust calls to more complex PCA based approaches
+to my favorite grouping, the random forest unsupervised grouping. Not all is
+implemented.
+
+\subsection{group.hclust}
+
+This function uses the hclust algorithm to cluster the data and add the grouping
+information into the samples resp. annotation tables. Please try to keep the
+grouing names unique as new groups with the same name will replace old ones
+and you are not able to change colors for a single groups if they share one
+name.
+Please read the documentation on the R command line for all the different options.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{subs} \hlkwb{<-} \hlkwd{group.hclust} \hlstd{( subs,} \hlkwc{groups}\hlstd{=}\hlnum{4}\hlstd{,} \hlkwc{name}\hlstd{=}\hlstr{'hclust genes'}\hlstd{,} \hlkwc{type}\hlstd{=}\hlstr{'gene'} \hlstd{)}
+
+\hlkwd{table}\hlstd{(subs}\hlopt{@}\hlkwc{annotation}\hlstd{[,}\hlkwd{c}\hlstd{(}\hlstr{'hclust genes 4 groups'}\hlstd{)])}
+\end{alltt}
+\begin{verbatim}
+## 
+##  1  2  3  4 
+##  1  4 45 50
+\end{verbatim}
+\begin{alltt}
+\hlstd{subs} \hlkwb{<-} \hlkwd{group.hclust} \hlstd{( subs,} \hlkwc{groups}\hlstd{=}\hlnum{4}\hlstd{,} \hlkwc{name}\hlstd{=}\hlstr{'hclust samples'}\hlstd{,} \hlkwc{type}\hlstd{=}\hlstr{'sample'} \hlstd{)}
+
+\hlkwd{table}\hlstd{(}
+  \hlkwd{apply}\hlstd{(}
+        \hlstd{subs}\hlopt{@}\hlkwc{samples}\hlstd{[,}\hlkwd{c}\hlstd{(}\hlstr{'GroupName'}\hlstd{,} \hlstr{'hclust samples 4 groups'}\hlstd{)],}
+        \hlnum{1}\hlstd{,      paste,}  \hlkwc{collapse}\hlstd{=} \hlstr{"/gr."}\hlstd{)}
+\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## 
+##  HSC/gr.1  HSC/gr.2 MPP1/gr.1 MPP1/gr.2 MPP2/gr.2 MPP2/gr.3 MPP2/gr.4 
+##         3         1         2         1         1         1         1 
+## MPP3/gr.2 MPP3/gr.4 MPP4/gr.2 MPP4/gr.3 
+##         2         1         1         1
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\subsection{rfCluster\_col}
+
+The most interesting grouping function is rfCluster\_col(). It utilizes an
+unsupervised random forest to calculate the distance matrix for the data. As
+this process is very computer intensive the function allows the calculation to
+be run on a sun grid engine cluster (SGE), but you can also use the clustering
+method on you local computer.
+
+\subsubsection{Usage}
+
+This function has been developed to cluster single cell data with hundreads or
+thousands of samples.
+
+The rfCluster\_col run will create a lot of outout data that you can delete
+after the grouping process is finished. The files are in the objects outpath/RFclust.mp/
+folder.
+The files starting with runRFclust are all connected with the spawned
+calculation threads; the objects name'\_RFclust\_*ID*.RData' files are the
+subset of the original data for one run and the other *.RData files are the
+saved random forest distributions.
+
+The random forest output is read into the object after a second run of the same
+function call. Make sure you use the right StefansExpressionSet object for that!
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+        \hlstd{subs}
+\end{alltt}
+\begin{verbatim}
+## An object of class NGSexpressionSet 
+## named  max_sd_genes 
+## with 100 genes and 15  samples. 
+## Annotation datasets (100,4): 'GeneID', 'Length', 'hclust genes order', 'hclust genes 4 groups'   
+## Sample annotation (15,22): 'Source.Name', 'Comment.ENA_SAMPLE', 'Provider', 'Characteristics.organism', 'Characteristics.strain', 'Characteristics.cell.type', 'Material.Type.1', 'Comment.LIBRARY_LAYOUT', 'Comment.LIBRARY_SOURCE', 'Comment.LIBRARY_STRATEGY', 'Comment.LIBRARY_SELECTION', 'Performer', 'GroupName', 'Technology.Type', 'Comment.ENA_EXPERIMENT', 'Scan.Name', 'Sample', 'Comment.FASTQ_URI', 'Factor.Value.cell.type', 'bam filename', 'hclust samples order', 'hclust samples 4 groups'
+\end{verbatim}
+\begin{alltt}
+        \hlstd{subs.C} \hlkwb{<-} \hlkwd{rfCluster_col}\hlstd{(subs,}
+                        \hlkwc{rep}\hlstd{=}\hlnum{1}\hlstd{,} \hlcom{# one analysis only}
+                        \hlkwc{SGE}\hlstd{=F,} \hlcom{# Do not use the SGE extension }
+                        \hlkwc{email}\hlstd{=}\hlstr{'not@important.without.SGE'}\hlstd{,} \hlcom{# necessary }
+                        \hlkwc{k}\hlstd{=}\hlnum{3}\hlstd{,} \hlcom{#how many clusters to find}
+                        \hlkwc{slice}\hlstd{=}\hlnum{4}\hlstd{,} \hlcom{# how many processes to span per run}
+                        \hlkwc{subset}\hlstd{=}\hlkwd{nrow}\hlstd{(subs}\hlopt{@}\hlkwc{samples}\hlstd{),} \hlcom{# use the whole dataset}
+                        \hlkwc{nforest}\hlstd{=}\hlnum{5}\hlstd{,} \hlcom{# how many forets per rep - set that to 500}
+                        \hlkwc{ntree}\hlstd{=}\hlnum{100}\hlstd{,} \hlcom{# how many trees per forest - set that to 1000}
+                        \hlkwc{name}\hlstd{=}\hlstr{'RFclust'} \hlcom{# the name of this analysis (rename if re-run)}
+        \hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## [1] "max_sd_genes_RFclust_1 : The data is going to be analyszed now - re-run this function to check if the process has finished."
+## [1] "You should wait some time now to let the calculation finish! -> re-run the function"
+## [1] "check: system( 'ps -Af | grep Rcmd | grep -v grep')"
+\end{verbatim}
+\begin{alltt}
+\hlkwd{Sys.sleep}\hlstd{(}\hlnum{50}\hlstd{)}
+
+\hlstd{subs.C} \hlkwb{<-} \hlkwd{rfCluster_col}\hlstd{(subs.C,} \hlcom{## <- this change is important!! }
+                \hlkwc{rep}\hlstd{=}\hlnum{1}\hlstd{,} \hlcom{# one analysis only}
+                \hlkwc{SGE}\hlstd{=F,} \hlcom{# Do not use the SGE extension }
+                \hlkwc{email}\hlstd{=}\hlstr{'not@important.without.SGE'}\hlstd{,} \hlcom{# necessary }
+                \hlkwc{k}\hlstd{=}\hlnum{3}\hlstd{,} \hlcom{#how many clusters to find}
+                \hlkwc{slice}\hlstd{=}\hlnum{4}\hlstd{,} \hlcom{# how many processes to span per run}
+                \hlkwc{subset}\hlstd{=}\hlkwd{nrow}\hlstd{(subs}\hlopt{@}\hlkwc{samples}\hlstd{),} \hlcom{# use the whole dataset}
+                \hlkwc{nforest}\hlstd{=}\hlnum{5}\hlstd{,} \hlcom{# how many forets per rep - set that to 500}
+                \hlkwc{ntree}\hlstd{=}\hlnum{100}\hlstd{,} \hlcom{# how many trees per forest - set that to 1000}
+                \hlkwc{name}\hlstd{=}\hlstr{'RFclust'} \hlcom{# the name of this analysis (rename if re-run)}
+\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## [1] "Done with cluster 1"
+\end{verbatim}
+\begin{alltt}
+\hlkwd{table}\hlstd{(}\hlkwd{apply}\hlstd{(}
+\hlstd{subs.C}\hlopt{@}\hlkwc{samples}\hlstd{[,}\hlkwd{c}\hlstd{(}\hlstr{'GroupName'}\hlstd{,} \hlstr{'RFgrouping RFclust 1'}\hlstd{)],}\hlnum{1}\hlstd{, paste,} \hlkwc{collapse}\hlstd{=} \hlstr{"/gr."}\hlstd{)}
+\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## 
+##   HSC/gr.1   HSC/gr.2   HSC/gr.3  MPP1/gr.2  MPP1/gr.4  MPP1/gr.5 
+##          1          2          1          1          1          1 
+##  MPP2/gr.5  MPP2/gr.6  MPP2/gr.7  MPP3/gr.7  MPP3/gr.8  MPP3/gr.9 
+##          1          1          1          1          1          1 
+## MPP4/gr.10 
+##          2
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+Once this grouping has been run and the object keeps unchanged, you can create a
+different grouping based on the same random forest distribution.
+In order to do that you need the createRFgrouping\_col() function.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{subs.C} \hlkwb{<-} \hlkwd{createRFgrouping_col} \hlstd{( subs.C,}
+        \hlstr{'max_sd_genes_RFclust_1'} \hlstd{,}
+        \hlkwc{k}\hlstd{=}\hlnum{2}\hlstd{,}
+        \hlkwc{single_res_col} \hlstd{=} \hlstr{'Our new grouing'}
+\hlstd{)}
+\hlkwd{table}\hlstd{(}\hlkwd{apply}\hlstd{(}
+\hlstd{subs.C}\hlopt{@}\hlkwc{samples}\hlstd{[,}\hlkwd{c}\hlstd{(}\hlstr{'GroupName'}\hlstd{,} \hlstr{'Our new grouing'}\hlstd{)],} \hlnum{1}\hlstd{, paste,} \hlkwc{collapse}\hlstd{=} \hlstr{"/gr."}\hlstd{)}
+\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## 
+##  HSC/gr.1  HSC/gr.2 MPP1/gr.1 MPP1/gr.2 MPP2/gr.1 MPP2/gr.2 MPP3/gr.2 
+##         3         1         2         1         1         2         3 
+## MPP4/gr.2 
+##         2
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+\subsubsection{TODO}
+
+Reduce the memory requirement for the final distance matrix reading process.
+
+
+\subsection{rfCluster\_row}
+
+The rfCluster\_col does cluster samples and the rfCluster\_row clusters genes in
+this object. Otherwise the handling is exactly the same. Apart from the fact,
+that we have way less samples than genes. Therefore it is extremely important to
+first select a group of interesting genes from the dataset and run the
+clustering from there.
+
+All in all this function is not tested enough to be called stable in the way
+that you get good results back! The results from this run are shown in figure
+\ref{complexHeatmap} on page \pageref{complexHeatmap}.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{subs}
+\end{alltt}
+\begin{verbatim}
+## An object of class NGSexpressionSet 
+## named  max_sd_genes 
+## with 100 genes and 15  samples. 
+## Annotation datasets (100,4): 'GeneID', 'Length', 'hclust genes order', 'hclust genes 4 groups'   
+## Sample annotation (15,22): 'Source.Name', 'Comment.ENA_SAMPLE', 'Provider', 'Characteristics.organism', 'Characteristics.strain', 'Characteristics.cell.type', 'Material.Type.1', 'Comment.LIBRARY_LAYOUT', 'Comment.LIBRARY_SOURCE', 'Comment.LIBRARY_STRATEGY', 'Comment.LIBRARY_SELECTION', 'Performer', 'GroupName', 'Technology.Type', 'Comment.ENA_EXPERIMENT', 'Scan.Name', 'Sample', 'Comment.FASTQ_URI', 'Factor.Value.cell.type', 'bam filename', 'hclust samples order', 'hclust samples 4 groups'
+\end{verbatim}
+\begin{alltt}
+\hlstd{subs.C} \hlkwb{<-} \hlkwd{rfCluster_row}\hlstd{(subs.C,}
+        \hlkwc{rep}\hlstd{=}\hlnum{1}\hlstd{,} \hlcom{# one analysis only}
+        \hlkwc{SGE}\hlstd{=F,} \hlcom{# Do not use the SGE extension }
+        \hlkwc{email}\hlstd{=}\hlstr{'not@important.without.SGE'}\hlstd{,} \hlcom{# necessary }
+        \hlkwc{k}\hlstd{=}\hlnum{3}\hlstd{,} \hlcom{#how many clusters to find}
+        \hlkwc{slice}\hlstd{=}\hlnum{4}\hlstd{,} \hlcom{# how many processes to span per run}
+        \hlkwc{subset}\hlstd{=}\hlkwd{nrow}\hlstd{(subs}\hlopt{@}\hlkwc{samples}\hlstd{)}\hlopt{+}\hlnum{1}\hlstd{,} \hlcom{# use the whole dataset}
+        \hlkwc{nforest}\hlstd{=}\hlnum{5}\hlstd{,} \hlcom{# how many forets per rep - set that to 500}
+        \hlkwc{ntree}\hlstd{=}\hlnum{100}\hlstd{,} \hlcom{# how many trees per forest - set that to 1000}
+        \hlkwc{name}\hlstd{=}\hlstr{'RFclust_row'} \hlcom{# the name of this analysis (rename if re-run)}
+\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## [1] "max_sd_genes_RFclust_row_1 : The data is going to be analyszed now - re-run this function to check if the process has finished."
+## [1] "You should wait some time now to let the calculation finish! -> re-run the function"
+## [1] "check: system( 'ps -Af | grep Rcmd | grep -v grep')"
+\end{verbatim}
+\begin{alltt}
+\hlkwd{Sys.sleep}\hlstd{(}\hlnum{51}\hlstd{)}
+
+\hlstd{subs.C} \hlkwb{<-} \hlkwd{rfCluster_row}\hlstd{(subs.C,} \hlcom{## <- this change is important!! }
+        \hlkwc{rep}\hlstd{=}\hlnum{1}\hlstd{,} \hlcom{# one analysis only}
+        \hlkwc{SGE}\hlstd{=F,} \hlcom{# Do not use the SGE extension }
+        \hlkwc{email}\hlstd{=}\hlstr{'not@important.without.SGE'}\hlstd{,} \hlcom{# necessary }
+        \hlkwc{k}\hlstd{=}\hlnum{3}\hlstd{,} \hlcom{#how many clusters to find}
+        \hlkwc{slice}\hlstd{=}\hlnum{4}\hlstd{,} \hlcom{# how many processes to span per run}
+        \hlkwc{subset}\hlstd{=}\hlkwd{nrow}\hlstd{(subs}\hlopt{@}\hlkwc{samples}\hlstd{)}\hlopt{+}\hlnum{1}\hlstd{,} \hlcom{# use the whole dataset}
+        \hlkwc{nforest}\hlstd{=}\hlnum{5}\hlstd{,} \hlcom{# how many forets per rep - set that to 500}
+        \hlkwc{ntree}\hlstd{=}\hlnum{100}\hlstd{,} \hlcom{# how many trees per forest - set that to 1000}
+        \hlkwc{name}\hlstd{=}\hlstr{'RFclust_row'} \hlcom{# the name of this analysis (rename if re-run)}
+\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## [1] "Done with cluster 1"
+\end{verbatim}
+\begin{alltt}
+\hlkwd{table}\hlstd{(subs.C}\hlopt{@}\hlkwc{annotation}\hlstd{[,}\hlstr{'RFgrouping RFclust_row 1'}\hlstd{])}
+\end{alltt}
+\begin{verbatim}
+## 
+##  1  2  3  4  5  6  7  8  9 10 
+##  2  3  5 48  2  3  9 12 13  3
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+Once this grouping has been run and the object keeps unchanged, you can create a
+different grouping based on the same random forest distribution.
+In order to do that you need the createRFgrouping\_row() function.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{subs.C} \hlkwb{<-} \hlkwd{createRFgrouping_row} \hlstd{(}
+\hlstd{subs.C,} \hlstr{'max_sd_genes_RFclust_row_1'} \hlstd{,} \hlkwc{k}\hlstd{=}\hlnum{2}\hlstd{,} \hlkwc{single_res_row} \hlstd{=} \hlstr{'Our new grouing'}
+\hlstd{)}
+
+\hlkwd{table}\hlstd{(subs.C}\hlopt{@}\hlkwc{annotation}\hlstd{[,}\hlkwd{c}\hlstd{(} \hlstr{'Our new grouing'}\hlstd{)])}
+\end{alltt}
+\begin{verbatim}
+## 
+##  1  2 
+## 55 45
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+\section{Plotting}
+
+This is the second most important part of the object.
+
+\subsection{Heatmap using ggplot2}
+
+I will first explain how to create the ggplot2 plots also used for our shiny
+server. The function ggplot.gene is described in figure \ref{ggplot.gene} on
+page \pageref{ggplot.gene}; the function gg.heatmap.list is described in figure
+\ref{gg.heatmap.list} on page \pageref{gg.heatmap.list}.
+
+\begin{figure}
+\label{ggplot.gene}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+        \hlkwd{ggplot.gene} \hlstd{(PMID25158935,} \hlstr{'Foxo1'}\hlstd{,} \hlkwc{groupCol}\hlstd{=}\hlstr{'GroupName'} \hlstd{)}
+\end{alltt}
+
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# Using rownames(ma) as id variables}}\begin{verbatim}
+## $plot
+\end{verbatim}
+\end{kframe}
+\includegraphics[width=\maxwidth]{figure/ggplot_gene-1} 
+\begin{kframe}\begin{verbatim}
+## 
+## $not.in
+## [1] "NUKL"
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+\end{figure}
+
+\begin{figure}
+\label{gg.heatmap.list}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+        \hlkwd{gg.heatmap.list} \hlstd{(PMID25158935,} \hlkwd{c}\hlstd{(}\hlstr{'Mpo'}\hlstd{,} \hlstr{'Gata1'}\hlstd{,} \hlstr{'Foxo1'}\hlstd{),}
+                        \hlkwc{groupCol}\hlstd{=}\hlstr{'GroupName'} \hlstd{)}
+\end{alltt}
+
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# Using rownames(ma) as id variables}}\begin{verbatim}
+## $plot
+\end{verbatim}
+\end{kframe}
+\includegraphics[width=\maxwidth]{figure/gg_heatmap_list-1} 
+\begin{kframe}\begin{verbatim}
+## 
+## $not.in
+## character(0)
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+\end{figure}
+
+%I have created the gg.heatmap.list function in a way, that you can also add
+%column - and row -grouping information to the plot. The first level you have
+%already seen in the groupCol='GroupName' option, but you can enhance that by
+%adding more variables to the groupCol (the first will be used for the facets).
+%
+%
+%But as you see in figure \ref{gg.heatmap.list2} on page
+%\pageref{gg.heatmap.list2} the ggplot2 based heatmap.3 is far from perfect at
+%the moment.
+%Instead of putting a lot of time into this function I have implemented a call to
+%heatmap.3 into the object.
+%\begin{figure}
+%\label{gg.heatmap.list2}
+%<<gg.heatmap.list.moreColGroups>>=
+%	gg.heatmap.list (subs.C, 
+%			groupCol=c( 'GroupName' ),
+%			colCol= c( 'RFgrouping RFclust 1' )
+%	)
+%@
+%\end{figure}
+
+\subsection{Heatmap using heatmap.3}
+
+The heatmap.3 function is called internally by the complexHeatmap() function.
+As the name suggests - this function is far from simple and I recommend reading
+the internal R documentation (?complexHeatmap at the promt).
+
+In short the function is selecting a number of colujmn (sample) and row (gene)
+grouping variables and creates the colour bars from this information. The data
+is going to be sorted after the first variable in both the rowGroups and
+colGroups variables. If you want to enforce additional ordering you need to
+order the data yourself using the reorder.samples or reorder.genes functions.
+
+Here I show two calls to the function: one plotting with both column and row
+groups (figure \ref{complexHeatmap} on püage \pageref{complexHeatmap}) and one
+with only column groups (figure \ref{complexHeatmap2} on page \pageref{complexHeatmap2}). Two plots mainly to
+visualize the effect of the random forest gene grouping.
+
+\begin{figure}
+\label{complexHeatmap}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# the color information is stored in the subs.C@usedObj[['colorRange']] list}
+\hlcom{# and we miss the GroupName colours ...}
+\hlstd{subs.C} \hlkwb{<-} \hlkwd{colors_4}\hlstd{( subs.C,} \hlstr{'GroupName'}\hlstd{,}
+                \hlkwc{colFunc}\hlstd{=}\hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{) \{} \hlkwd{c}\hlstd{(} \hlstr{'green'}\hlstd{,}\hlstr{'yellow'}\hlstd{,} \hlstr{'orange'}\hlstd{,} \hlstr{'red'}\hlstd{,} \hlstr{'purple'}\hlstd{) \}}
+\hlstd{)}
+\hlcom{#subs.C <- colors_4( subs.C, 'RFgrouping RFclust 1' )}
+\hlkwd{complexHeatmap} \hlstd{(subs.C,}
+        \hlkwc{ofile}\hlstd{=}\hlkwa{NULL}\hlstd{,}
+        \hlkwc{colGroups}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{'RFgrouping RFclust 1'}\hlstd{,}\hlstr{'GroupName'}\hlstd{),}
+        \hlkwc{rowGroups}\hlstd{=}\hlstr{'RFgrouping RFclust_row 1'}\hlstd{,}
+        \hlkwc{pdf}\hlstd{=}\hlnum{FALSE}\hlstd{,}
+        \hlkwc{subpath}\hlstd{=}\hlstr{''}\hlstd{,}
+        \hlkwc{main} \hlstd{=} \hlkwd{paste}\hlstd{(}\hlstr{'complexHeatmap in action + RF gene grouping based on'}\hlstd{,} \hlkwd{nrow}\hlstd{(subs}\hlopt{@}\hlkwc{samples}\hlstd{),} \hlstr{'genes'}\hlstd{),}
+        \hlkwc{heapmapCols}\hlstd{=} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{)\{} \hlkwd{c}\hlstd{(}\hlstr{"darkgrey"}\hlstd{,}\hlkwd{bluered}\hlstd{(x))\}}
+\hlstd{)}
+\end{alltt}
+\end{kframe}
+\includegraphics[width=\maxwidth]{figure/complexHeatmap-1} 
+
+\end{knitrout}
+\end{figure}
+
+
+\begin{figure}
+\label{complexHeatmap2}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# the color information is stored in the subs.C@usedObj[['colorRange']] list}
+\hlcom{# and we miss the GroupName colours ...}
+\hlstd{subs.C} \hlkwb{<-} \hlkwd{colors_4}\hlstd{( subs.C,} \hlstr{'GroupName'}\hlstd{,}
+                \hlkwc{colFunc}\hlstd{=}\hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{) \{} \hlkwd{c}\hlstd{(} \hlstr{'green'}\hlstd{,}\hlstr{'yellow'}\hlstd{,} \hlstr{'orange'}\hlstd{,} \hlstr{'red'}\hlstd{,} \hlstr{'purple'}\hlstd{) \}}
+\hlstd{)}
+\hlcom{#subs.C <- colors_4( subs.C, 'RFgrouping RFclust_col 1' )}
+\hlkwd{complexHeatmap} \hlstd{(subs.C,}
+        \hlkwc{ofile}\hlstd{=}\hlkwa{NULL}\hlstd{,}
+        \hlkwc{colGroups}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{'RFgrouping RFclust 1'}\hlstd{,}\hlstr{'GroupName'}\hlstd{),}
+        \hlkwc{pdf}\hlstd{=}\hlnum{FALSE}\hlstd{,}
+        \hlkwc{subpath}\hlstd{=}\hlstr{''}\hlstd{,}
+        \hlkwc{main} \hlstd{=} \hlstr{'complexHeatmap in action no gene grouping'}\hlstd{,}
+        \hlkwc{heapmapCols}\hlstd{=} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{)\{} \hlkwd{c}\hlstd{(}\hlstr{"darkgrey"}\hlstd{,}\hlkwd{bluered}\hlstd{(x))\}}
+\hlstd{)}
+\end{alltt}
+\end{kframe}
+\includegraphics[width=\maxwidth]{figure/complexHeatmap2-1} 
+
+\end{knitrout}
+\end{figure}
+
+
+\subsection{Grouping colours}
+
+The grouping colours are stored in the usedObj slot of the StefansExpressionSet
+object in the list entry 'colorRange' using the column name to store a color
+vector.
+This colour vector can be changed at any time. The only prerequisite is, that
+the stored colours match the amout of groups described in the respective
+grouping.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{subs.C}\hlopt{@}\hlkwc{usedObj}\hlstd{[[}\hlstr{'colorRange'}\hlstd{]][[}\hlstr{'RFgrouping RFclust_row 1'}\hlstd{]]}
+\end{alltt}
+\begin{verbatim}
+##  [1] "#FF0000FF" "#FF9900FF" "#CCFF00FF" "#33FF00FF" "#00FF66FF"
+##  [6] "#00FFFFFF" "#0066FFFF" "#3300FFFF" "#CC00FFFF" "#FF0099FF"
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+The most simple way to change the colors is to change these vectors by hand; the
+most secure way is to use the inbuit color\_4 function:
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{subs.C} \hlkwb{<-} \hlkwd{colors_4}\hlstd{(subs.C,} \hlstr{'RFgrouping RFclust_row 1'}\hlstd{,} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{)\{} \hlkwd{bluered}\hlstd{(x) \} )}
+\hlstd{subs.C}\hlopt{@}\hlkwc{usedObj}\hlstd{[[}\hlstr{'colorRange'}\hlstd{]][[}\hlstr{'RFgrouping RFclust_row 1'}\hlstd{]]}
+\end{alltt}
+\begin{verbatim}
+##  [1] "#0000FF" "#4040FF" "#8080FF" "#BFBFFF" "#FFFFFF" "#FFFFFF" "#FFBFBF"
+##  [8] "#FF8080" "#FF4040" "#FF0000"
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+The groupings can also be plotted to a separate legend using the plot.legend
+function:
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{## this will create a file 'x@outpath/PlotSomething_hist_4_groups.pdf'}
+\hlkwd{plot.legend}\hlstd{( subs,} \hlstr{'hclust samples 4 groups'}\hlstd{,} \hlkwc{file}\hlstd{=}\hlstr{"PlotSomething"}\hlstd{,} \hlkwc{pdf}\hlstd{=T )}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+The output figure can be seen in figure \ref{legendExample} on page
+\pageref{legendExample}.
+
+
+\begin{figure}
+\label{legendExample}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{## this will create a file 'x@outpath/PlotSomething_hist_4_groups.pdf'}
+\hlkwd{plot.legend}\hlstd{( subs,} \hlstr{'hclust samples 4 groups'} \hlstd{)}
+\end{alltt}
+\end{kframe}
+\includegraphics[width=\maxwidth]{figure/plot_legend-1} 
+
+\end{knitrout}
+\end{figure}
+
+
+\end{document}
