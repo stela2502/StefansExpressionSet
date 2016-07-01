@@ -17,12 +17,11 @@ setGeneric('normalize', ## Name
 )
 
 setMethod('normalize', signature = c ('NGSexpressionSet'),
-		definition = function (  object, readCounts=NULL, to_gene_length=FALSE, geneLengthCol='transcriptLength' ) {
+		definition = function (  object, ..., readCounts=NULL, to_gene_length=FALSE, geneLengthCol='transcriptLength' ) {
 			if ( ! object@snorm ){
 				if ( is.null( readCounts ) ) {
 					readCounts <- as.vector( DESeq::estimateSizeFactorsForMatrix ( as.matrix(object@data)) )
 				}
-				browser()
 				object@samples$SizeFactor <- readCounts
 				object@raw <- object@data
 				object@data =  data.frame(t(apply(object@data,1, function(a) { a / readCounts } ) ))

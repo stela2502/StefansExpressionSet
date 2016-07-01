@@ -10,7 +10,8 @@ Description: StefansExpressionSet is a simple package to analyze NGS expression 
 Depends: 
 	reshape2, 
 	stringr, 
-	RSvgDevice, 
+	RSvgDevice,
+	DESeq,
 	rgl, 
 	gplots,
     RFclust.SGE,
