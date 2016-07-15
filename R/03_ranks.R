@@ -14,7 +14,7 @@ setGeneric('ranks', ## Name
 
 setMethod('ranks', signature = c ('StefansExpressionSet') ,
 	definition = function (x ) {
-	if ( is.na(x@usedObj[['ranks']]) ){
+	if ( is.null(x@usedObj[['ranks']]) ){
 		x@usedObj[['ranks']] <- apply( x@data,2,order)
 		colnames( x@usedObj[['ranks']] ) <- colnames(x@data) 
 		rownames( x@usedObj[['ranks']] ) <- rownames(x@data) 

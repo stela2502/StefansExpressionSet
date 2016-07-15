@@ -25,9 +25,9 @@ setMethod('restrictSamples', signature = c ( 'StefansExpressionSet') ,
 	}
 	
 	switch( mode,
-			'less' = S <- x@samples[which ( x@samples[,column] <=  value), ], 
-			'more' = S <- x@samples[which ( x@samples[,column] > value ), ], 
-			'onlyless' = S <- x@samples[which ( x@samples[,column]  < value ), ],
+			'less' = S <- x@samples[which ( as.numeric(x@samples[,column]) >  value), ], 
+			'more' = S <- x@samples[which ( as.numeric(x@samples[,column]) < value ), ], 
+			'onlyless' = S <- x@samples[which ( as.numeric(x@samples[,column])  >= value ), ],
 			'equals' = S <- x@samples[which ( x@samples[,column] ==  value), ],
 			'grep' = S <- x@samples[ grep(value,x@samples[,column]) ,]
 	)
