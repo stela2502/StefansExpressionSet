@@ -64,7 +64,7 @@ setMethod('rfCluster_row', signature = c ('StefansExpressionSet'),
 					}
 					if ( is.null(x@usedObj[['rfExpressionSets_row']])){
 						x@usedObj[['rfExpressionSets_row']] <- list()
-						x@usedObj[['rfObj_row']][[ i ]] <- list()
+						x@usedObj[['rfObj_row']] <- list()
 					}
 					
 					if ( length( x@usedObj[['rfExpressionSets_row']] ) < i  ) {
