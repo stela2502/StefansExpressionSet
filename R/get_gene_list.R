@@ -3,7 +3,7 @@
 #' @rdname get_gene_list-methods
 #' @docType methods
 #' @description Query all stat tables and select genes based on multiple p value cutoff values
-#' @param x the ExpressionSet
+#' @param x the StefansExpressionSet
 #' @param p_value a list of p value cut offs (0.1,  1e-2 ,1e-3,1e-4,1e-5, 1e-6, 1e-7, 1e-8 )
 #' @param geneNameCol the (optional) annotation column defining the gene names
 #' @title description of function get_gene_list

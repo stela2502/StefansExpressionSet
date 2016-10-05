@@ -10,7 +10,7 @@ get_gene_list(x, p_value = c(0.1, 0.01, 0.001, 1e-04, 1e-05, 1e-06, 1e-07,
   1e-08), geneNameCol = NULL)
 }
 \arguments{
-\item{x}{the ExpressionSet}
+\item{x}{the StefansExpressionSet}
 
 \item{p_value}{a list of p value cut offs (0.1,  1e-2 ,1e-3,1e-4,1e-5, 1e-6, 1e-7, 1e-8 )}
 

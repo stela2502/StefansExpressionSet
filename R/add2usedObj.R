@@ -23,7 +23,7 @@ setMethod('add2usedObj', signature = c('StefansExpressionSet') ,
 	if ( is.null(data.name)){
 		dataObj@usedObj[[list.name]] <- object
 	}else {
-		
+		dataObj@usedObj[[list.name]][[data.name]] <- object
 	}
 	dataObj
 })

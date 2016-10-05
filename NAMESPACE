@@ -2,6 +2,7 @@
 
 export(NGSexpressionSet)
 export(SingleCellsNGS)
+export(add2usedObj)
 export(addAnnotation)
 export(addCluster)
 export(anayse_working_set)
