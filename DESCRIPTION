@@ -15,6 +15,9 @@ Depends:
 	gplots,
     RFclust.SGE,
 	ggplot2
+Imports: MAST
+biocViews:
+    MAST
 License: GPL-2
 Suggests:
     testthat

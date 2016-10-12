@@ -3,7 +3,7 @@
 #' @rdname describe.probeset-methods
 #' @docType methods
 #' @description print all annotation values + all values + all stat results for one probeset
-#' @param x the ExpressionSet object
+#' @param x the StefansExpressionSet object
 #' @param probeset the probeset to describe
 #' @title description of function describe.probeset
 #' @export 

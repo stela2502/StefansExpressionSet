@@ -5,17 +5,28 @@
 #' @description  uses ggplot2 to plot heatmaps
 #' @param merged the merged data object with the Expression column that should be colored
 #' @param colrs and optional colors vector( gray + bluered for data and rainbow for samples)
+#' @param lowest the lowest color in teh heatmap (gray by default)
 #' @title description of function gg.heatmap.list
 #' @return a list with the modified merged table and the colors vector
 #' @export 
 setGeneric('defineHeatmapColors', ## Name
-		function (x, melted,..., colrs=NULL) { ## Argumente der generischen Funktion
+		function (x, melted,..., colrs=NULL, lowest='gray') { ## Argumente der generischen Funktion
 			standardGeneric('defineHeatmapColors') ## der Aufruf von standardGeneric sorgt für das Dispatching
 		}
 )
 
 setMethod('defineHeatmapColors', signature = c ( 'SingleCellsNGS') ,
-		definition = function (x, melted, colrs=NULL ){
+		definition = function (x, melted, colrs=NULL, lowest='gray' ){
+			if ( ! is.null(lowest) ) {
+				colors= c(
+						lowest, 
+						gplots::bluered(length(brks) -2  ), ## the expression
+				)
+			}else {
+				colors= c(
+						gplots::bluered(length(brks) -1  ), ## the expression
+				)
+			}
 			if ( is.factor( melted$Expression )) {
 				## here might be some row grouping going on!
 				d <- levels(melted$Expression)[melted$Expression]
@@ -27,11 +38,7 @@ setMethod('defineHeatmapColors', signature = c ( 'SingleCellsNGS') ,
 				brks = unique(brks)
 				d[-prob.id]  <- brks [cut( n, breaks= brks)]
 				melted$Expression <- factor( d, levels= c(brks, treat.separate ) )
-				colors= c(
-						'gray', 
-						gplots::bluered(length(brks) -2  ), ## the expression
-						rainbow( length(treat.separate) ) ## the sample descriptions
-				)
+				colors <- c( colors,rainbow( length(treat.separate) ) )
 			}
 			else {
 				n <- as.numeric(melted$Expression )
@@ -39,11 +46,6 @@ setMethod('defineHeatmapColors', signature = c ( 'SingleCellsNGS') ,
 				brks= c( (m-.1), as.vector(quantile(n[which(n != m)],seq(0,1,by=0.1)) ))
 				brks = unique(brks)
 				melted$Expression <- factor( brks [cut( n, breaks= brks)] , levels= c(brks) )
-				
-				colors= c(
-								'gray', 
-								gplots::bluered(length(brks) -2  ) ## the expression
-				)
 			}
 			list (melted = melted, colors = colors)
 		}

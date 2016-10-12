@@ -6,10 +6,12 @@
 \alias{defineHeatmapColors,SingleCellsNGS-method}
 \title{description of function gg.heatmap.list}
 \usage{
-defineHeatmapColors(x, melted, ..., colrs = NULL)
+defineHeatmapColors(x, melted, ..., colrs = NULL, lowest = "gray")
 }
 \arguments{
 \item{colrs}{and optional colors vector( gray + bluered for data and rainbow for samples)}
+
+\item{lowest}{the lowest color in teh heatmap (gray by default)}
 
 \item{merged}{the merged data object with the Expression column that should be colored}
 }
