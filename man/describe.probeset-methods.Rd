@@ -9,7 +9,7 @@
 describe.probeset(x, probeset)
 }
 \arguments{
-\item{x}{the ExpressionSet object}
+\item{x}{the StefansExpressionSet object}
 
 \item{probeset}{the probeset to describe}
 }

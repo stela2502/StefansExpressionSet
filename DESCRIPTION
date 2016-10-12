@@ -14,8 +14,8 @@ Depends:
 	rgl, 
 	gplots,
     RFclust.SGE,
-	ggplot2,
-	MAST
+    MAST,
+	ggplot2
 License: GPL-2
 Suggests:
     testthat

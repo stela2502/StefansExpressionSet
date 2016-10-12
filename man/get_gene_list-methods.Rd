@@ -17,7 +17,7 @@ get_gene_list(x, p_value = c(0.1, 0.01, 0.001, 1e-04, 1e-05, 1e-06, 1e-07,
 \item{geneNameCol}{the (optional) annotation column defining the gene names}
 }
 \value{
-the ExpressionSet object with values in the sig_genes slot
+the StefansExpressionSet object with values in the sig_genes slot
 }
 \description{
 Query all stat tables and select genes based on multiple p value cutoff values

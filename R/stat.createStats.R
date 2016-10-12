@@ -74,29 +74,37 @@ setMethod('createStats', signature = c ( 'StefansExpressionSet') ,
 
 setMethod('createStats', signature = c ( 'SingleCellsNGS') ,
 		definition = function ( x, condition, files=F, A=NULL, B=NULL ) {
+			if (!requireNamespace("MAST", quietly = TRUE)) {
+				stop("MAST needed for this function to work. Please install it.",
+						call. = FALSE)
+			}
 			toM <- function (x) {
 				d <- as.matrix(x@data)
 				d[which(d==-20)] <- NA
 				d[is.na(d)] <- 0
+				d
 			}
 			if ( is.null(x@samples[,condition]) ) {
 				stop( paste("the condition",condition, "is not defined in the samples table!"))
 			}
 			if ( is.null(A) ) {
 				name = paste ("SingleCellAssay",condition)
+				a <- x
 			}else {
 				keep <- which( x@samples[,condition] ==A | x@samples[,condition] == B)
 				name = paste ("SingleCellAssay",condition, A, B)
-				x <- drop.samples ( x, colnames(x@data)[-keep], name=name)
+				a <- drop.samples ( x, colnames(x@data)[-keep], name=name)
 			}
-			browser()
-			d <- toM(x)
-			sca <- FromMatrix(class='SingleCellAssay', exprsArray=t(d), data.frame(wellKey=rownames(d)), data.frame(primerid=colnames(d)) )
+			d <- toM(a)
+			sca <- MAST::FromMatrix(class='SingleCellAssay', 
+					exprsArray=d, 
+					data.frame(wellKey=colnames(d), GroupName = a@samples[,condition]), 
+					data.frame(primerid=rownames(d)))
 			
-			groups <- colData(sca)$GroupName <- x@samples[,condition]
-			zlm.output <- zlm.SingleCellAssay(~ GroupName, sca, method='glm', ebayes=T)
-			zlm.lr <- lrTest(zlm.output,'GroupName')
-			x <- add_to_stat ( x, zlm.lr, name )
+			groups <- colData(sca)$GroupName <- a@samples[,condition]
+			zlm.output <- MAST::zlm.SingleCellAssay(~ GroupName, sca, method='glm', ebayes=T)
+			zlm.lr <- MAST::lrTest(zlm.output,'GroupName')
+			x <- add_to_stat ( x, zlm.lr[,,'Pr(>Chisq)'], name )
 			x
 			
 		})
