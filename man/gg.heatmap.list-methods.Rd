@@ -7,7 +7,7 @@
 \title{description of function gg.heatmap.list}
 \usage{
 gg.heatmap.list(dat, glist = NULL, colrs = NULL, groupCol = "GroupID",
-  colCol = NULL)
+  colCol = NULL, lowest = "gray")
 }
 \arguments{
 \item{dat}{the StefansExpressionSet object}
@@ -19,6 +19,8 @@ gg.heatmap.list(dat, glist = NULL, colrs = NULL, groupCol = "GroupID",
 \item{groupCol}{the column group in the samples table that contains the grouping strings}
 
 \item{colCol}{the column group in the samples table that contains the color groups}
+
+\item{lowest}{the color for the lowest expression value (default NULL)}
 }
 \description{
 uses ggplot2 to plot heatmaps

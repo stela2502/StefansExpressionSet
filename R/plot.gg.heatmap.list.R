@@ -8,16 +8,17 @@
 #' @param colrs a list of colors for the sample level boxes (or rainbow colors)
 #' @param groupCol the column group in the samples table that contains the grouping strings
 #' @param colCol the column group in the samples table that contains the color groups
+#' @param lowest the color for the lowest expression value (default NULL)
 #' @title description of function gg.heatmap.list
 #' @export 
 setGeneric('gg.heatmap.list', ## Name
-		function (dat,glist=NULL, colrs=NULL, groupCol='GroupID', colCol=NULL) { ## Argumente der generischen Funktion
+		function (dat,glist=NULL, colrs=NULL, groupCol='GroupID', colCol=NULL, lowest='gray') { ## Argumente der generischen Funktion
 			standardGeneric('gg.heatmap.list') ## der Aufruf von standardGeneric sorgt für das Dispatching
 		}
 )
 
 setMethod('gg.heatmap.list', signature = c ( 'StefansExpressionSet') ,
-		definition = function (dat,glist=NULL, colrs=NULL, groupCol='GroupID', colCol=NULL) {
+		definition = function (dat,glist=NULL, colrs=NULL, groupCol='GroupID', colCol=NULL, lowest='gray') {
 			
 			if ( ! is.null(glist) ) {
 				isect <- reduce.Obj ( dat, glist)
@@ -32,7 +33,7 @@ setMethod('gg.heatmap.list', signature = c ( 'StefansExpressionSet') ,
 			#dat.ss <- dat[which(is.na(match(dat$Gene.Symbol,isect))==F),]
 			colnames(dat.ss) <- c( 'Gene.Symbol', 'Sample', 'Expression', 'Group', 
 					paste('ColorGroup', 1:10) )[1:ncol(dat.ss)]
-			r <- defineHeatmapColors(dat, dat.ss )
+			r <- defineHeatmapColors(dat, dat.ss,  lowest=lowest)
 			dat.ss <- r$melted ## cut was applied
 			ord.genes <- rownames(isect@data)[hclust(dist(isect@data),method="ward.D2")$order]
 			if ( ! is.null(colCol) ){

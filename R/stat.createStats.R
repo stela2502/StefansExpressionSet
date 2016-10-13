@@ -67,7 +67,44 @@ add_to_stat <- function( x, stat, name ) {
 
 
 setMethod('createStats', signature = c ( 'StefansExpressionSet') ,
-	definition = function ( x, condition, files=F, A=NULL, B=NULL ) {
-	stop( 'Not implemented' )
-})
+		definition = function ( x, condition, files=F, A=NULL, B=NULL ) {
+			stop( 'Not implemented' )
+		})
 
+
+setMethod('createStats', signature = c ( 'SingleCellsNGS') ,
+		definition = function ( x, condition, files=F, A=NULL, B=NULL ) {
+			if (!requireNamespace("MAST", quietly = TRUE)) {
+				stop("MAST needed for this function to work. Please install it.",
+						call. = FALSE)
+			}
+			toM <- function (x) {
+				d <- as.matrix(x@data)
+				d[which(d==-20)] <- NA
+				d[is.na(d)] <- 0
+				d
+			}
+			if ( is.null(x@samples[,condition]) ) {
+				stop( paste("the condition",condition, "is not defined in the samples table!"))
+			}
+			if ( is.null(A) ) {
+				name = paste ("SingleCellAssay",condition)
+				a <- x
+			}else {
+				keep <- which( x@samples[,condition] ==A | x@samples[,condition] == B)
+				name = paste ("SingleCellAssay",condition, A, B)
+				a <- drop.samples ( x, colnames(x@data)[-keep], name=name)
+			}
+			d <- toM(a)
+			sca <- MAST::FromMatrix(class='SingleCellAssay', 
+					exprsArray=d, 
+					data.frame(wellKey=colnames(d), GroupName = a@samples[,condition]), 
+					data.frame(primerid=rownames(d)))
+			
+			groups <- colData(sca)$GroupName <- a@samples[,condition]
+			zlm.output <- MAST::zlm.SingleCellAssay(~ GroupName, sca, method='glm', ebayes=T)
+			zlm.lr <- MAST::lrTest(zlm.output,'GroupName')
+			x <- add_to_stat ( x, zlm.lr[,,'Pr(>Chisq)'], name )
+			x
+			
+		})

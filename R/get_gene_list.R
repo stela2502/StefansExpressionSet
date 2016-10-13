@@ -7,7 +7,7 @@
 #' @param p_value a list of p value cut offs (0.1,  1e-2 ,1e-3,1e-4,1e-5, 1e-6, 1e-7, 1e-8 )
 #' @param geneNameCol the (optional) annotation column defining the gene names
 #' @title description of function get_gene_list
-#' @return the ExpressionSet object with values in the sig_genes slot
+#' @return the StefansExpressionSet object with values in the sig_genes slot
 #' @export 
 setGeneric('get_gene_list', ## Name
 		function (x, p_value = c ( 0.1,  1e-2 ,1e-3,1e-4,1e-5, 1e-6, 1e-7, 1e-8 ), geneNameCol=NULL ) { ## Argumente der generischen Funktion
