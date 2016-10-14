@@ -15,7 +15,7 @@ Depends:
 	gplots,
     RFclust.SGE,
 	ggplot2
-Imports: MAST
+Suggests: MAST
 biocViews:
     MAST
 License: GPL-2

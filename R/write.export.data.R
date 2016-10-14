@@ -14,7 +14,9 @@ setGeneric('export.data', ## Name
 
 setMethod('export.data', signature = c ( 'StefansExpressionSet') ,
 		definition = function ( x ) {
-			write.table(cbind ( x@annotation, x@data ), file=paste(x@outpath,x@name,"_expressionValues.xls",sep=''),sep='\t', row.names=F,quote=F )
-			write.table( x@samples, file=paste( x@outpath, x@name, "_sampleInformation.xls",sep='' ), sep='\t', row.names=F,quote=F )
+			ofile = paste(x@outpath,str_replace_all(x@name, "\\s+", "_" ),sep='')
+			write.table(cbind ( x@annotation, x@data ), file=paste(ofile,"expressionValues.xls",sep='_'),sep='\t', row.names=F,quote=F )
+			write.table( x@samples, file=paste( ofile, "sampleInformation.xls",sep='_' ), sep='\t', row.names=F,quote=F )
+	#		write.table( x@annotation, file=paste( ofile, "gene_annotation.xls",sep='_' ), sep='\t', row.names=F,quote=F )
 		})
 
