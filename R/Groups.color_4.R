@@ -37,7 +37,15 @@ setMethod('colors_4', signature = c ('StefansExpressionSet'),
 				else {
 					stop( "Sorry this column is nether defined in the samples nor in the annotation table!" )
 				}
-				
+				if ( length(levels( x@samples[, name ])) > 10 ) {
+					l <- length(levels( x@samples[, name ]))
+					col <- x@usedObj[['colorRange']][[name]]
+					if ( l %% 2 == 0 ) {
+						x@usedObj[['colorRange']][[name]] <- c(rbind( col[1:(l/2)], col[(l/2+1):l] ))
+					}else {
+						x@usedObj[['colorRange']][[name]] <- c(rbind( col[1:(l/2+1)], c(col[(l/2+1):l],'white') ))[1:l]
+					}
+				}
 			}
 			x
 		}
