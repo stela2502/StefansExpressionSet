@@ -6,16 +6,13 @@
 \alias{NGSexpressionSet,NGSexpressionSet-method}
 \title{description of function NGSexpressionSet}
 \usage{
-NGSexpressionSet(dat, Samples, Analysis = NULL, name = "WorkingSet",
-  namecol = "GroupName", namerow = "GeneID", usecol = "Use",
-  outpath = NULL)
+NGSexpressionSet(dat, Samples, name = "WorkingSet", namecol = "filename",
+  namerow = "GeneID", outpath = NULL)
 }
 \arguments{
 \item{dat}{data frame or matrix containing all expression data}
 
 \item{Samples}{A sample description table}
-
-\item{Analysis}{If the samples table contains a Analysis column you can subset the data already here to the Analysis here (String). This table has to contain a column filenames that is expected to connect the sample table to the dat column names.}
 
 \item{name}{The name of this object is going to be used in the output of all plots and tables - make it specific}
 
@@ -24,10 +21,6 @@ NGSexpressionSet(dat, Samples, Analysis = NULL, name = "WorkingSet",
 \item{namerow}{This is the name of the gene level annotation column in the dat file to use as ID}
 
 \item{outpath}{Where to store the output from the analysis}
-
-\item{annotation}{The annotation table from e.g. affymetrix csv data}
-
-\item{newOrder}{The samples column name for the new order (default 'Order')}
 }
 \value{
 A new NGSexpressionSet object

@@ -4,16 +4,6 @@
 \name{saveObj}
 \alias{saveObj}
 \alias{saveObj,StefansExpressionSet-method}
-<<<<<<< HEAD
-\title{description of function analyse.data}
-\usage{
-saveObj(data, file = NULL)
-}
-\arguments{
-\item{file}{theoutfile default='SCExV_Grps.txt'}
-
-\item{obj}{the Rscexv object}
-=======
 \title{description of function saveObj}
 \usage{
 saveObj(data, file = NULL)
@@ -21,8 +11,7 @@ saveObj(data, file = NULL)
 \arguments{
 \item{data}{the StefansExpressionSet object}
 
-\item{file}{theoutfile default=paste(str_replace_all(data@name, "\\s+", "_" ), '.RData',sep='')}
->>>>>>> branch 'master' of git@github.com:stela2502/StefansExpressionSet.git
+\item{file}{the outfile default=paste(str_replace_all(data@name, "\\s+", "_" ), '.RData',sep='')}
 }
 \description{
 This function saves the object either as analysis.RData or norm_data.RData if the analysi.RData has not been produced before

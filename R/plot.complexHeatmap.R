@@ -1,4 +1,4 @@
-4g
+
 #' @name complexHeatmap
 #' @aliases complexHeatmap,StefansExpressionSet-method
 #' @rdname complexHeatmap-methods
