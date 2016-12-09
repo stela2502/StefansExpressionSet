@@ -66,7 +66,6 @@ setMethod('normalize', signature = c ('SingleCellsNGS'),
 					, name=name )
 			if ( ! object@snorm ){
 				object@raw <- object@data
-				object@snorm = TRUE
 			}
 			## resample the data
 			n <- nrow(object@raw)
@@ -77,6 +76,7 @@ setMethod('normalize', signature = c ('SingleCellsNGS'),
 				object@data[ as.numeric(names(t)),i] <- as.numeric(t)
 			}
 			}
+			object@snorm = TRUE
 			object
 		}
 )

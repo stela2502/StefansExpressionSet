@@ -7,12 +7,15 @@
 \title{description of function read.bams}
 \usage{
 read.bams(bamFiles, annotation, GTF.featureType = "exon",
-  GTF.attrType = "gene_id", isPairedEnd = FALSE, nthreads = 2)
+  GTF.attrType = "gene_id", isPairedEnd = FALSE, nthreads = 2,
+  as.obj = F)
 }
 \arguments{
 \item{bamFiles}{a file containing one file name per line}
 
 \item{annotation}{the gene level annotation to use}
+
+\item{as.obj}{if true return the couts object instead of a matrix (default =F)}
 }
 \description{
 Use most of'StefansExpressionSet'functionallity with minor changes to NGS data (like normalizing)
