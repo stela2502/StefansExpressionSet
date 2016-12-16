@@ -30,7 +30,8 @@ setMethod('coexprees4gene', signature = c ( 'StefansExpressionSet') ,
 			)
 		}
 		adj.p <- p.adjust(pval , method = padjMethod) #BH
-		ret <- data.frame('GeneSymbol' = x@annotation[,geneNameCol], pval = pval, cor = cor, adj.p = adj.p )
+		ret <- data.frame( pval = pval, cor = cor, adj.p = adj.p )
+		ret <- cbind(x@annotation[,geneNameCol], ret )
 		rownames(ret) <- rownames(x@data)
 	}
 	ret
