@@ -81,8 +81,12 @@ setMethod('complexHeatmap', signature = c ('StefansExpressionSet'),
 			brks <- unique(as.vector(c(minValueExpr(x),quantile(data[which(data!= minValueExpr(x))],seq(0,1,by=0.1)),max(data))))
 			if ( ! is.null(ofile)){
 				if ( pdf ) {
+					width= ceiling(nrow(x@samples)/300) * 10
+					height = ceiling( nrow(x@annotation) / 100 ) * 8
 					pdf( file=paste(file.path(x@outpath,ofile),'pdf',sep='.'), width=10, height=8)
 				}else{
+					width= ceiling(nrow(x@samples)/300) * 1600
+					height = ceiling( nrow(x@annotation) / 100 ) *800
 					png( file=paste(file.path(x@outpath,ofile),'png',sep='.'), width=1600, height=800)
 				}
 				for ( v in colGroups ) {
@@ -92,7 +96,6 @@ setMethod('complexHeatmap', signature = c ('StefansExpressionSet'),
 					plot.legend(x, file=paste(ofile, 'row'), colname=v, pdf=pdf, col=rowColors[[v]] )
 				}
 			}
-			
 			heatmap.3(
 					data, breaks=brks,col=heapmapCols(length(brks)-2), Rowv=F, Colv = F,  key=F, symkey=FALSE,
 					trace='none', 
@@ -100,6 +103,7 @@ setMethod('complexHeatmap', signature = c ('StefansExpressionSet'),
 					RowSideColors=RowSideColors,RowSideColorsSize=RowSideColorsSize, 
 					cexRow=0.6,cexCol=0.7,main=main, dendrogram=dendrogram, labCol = "", lwid=c(0.5,4), lhei=c(1,4)
 			)
+			
 			if ( ! is.null(ofile)){
 				dev.off()
 				pdf( file=paste(file.path(x@outpath,ofile),'_legend_values.pdf',sep='.'), width=8, height=4)
