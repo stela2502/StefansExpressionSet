@@ -1,0 +1,86 @@
+#' @name mds
+#' @aliases mds,StefansExpressionSet-method
+#' @rdname mds-methods
+#' @docType methods
+#' @description Calculates the MDS for a given MDS type and stores the 3 dimensions in the object for later use.
+#' @param dataObj the StefansExpressionSet object
+#' @param mds.type Which MDS function should be called default="PCA"
+#' @param onwhat condense which dataset at the moment only Expression is supported default='expression'
+#' @title description of function mds.and.clus
+#' @export 
+setGeneric('mds', ## Name
+	function ( dataObj, ..., mds.type="PCA" , onwhat ='Expression' ) { ## Argumente der generischen Funktion
+		standardGeneric('mds') ## der Aufruf von standardGeneric sorgt für das Dispatching
+	}
+)
+
+setMethod('mds', signature = c ('StefansExpressionSet'),
+	definition = function ( dataObj, ..., mds.type="PCA", onwhat ='Expression' ) {
+	## the code is crap re-code!!
+	if(onwhat=="Expression"){
+		tab <- t(as.matrix(dataObj@data))
+	} 
+	else {
+		stop( paste("Sorry, the mds.type",mds.type,"is not supported") )
+	}
+	this.k <- paste(onwhat,mds.type)
+	if ( is.null( dataObj@usedObj$MDS) ) {
+		dataObj@usedObj$MDS = list()
+	}
+	if ( (is.null(dataObj@usedObj$MDS[[this.k]])) ||  all.equal( rownames(dataObj@usedObj$MDS[[this.k]]), colnames(dataObj@data) )==F ) {
+		mds.proj <- NULL
+		pr <- NULL
+		#system ( 'rm loadings.png' )
+		if(mds.type == "PCA"){
+			pr <- prcomp(tab)
+			mds.proj <- pr$x[,1:3]
+			png ( file=file.path( dataObj@outpath,'loadings.png'), width=1000, height=1000 )
+			plot (  pr$rotation[,1:2] , col='white' );
+			text( pr$rotation[,1:2], labels= rownames(pr$rotation), cex=1.5 )
+			dev.off()
+			write.table( cbind( Genes = rownames(pr$rotation), pr$rotation[,1:2] ), 
+					file=file.path( dataObj@outpath,'gene_loadings.xls') , row.names=F, sep='\t',quote=F )
+			#	mds.trans <- prcomp(t(tab))$x[,1:3]
+		} else if ( mds.type=='DM') {
+			browser()
+			dm <- DiffusionMap(dataObj@raw, distance = "cosine", sigma = .26)
+			mds.proj <- as.data.frame(dm)[,1:3]
+		}
+		else if ( mds.type == "LLE"){
+			mds.proj <- LLE( tab, dim = 3, k = as.numeric(LLEK) )
+			#	mds.trans <- LLE( t(tab), dim = 3, k = as.numeric(LLEK) )
+		}else if ( mds.type == "ISOMAP"){
+			mds.proj <- Isomap( tab, dim = 3, k = as.numeric(LLEK) )$dim3
+			#	mds.trans <- Isomap( t(tab), dim = 3, k = as.numeric(LLEK) )$dim3
+		}else if ( mds.type == "ZIFA" ) {
+			print ( "Running external python script to apply ZIFA dimensional reduction (PCR data only)" )
+			ZIFA <- 40.000001 - dataObj@raw
+			write.table( ZIFA, file="ZIFA_input.dat", sep=" ", col.names=F, row.names=F , quote=F)
+			write( c("from ZIFA import ZIFA","from ZIFA import block_ZIFA", "import numpy as np",
+							"Y = np.loadtxt('ZIFA_input.dat')", "Z, model_params = ZIFA.fitModel( Y, 3 )", 
+							"np.savetxt('TheMDS_ZIFA.xls', Z )" ), 
+					file= 'ZIFA_calc.py' )
+			system( "python ZIFA_calc.py" )
+			Sys.sleep(5)
+			mds.proj <- read.delim( "TheMDS_ZIFA.xls", sep=' ', header=F)
+			rownames(mds.proj) <- rownames(ZIFA)
+			colnames(mds.proj) <- c( 'x','y','z')
+			
+		} else if ( mds.type == "DDRTree" ) {
+			DDRTree_res <- DDRTree( as.matrix(t(dataObj@data)), dimensions=3)
+			mds.proj <- t(DDRTree_res$Z)
+			rownames(mds.proj) <- rownames(dataObj@data)
+			dataObj@usedObj$DRRTree <- DDRTree_res
+			
+		}
+		else {
+			print( paste("Sory I can not work on the option",mds.type) )
+		}
+		dataObj@usedObj$MDS[[mds.type]] <- mds.proj
+
+	}
+#	dataObj <- clusters ( dataObj, onwhat=onwhat, clusterby=clusterby, groups.n = groups.n,
+#			ctype = ctype, cmethod=cmethod, useGrouping=useGrouping )
+	
+	dataObj
+} )
