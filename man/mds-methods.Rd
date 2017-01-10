@@ -6,7 +6,7 @@
 \alias{mds,StefansExpressionSet-method}
 \title{description of function mds.and.clus}
 \usage{
-mds(dataObj, ..., mds.type = "PCA", onwhat = "Expression")
+mds(dataObj, ..., mds.type = "PCA", onwhat = "Expression", genes = F)
 }
 \arguments{
 \item{dataObj}{the StefansExpressionSet object}
@@ -14,6 +14,8 @@ mds(dataObj, ..., mds.type = "PCA", onwhat = "Expression")
 \item{mds.type}{Which MDS function should be called default="PCA"}
 
 \item{onwhat}{condense which dataset at the moment only Expression is supported default='expression'}
+
+\item{genes}{do it on genes not on samples (default = F)}
 }
 \description{
 Calculates the MDS for a given MDS type and stores the 3 dimensions in the object for later use.

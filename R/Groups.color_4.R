@@ -35,12 +35,18 @@ setMethod('colors_4', signature = c ('StefansExpressionSet'),
 			}
 			if ( is.na( match( name, names(x@usedObj[['colorRange']])))) {
 				if ( !is.na( match(name, colnames(x@samples)))){
+					if ( is.na(match(class(x@samples[, name ]),'factor')) ){
+						x@samples[, name ] <- factor(x@samples[, name ])
+					}
 					x@usedObj[['colorRange']][[name]] <- mix(
 							colFunc( length(levels( x@samples[, name ]))) ,
 							length(levels( x@samples[, name ])) 
 					)
 				}
 				else if ( !is.na( match(name, colnames(x@annotation)))){
+					if ( is.na(match(class(x@annotation[, name ]),'factor')) ){
+						x@annotation[, name ] <- factor(x@annotation[, name ])
+					}
 					x@usedObj[['colorRange']][[name]] <- mix( 
 							colFunc( length(levels( x@annotation[, name ]))),
 							length(levels( x@annotation[, name ]))

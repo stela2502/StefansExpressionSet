@@ -6,22 +6,26 @@
 #' @param dataObj the StefansExpressionSet object
 #' @param mds.type Which MDS function should be called default="PCA"
 #' @param onwhat condense which dataset at the moment only Expression is supported default='expression'
+#' @param genes do it on genes not on samples (default = F)
 #' @title description of function mds.and.clus
 #' @export 
 setGeneric('mds', ## Name
-	function ( dataObj, ..., mds.type="PCA" , onwhat ='Expression' ) { ## Argumente der generischen Funktion
+	function ( dataObj, ..., mds.type="PCA" , onwhat ='Expression', genes=F ) { ## Argumente der generischen Funktion
 		standardGeneric('mds') ## der Aufruf von standardGeneric sorgt für das Dispatching
 	}
 )
 
 setMethod('mds', signature = c ('StefansExpressionSet'),
-	definition = function ( dataObj, ..., mds.type="PCA", onwhat ='Expression' ) {
+	definition = function ( dataObj, ..., mds.type="PCA", onwhat ='Expression', genes=F ) {
 	## the code is crap re-code!!
 	if(onwhat=="Expression"){
-		tab <- t(as.matrix(dataObj@data))
+		tab <- as.matrix(t(dataObj@data))
 	} 
 	else {
 		stop( paste("Sorry, the mds.type",mds.type,"is not supported") )
+	}
+	if ( genes ) {
+		tab <- t(tab)
 	}
 	this.k <- paste(onwhat,mds.type)
 	if ( is.null( dataObj@usedObj$MDS) ) {
@@ -42,8 +46,11 @@ setMethod('mds', signature = c ('StefansExpressionSet'),
 					file=file.path( dataObj@outpath,'gene_loadings.xls') , row.names=F, sep='\t',quote=F )
 			#	mds.trans <- prcomp(t(tab))$x[,1:3]
 		} else if ( mds.type=='DM') {
-			browser()
-			dm <- DiffusionMap(dataObj@raw, distance = "cosine", sigma = .26)
+			if ( ! exists('sigma') ){
+				sigmas <- find.sigmas(tab, verbose=F)
+				sigma <- optimal.sigma(sigmas)
+			}
+			dm <- DiffusionMap(tab, distance = "cosine", sigma = sigma)
 			mds.proj <- as.data.frame(dm)[,1:3]
 		}
 		else if ( mds.type == "LLE"){
@@ -53,8 +60,15 @@ setMethod('mds', signature = c ('StefansExpressionSet'),
 			mds.proj <- Isomap( tab, dim = 3, k = as.numeric(LLEK) )$dim3
 			#	mds.trans <- Isomap( t(tab), dim = 3, k = as.numeric(LLEK) )$dim3
 		}else if ( mds.type == "ZIFA" ) {
+			stop( "Sorry ZIFA has to be double checked - are you working on normalized data - than ZIFA can not be applied!")
 			print ( "Running external python script to apply ZIFA dimensional reduction (PCR data only)" )
-			ZIFA <- 40.000001 - dataObj@raw
+			if ( genes ) {
+				ZIFA <- 40.000001 - dataObj@raw
+			}
+			else {
+				ZIFA <- 40.000001 - t(dataObj@raw)
+			}
+			
 			write.table( ZIFA, file="ZIFA_input.dat", sep=" ", col.names=F, row.names=F , quote=F)
 			write( c("from ZIFA import ZIFA","from ZIFA import block_ZIFA", "import numpy as np",
 							"Y = np.loadtxt('ZIFA_input.dat')", "Z, model_params = ZIFA.fitModel( Y, 3 )", 
@@ -63,20 +77,40 @@ setMethod('mds', signature = c ('StefansExpressionSet'),
 			system( "python ZIFA_calc.py" )
 			Sys.sleep(5)
 			mds.proj <- read.delim( "TheMDS_ZIFA.xls", sep=' ', header=F)
-			rownames(mds.proj) <- rownames(ZIFA)
+			if ( genes ) {
+				rownames(mds.proj) <- colnames(ZIFA)
+			}else {
+				rownames(mds.proj) <- rownames(ZIFA)
+			}
 			colnames(mds.proj) <- c( 'x','y','z')
 			
 		} else if ( mds.type == "DDRTree" ) {
-			DDRTree_res <- DDRTree( as.matrix(t(dataObj@data)), dimensions=3)
-			mds.proj <- t(DDRTree_res$Z)
-			rownames(mds.proj) <- rownames(dataObj@data)
-			dataObj@usedObj$DRRTree <- DDRTree_res
 			
+			DDRTree_res <- DDRTree( tab, dimensions=3)
+			mds.proj <- t(DDRTree_res$Z)
+			rownames(mds.proj) <- colnames(tab)
+			
+			if ( genes ) {	
+				dataObj@usedObj$DRRTree.genes <- DDRTree_res
+			}else {
+				dataObj@usedObj$DRRTree <- DDRTree_res
+			}
 		}
 		else {
 			print( paste("Sory I can not work on the option",mds.type) )
 		}
-		dataObj@usedObj$MDS[[mds.type]] <- mds.proj
+		if ( genes ) {
+			if ( is.null(dataObj@usedObj$MDSgenes)){
+				dataObj@usedObj$MDSgenes <- list()
+			}
+			dataObj@usedObj$MDSgenes[[mds.type]] <- mds.proj
+		}else{
+			if ( is.null(dataObj@usedObj$MDS)){
+				dataObj@usedObj$MDS <- list()
+			}
+			dataObj@usedObj$MDS[[mds.type]] <- mds.proj
+		}
+		
 
 	}
 #	dataObj <- clusters ( dataObj, onwhat=onwhat, clusterby=clusterby, groups.n = groups.n,

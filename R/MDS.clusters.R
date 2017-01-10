@@ -27,7 +27,7 @@ setMethod('clusters', signature = c ('StefansExpressionSet'),
 			clusters <- NULL
 			hc <- NULL
 			if(onwhat=="Expression"){
-				tab <- t(dataObj@data)
+				tab <- dataObj@data
 			}
 			else {
 				stop( paste("Sorry, the mds.type",mds.type,"is not supported") )
@@ -68,11 +68,10 @@ setMethod('clusters', signature = c ('StefansExpressionSet'),
 					dataObj@usedObj[['auto_clusters']] = 0
 				}
 				dataObj@usedObj[['auto_clusters']] <- dataObj@usedObj[['auto_clusters']] +1
-				dataObj@samples <- cbind ( dataObj@samples, clusters )
 				name <- paste( 'auto_clusters', 
 						dataObj@usedObj[['auto_clusters']] ,sep='.')
 				}
-				
+				dataObj@samples <- cbind ( dataObj@samples, clusters )
 				colnames(dataObj@samples)[ncol(dataObj@samples)] = name
 				clusters <- dataObj@usedObj[['clusters']]
 				dataObj@usedObj$usedGrouping <- name
@@ -83,15 +82,15 @@ setMethod('clusters', signature = c ('StefansExpressionSet'),
 				dataObj@usedObj$usedGrouping <- useGrouping
 			}
 			## now I want to create some gene clusters too based on hclust only
-			if ( is.null(dataObj@annotation$'hclust Order')){
-				hcG <- hclust(as.dist( 1- cor(t(dataObj@data), method='pearson') ),method = cmethod )
-				dataObj@annotation$'hclust Order' <- hcG$order
-				dataObj@annotation$'hclust 5 groups' <- factor(cutree(hcG,k=5) )
-				dataObj@annotation$'hclust 10 groups' <- factor(cutree(hcG,k=10) )
-				for ( i in c('hclust Order', 'hclust 5 groups', 'hclust 10 groups' )){
-					dataObj <- colors_4(dataObj, i )
-				}
-			}
+#			if ( is.null(dataObj@annotation$'hclust Order')){
+#				hcG <- hclust(as.dist( 1- cor(dataObj@data, method='pearson') ),method = cmethod )
+#				dataObj@annotation$'hclust Order' <- hcG$order
+#				dataObj@annotation$'hclust 5 groups' <- factor(cutree(hcG,k=5) )
+#				dataObj@annotation$'hclust 10 groups' <- factor(cutree(hcG,k=10) )
+#				for ( i in c('hclust Order', 'hclust 5 groups', 'hclust 10 groups' )){
+#					dataObj <- colors_4(dataObj, i )
+#				}
+#			}
 			dataObj@usedObj[['clusters']] <- clusters
 			dataObj@usedObj[['hc']] <- hc
 			dataObj

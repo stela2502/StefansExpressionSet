@@ -6,13 +6,15 @@
 \alias{Make3D4obj,StefansExpressionSet-method}
 \title{description of function Make3D4obj}
 \usage{
-Make3D4obj(x, group, cex = 0.5, colFunc = function(x) {     rainbow(x) },
-  cut = F, names = F, opath = NULL)
+Make3D4obj(x, group, mds.type = "PCA", cex = 0.5, colFunc = function(x) { 
+     rainbow(x) }, cut = F, names = F, opath = NULL)
 }
 \arguments{
 \item{x}{the StefansExpressionSet object}
 
 \item{group}{the grouping value (either colname from the samples table or a rowname from the data table}
+
+\item{mds.type}{the mds type to use (names from names(x@usedObj$MDS)) default = PCA}
 
 \item{cex}{define the size of the strings default=0.5}
 

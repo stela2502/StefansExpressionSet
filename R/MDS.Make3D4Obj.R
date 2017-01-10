@@ -5,6 +5,7 @@
 #' @description This function  created a MDS 3D plot with an inbuilt background describing the data colors 
 #' @param x  the StefansExpressionSet object
 #' @param group the grouping value (either colname from the samples table or a rowname from the data table
+#' @param mds.type the mds type to use (names from names(x@usedObj$MDS)) default = PCA
 #' @param cex  define the size of the strings default=0.5
 #' @param colFunc the color function if the color is not already defined using colors_4()  default= function(x){rainbow(x)}
 #' @param cut this has to be true for genes, as the samples are then binned into 10 expression groups each containing the same number of samples default=F
@@ -13,14 +14,14 @@
 #' @title description of function Make3D4obj
 #' @export 
 setGeneric('Make3D4obj', ## Name
-	function ( x, group, cex=0.5, colFunc = function(x) {rainbow(x)}, cut=F, names=F, opath=NULL ) { ## Argumente der generischen Funktion
+	function ( x, group, mds.type='PCA', cex=0.5, colFunc = function(x) {rainbow(x)}, cut=F, names=F, opath=NULL ) { ## Argumente der generischen Funktion
 		standardGeneric('Make3D4obj') ## der Aufruf von standardGeneric sorgt für das Dispatching
 	}
 )
 
 
 setMethod('Make3D4obj', signature = c ('StefansExpressionSet'),
-	definition = function ( x, group, cex=0.5, colFunc = function(x) {rainbow(x)}, cut=F, names=F, opath=NULL ) {
+	definition = function ( x, group, mds.type='PCA', cex=0.5, colFunc = function(x) {rainbow(x)}, cut=F, names=F, opath=NULL ) {
 
 		My.legend3d <- function (...) {
 			bgplot3d( {
@@ -30,7 +31,9 @@ setMethod('Make3D4obj', signature = c ('StefansExpressionSet'),
 				legend(...)
 			} )
 		}
-
+		if ( is.null (x@usedObj$MDS[[mds.type]] )){
+			x <- mds(x, mds.type=mds.type)
+		}
         if ( cut ) {
                 ## this is a gene expression value!
                 n <- as.numeric(x@data[group,] )
@@ -47,23 +50,23 @@ setMethod('Make3D4obj', signature = c ('StefansExpressionSet'),
         else {
                 col <- x@usedObj$colorRange[[group]][x@samples[,group]]
         }
-        rgl.open()
-        par3d(windowRect = c(100, 100, 864, 864)) #864 is 12 inch in the R internal counts
-        bg3d(color='#4C4C4C')
+		par3d(windowRect = c(137,   0, 744, 544))
+		rgl.open()
+		bg3d(color='#4C4C4C') 
         if ( cut ) {
                 ## plot points!
                 print ( "Debug the gene plot" )
-                rgl.points( x@usedObj$Points43D, col=col )
-                My.legend3d ("topright", legend = paste( brks ), pch=16, col= c('black', bluered(length(brks) -1  )), cex=.2,inset =c(0.02))
+                rgl.points( x@usedObj$MDS[[mds.type]], col=col )
+                My.legend3d ("topright", legend = paste( brks ), pch=16, col= c('black', bluered(length(brks) -1  )), cex=1,inset =c(0.02))
 
         }
         else {
                 if ( names) {
-                        rgl.texts( x@usedObj$Points43D, col=col, text= as.character(x@samples[,group]), cex=cex )
+                        rgl.texts( x@usedObj$MDS[[mds.type]], col=col, text= as.character(x@samples[,group]), cex=cex )
                         My.legend3d ("topright", legend = paste( unique(as.character(x@samples[,group]))  ), pch = 16, col = unique(col), cex=1, inset=c(0.02))
                 }
                 else {
-                        rgl.points( x@usedObj$Points43D, col=col )
+                        rgl.points( x@usedObj$MDS[[mds.type]], col=col )
                         My.legend3d ("topright", legend = paste( unique(as.character(x@samples[,group]))  ), pch = 16, col = unique(col), cex=1, inset=c(0.02))
                 }
         }

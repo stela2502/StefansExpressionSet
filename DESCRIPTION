@@ -14,10 +14,12 @@ Depends:
 	rgl, 
 	gplots,
     RFclust.SGE,
-	ggplot2
+	ggplot2,
+	DDRTree
 Suggests: MAST
 biocViews:
     MAST
+    destiny
 License: GPL-2
 Suggests:
     testthat
