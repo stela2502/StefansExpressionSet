@@ -25,7 +25,7 @@ setMethod('Make3D4obj', signature = c ('StefansExpressionSet'),
 
 		My.legend3d <- function (...) {
 			bgplot3d( {
-				par(mar = c(0, 0, 0, 0), bg='#4C4C4C')
+				par( mar =c(1,1,1,1),bg='#4C4C4C')
 				plot(0, 0, type = "n", xlim = 0:1, ylim = 0:1, xaxs = "i",
 						yaxs = "i", axes = FALSE, bty = "n", col='#4C4C4C')
 				legend(...)
@@ -50,9 +50,11 @@ setMethod('Make3D4obj', signature = c ('StefansExpressionSet'),
         else {
                 col <- x@usedObj$colorRange[[group]][x@samples[,group]]
         }
-		par3d(windowRect = c(137,   0, 744, 544))
+		#18 105 762 810
 		rgl.open()
-		bg3d(color='#4C4C4C') 
+		par3d(windowRect = c(18,105, 762, 810))
+		Sys.sleep(1)
+		#bg3d(color='#4C4C4C') 
         if ( cut ) {
                 ## plot points!
                 print ( "Debug the gene plot" )
