@@ -22,7 +22,7 @@ setMethod('mds', signature = c ('StefansExpressionSet'),
 		tab <- as.matrix(t(dataObj@data))
 	} 
 	else {
-		stop( paste("Sorry, the mds.type",mds.type,"is not supported") )
+		stop( paste("Sorry, the option onwhat",onwhat,"is not supported") )
 	}
 	if ( genes ) {
 		tab <- t(tab)
@@ -97,7 +97,7 @@ setMethod('mds', signature = c ('StefansExpressionSet'),
 			}
 		}
 		else {
-			print( paste("Sory I can not work on the option",mds.type) )
+			print( paste("Sory I can not work on the mds.type option",mds.type) )
 		}
 		if ( genes ) {
 			if ( is.null(dataObj@usedObj$MDSgenes)){
