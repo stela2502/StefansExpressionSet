@@ -11,23 +11,27 @@
 #' @param cut this has to be true for genes, as the samples are then binned into 10 expression groups each containing the same number of samples default=F
 #' @param names if true not dots, but the name in the samples table is plotted in 3D default=F
 #' @param opath create a webgl representation of the plot in a html page in this path (default = NULL) 
+#' @param main the title of the plot (default ='')
 #' @title description of function Make3D4obj
 #' @export 
 setGeneric('Make3D4obj', ## Name
-	function ( x, group, mds.type='PCA', cex=0.5, colFunc = function(x) {rainbow(x)}, cut=F, names=F, opath=NULL ) { ## Argumente der generischen Funktion
+	function ( x, group, mds.type='PCA', cex=0.5, colFunc = function(x) {rainbow(x)}, cut=F, names=F, opath=NULL, main='' ) { ## Argumente der generischen Funktion
 		standardGeneric('Make3D4obj') ## der Aufruf von standardGeneric sorgt für das Dispatching
 	}
 )
 
 
 setMethod('Make3D4obj', signature = c ('StefansExpressionSet'),
-	definition = function ( x, group, mds.type='PCA', cex=0.5, colFunc = function(x) {rainbow(x)}, cut=F, names=F, opath=NULL ) {
+	definition = function ( x, group, mds.type='PCA', cex=0.5, colFunc = function(x) {rainbow(x)}, cut=F, names=F, opath=NULL, main='' ) {
 
 		My.legend3d <- function (...) {
+			if ( ! exists ( 'main')) {
+				main = ''
+			}
 			bgplot3d( {
 				par( mar =c(1,1,1,1),bg='#4C4C4C')
 				plot(0, 0, type = "n", xlim = 0:1, ylim = 0:1, xaxs = "i",
-						yaxs = "i", axes = FALSE, bty = "n", col='#4C4C4C')
+						yaxs = "i", axes = FALSE, bty = "n", col='#4C4C4C', main=main)
 				legend(...)
 			} )
 		}

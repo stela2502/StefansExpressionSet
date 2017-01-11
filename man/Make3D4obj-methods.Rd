@@ -7,7 +7,7 @@
 \title{description of function Make3D4obj}
 \usage{
 Make3D4obj(x, group, mds.type = "PCA", cex = 0.5, colFunc = function(x) { 
-     rainbow(x) }, cut = F, names = F, opath = NULL)
+     rainbow(x) }, cut = F, names = F, opath = NULL, main = "")
 }
 \arguments{
 \item{x}{the StefansExpressionSet object}
@@ -25,6 +25,8 @@ Make3D4obj(x, group, mds.type = "PCA", cex = 0.5, colFunc = function(x) {
 \item{names}{if true not dots, but the name in the samples table is plotted in 3D default=F}
 
 \item{opath}{create a webgl representation of the plot in a html page in this path (default = NULL)}
+
+\item{main}{the title of the plot (default ='')}
 }
 \description{
 This function  created a MDS 3D plot with an inbuilt background describing the data colors
