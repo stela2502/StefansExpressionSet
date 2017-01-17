@@ -62,8 +62,8 @@ setMethod('Make3D4obj', signature = c ('StefansExpressionSet'),
         if ( cut ) {
                 ## plot points!
                 print ( "Debug the gene plot" )
+				My.legend3d ("topright", legend = paste( brks ), pch=16, col= c('black', bluered(length(brks) -1  )), cex=1,inset =c(0.02))
                 rgl.points( x@usedObj$MDS[[mds.type]], col=col )
-                My.legend3d ("topright", legend = paste( brks ), pch=16, col= c('black', bluered(length(brks) -1  )), cex=1,inset =c(0.02))
 
         }
         else {

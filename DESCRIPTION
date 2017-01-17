@@ -15,9 +15,8 @@ Depends:
 	gplots,
     RFclust.SGE,
 	ggplot2,
-	DDRTree,
-	destiny
-Suggests: MAST
+	DDRTree
+Suggests: MAST, destiny
 biocViews:
     MAST
     destiny

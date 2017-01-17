@@ -46,12 +46,19 @@ setMethod('mds', signature = c ('StefansExpressionSet'),
 					file=file.path( dataObj@outpath,'gene_loadings.xls') , row.names=F, sep='\t',quote=F )
 			#	mds.trans <- prcomp(t(tab))$x[,1:3]
 		} else if ( mds.type=='DM') {
-			if ( ! exists('sigma') ){
-				sigmas <- find.sigmas(tab, verbose=F)
-				sigma <- optimal.sigma(sigmas)
+			if (!requireNamespace("destiny", quietly = TRUE)) {
+				stop("package 'destiny' needed for this function to work. Please install it.",
+						call. = FALSE)
 			}
-			dm <- DiffusionMap(tab, distance = "cosine", sigma = sigma)
-			mds.proj <- as.data.frame(dm)[,1:3]
+			if ( ! exists('sigma', mode='numeric') ){
+				sigmas <- destiny::find.sigmas(tab, verbose=F)
+				sigma <- destiny::optimal.sigma(sigmas)
+			}
+			if ( !exists('distance', mode='character')){
+				distance = 'cosine'
+			}
+			dm <- destiny::DiffusionMap(tab, distance = distance, sigma = sigma)
+			mds.proj <- destiny::as.data.frame(dm)[,1:3]
 		}
 		else if ( mds.type == "LLE"){
 			mds.proj <- LLE( tab, dim = 3, k = as.numeric(LLEK) )
