@@ -46,6 +46,9 @@ setMethod('clusters', signature = c ('StefansExpressionSet'),
 				}else if (  ctype=='kmeans' ) {
 					hc <- hclust(as.dist( 1- cor(t(tab), method='pearson') ),method = cmethod)
 					clusters <- kmeans( dataObj@usedObj[['mds.proj']] ,centers=groups.n)$cluster
+				}else if ( ctype =='mclust' ) {
+					hc <- hc( as.dist( 1- cor(t(tab), method='pearson') ) )
+					clusters <- hclass(hc, 12)
 				}
 				else { stop( paste('ctype',ctype, 'unknown!' ) )}
 			}else { ## now the clusterby is a MDS algorithm name / MDS dataset name
@@ -58,6 +61,9 @@ setMethod('clusters', signature = c ('StefansExpressionSet'),
 				}else if (  ctype=='kmeans' ) {
 					hc <- hclust(dist( dataObj@usedObj$MDS[[clusterby]] ),method = cmethod)
 					clusters <- kmeans( dataObj@usedObj$MDS[[clusterby]] ,centers=groups.n)$cluster
+				}else if ( ctype =='mclust' ) {
+					hc <- hc( dataObj@usedObj$MDS[[clusterby]] )
+					clusters <- hclass(hc, 12)
 				}
 				else { stop( paste('ctype',ctype, 'unknown!' ) )}
 			}
