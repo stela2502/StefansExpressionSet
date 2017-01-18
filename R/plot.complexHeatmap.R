@@ -13,10 +13,12 @@
 #' @param pdf export as pdf (default = FALSE)
 #' @param subpath the subpath for the plots (default = '')
 #' @param heapmapCols the color function to calculate the heatmap colours ( default function (x) { c("darkgrey",bluered(x)) } )
+#' @param brks how many breaks should the expression value color key have (default=10)
 #' @title description of function plot.beans
 #' @export 
 setGeneric('complexHeatmap', ## Name
-		function ( x,  ofile=NULL, colGroups=NULL, rowGroups=NULL, colColors=NULL, rowColors=NULL, pdf=FALSE, subpath='', main = '',  heapmapCols= function(x){ c("darkgrey",bluered(x))} ) { ## Argumente der generischen Funktion
+		function ( x,  ofile=NULL, colGroups=NULL, rowGroups=NULL, colColors=NULL, rowColors=NULL, pdf=FALSE, subpath='', 
+				main = '',  heapmapCols= function(x){ c("darkgrey",bluered(x))} , brks=10) { ## Argumente der generischen Funktion
 			standardGeneric('complexHeatmap') ## der Aufruf von standardGeneric sorgt für das Dispatching
 		}
 )
@@ -78,7 +80,7 @@ setMethod('complexHeatmap', signature = c ('StefansExpressionSet'),
 			}
 			data <- as.matrix(x@data)
 			
-			brks <- unique(as.vector(c(minValueExpr(x),quantile(data[which(data!= minValueExpr(x))],seq(0,1,by=0.1)),max(data))))
+			brks <- unique(as.vector(c(minValueExpr(x),quantile(data[which(data!= minValueExpr(x))],seq(0,1,by=1/brks)),max(data))))
 			if ( ! is.null(ofile)){
 				if ( pdf ) {
 					width= ceiling(nrow(x@samples)/300) * 10
