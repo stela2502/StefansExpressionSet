@@ -101,7 +101,7 @@ setMethod('createStats', signature = c ( 'SingleCellsNGS') ,
 					data.frame(wellKey=colnames(d), GroupName = a@samples[,condition]), 
 					data.frame(primerid=rownames(d)))
 			
-			groups <- colData(sca)$GroupName <- a@samples[,condition]
+			groups <- MAST::colData(sca)$GroupName <- a@samples[,condition]
 			zlm.output <- MAST::zlm.SingleCellAssay(~ GroupName, sca, method='glm', ebayes=T)
 			zlm.lr <- MAST::lrTest(zlm.output,'GroupName')
 			x <- add_to_stat ( x, zlm.lr[,,'Pr(>Chisq)'], name )
