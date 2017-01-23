@@ -51,8 +51,8 @@ setMethod('mds', signature = c ('StefansExpressionSet'),
 						call. = FALSE)
 			}
 			if ( ! exists('sigma', mode='numeric') ){
-				sigmas <- destiny::find.sigmas(tab, verbose=F)
-				sigma <- destiny::optimal.sigma(sigmas)
+				sigmas <- destiny::find_sigmas(tab, verbose=F)
+				sigma <- destiny::optimal_sigma(sigmas)
 			}
 			if ( !exists('distance', mode='character')){
 				distance = 'cosine'
