@@ -20,7 +20,7 @@ Depends:
 Suggests: MAST, destiny
 biocViews:
     MAST
-    destiny
+    destiny(>= 2.0.3)
 License: GPL-2
 Suggests:
     testthat

@@ -63,7 +63,7 @@ setMethod('clusters', signature = c ('StefansExpressionSet'),
 					clusters <- kmeans( dataObj@usedObj$MDS[[clusterby]] ,centers=groups.n)$cluster
 				}else if ( ctype =='mclust' ) {
 					hc <- hc( dataObj@usedObj$MDS[[clusterby]] )
-					clusters <- hclass(hc, 12)
+					clusters <- hclass(hc, groups.n)
 				}
 				else { stop( paste('ctype',ctype, 'unknown!' ) )}
 			}
