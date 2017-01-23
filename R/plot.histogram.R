@@ -23,14 +23,14 @@ setMethod('plot.histogram', signature = c ('StefansExpressionSet'),
 		definition = function ( dataObj, probesetID, cuts=vector('list',1), subpath='preprocess', colGroup='ArrayID', nameCol='gene_name', png=FALSE,breaks=15 ) {
 			
 			ma <- dataObj@data
-			if ( dataObj@wFACS ){
-				ma <- rbind( ma,  dataObj@facs )
-			}
+			#if ( dataObj@wFACS ){
+			#	ma <- rbind( ma,  dataObj@facs )
+			#}
 			n <- rownames(ma)
 			names = names(table(dataObj@samples[,colGroup]))
 			arrays <- length(names)
-			x <- colors_4(x,colGroup)
-			cols <- x@usedObj$colorRange[[colGroup]]
+			dataObj <- colors_4(dataObj,colGroup)
+			cols <- dataObj@usedObj$colorRange[[colGroup]]
 			n.cuts <- names(cuts)
 			if ( png ){
 				opath = file.path(dataObj@outpath,subpath )
@@ -47,7 +47,11 @@ setMethod('plot.histogram', signature = c ('StefansExpressionSet'),
 				#h <- hist(ma[i,],main=n[i], xlab='expression values [raw]', freq=F, col=rgb(0, 1, 0, 0.5), cex.lab = 1.5, breaks = 15, ylim=c(0,max(m)) )
 				h <- hist(t(ma[i,]), breaks = breaks,plot=F ) #, main= paste(dataObj@annotation[i,nameCol], i) )
 				m <- c(m, max(h$density) )
-				plot( h, freq=F,main= paste(dataObj@annotation[i,nameCol], i), col=rgb(0, 1, 0, 0.5), xlab="Ct", cex.lab = 1.5, breaks = 15, ylim=c(0,max(m))  )
+				hist(t(ma[i,]), breaks = breaks, freq=F,
+						main= paste(dataObj@annotation[i,nameCol], i), 
+						col=rgb(0, 1, 0, 0.5), xlab="Ct", cex.lab = 1.5, 
+						ylim=c(0,max(m))  
+				)
 				id = 1
 				for (a in names ) {
 					lines( temp[[a]] , col=cols[id], lwd=2)
