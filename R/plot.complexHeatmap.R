@@ -24,7 +24,8 @@ setGeneric('complexHeatmap', ## Name
 )
 
 setMethod('complexHeatmap', signature = c ('StefansExpressionSet'),
-		definition = function ( x,  ofile=NULL, colGroups=NULL, rowGroups=NULL, colColors=NULL, rowColors=NULL, pdf=FALSE, subpath='', main = '' ,  heapmapCols= function(x){ c("darkgrey",bluered(x))} ) {
+		definition = function ( x,  ofile=NULL, colGroups=NULL, rowGroups=NULL, colColors=NULL, rowColors=NULL, pdf=FALSE,
+				subpath='', main = '' ,  heapmapCols= function(x){ c("darkgrey",bluered(x))}, brks=10 ) {
 			
 			Rowv = FALSE
 			Colv = FALSE
