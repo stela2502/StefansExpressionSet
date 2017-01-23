@@ -41,7 +41,7 @@ setMethod('plot.probeset', signature = c ( 'StefansExpressionSet') ,
 	x <- reduce.Obj(x, probeset )
 	if ( nrow(x@data) == 1 ) {
 		melted <- melt( x, probeNames=geneNameCol, groupcol = sampleGroup , colCol= sampleGroup )
-		colnames(melted) <- c( 'Gene.Symbol', 'Sample', 'Expression', 'Group', 'ColorGroup' )
+		colnames(melted) <- c( 'Gene.Symbol', 'Sample', 'Expression', 'Group', 'ColorGroup' )[1:ncol(melted)]
 		collaps <- '_points_'
 		if (boxplot){
 			collaps <-'_boxplot_'
