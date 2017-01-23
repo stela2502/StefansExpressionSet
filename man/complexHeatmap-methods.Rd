@@ -8,7 +8,8 @@
 \usage{
 complexHeatmap(x, ofile = NULL, colGroups = NULL, rowGroups = NULL,
   colColors = NULL, rowColors = NULL, pdf = FALSE, subpath = "",
-  main = "", heapmapCols = function(x) {     c("darkgrey", bluered(x)) })
+  main = "", heapmapCols = function(x) {     c("darkgrey", bluered(x)) },
+  brks = 10)
 }
 \arguments{
 \item{x}{the StefansExpressionSet object}
@@ -28,6 +29,8 @@ complexHeatmap(x, ofile = NULL, colGroups = NULL, rowGroups = NULL,
 \item{subpath}{the subpath for the plots (default = '')}
 
 \item{heapmapCols}{the color function to calculate the heatmap colours ( default function (x) { c("darkgrey",bluered(x)) } )}
+
+\item{brks}{how many breaks should the expression value color key have (default=10)}
 }
 \description{
 plot the PCR heatmap using the heatmap.3 function included in this package

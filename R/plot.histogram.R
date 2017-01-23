@@ -15,7 +15,7 @@
 #' @export 
 setGeneric('plot.histogram', ## Name
 		function ( dataObj, probesetID, cuts=vector('list',1), subpath='preprocess', colGroup='ArrayID', nameCol='gene_name', png=FALSE, breaks=15 ) { ## Argumente der generischen Funktion
-			standardGeneric('plot.histograms') ## der Aufruf von standardGeneric sorgt für das Dispatching
+			standardGeneric('plot.histogram') ## der Aufruf von standardGeneric sorgt für das Dispatching
 		}
 )
 
