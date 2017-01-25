@@ -46,13 +46,19 @@ setMethod('mds', signature = c ('StefansExpressionSet'),
 					file=file.path( dataObj@outpath,'gene_loadings.xls') , row.names=F, sep='\t',quote=F )
 			#	mds.trans <- prcomp(t(tab))$x[,1:3]
 		} else if ( mds.type=='DM') {
-			if (!requireNamespace("destiny", quietly = TRUE)) {
+			if (!library("destiny", quietly = TRUE,logical.return=TRUE )) {
 				stop("package 'destiny' needed for this function to work. Please install it.",
 						call. = FALSE)
 			}
 			if ( ! exists('sigma', mode='numeric') ){
-				sigmas <- destiny::find_sigmas(tab, verbose=F)
-				sigma <- destiny::optimal_sigma(sigmas)
+				if ( exists('find_sigmas', where='package:destiny', mode='function') ){
+					sigmas <- destiny::find_sigmas(tab, verbose=F)
+					sigma <- destiny::optimal_sigma(sigmas)
+				}else {
+					sigmas <- destiny::find.sigmas(tab, verbose=F)
+					sigma <- destiny::optimal.sigma(sigmas)
+				}
+				
 			}
 			if ( !exists('distance', mode='character')){
 				distance = 'cosine'
