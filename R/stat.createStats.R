@@ -74,7 +74,7 @@ setMethod('createStats', signature = c ( 'StefansExpressionSet') ,
 
 setMethod('createStats', signature = c ( 'SingleCellsNGS') ,
 		definition = function ( x, condition, files=F, A=NULL, B=NULL ) {
-			if (!requireNamespace("MAST", quietly = TRUE)) {
+			if (!library("MAST", quietly = TRUE,  logical.return =T) ) {
 				stop("MAST needed for this function to work. Please install it.",
 						call. = FALSE)
 			}
@@ -101,7 +101,7 @@ setMethod('createStats', signature = c ( 'SingleCellsNGS') ,
 					data.frame(wellKey=colnames(d), GroupName = a@samples[,condition]), 
 					data.frame(primerid=rownames(d)))
 			
-			groups <- MAST::colData(sca)$GroupName <- a@samples[,condition]
+			groups <- colData(sca)$GroupName <- a@samples[,condition]
 			zlm.output <- MAST::zlm.SingleCellAssay(~ GroupName, sca, method='glm', ebayes=T)
 			zlm.lr <- MAST::lrTest(zlm.output,'GroupName')
 			x <- add_to_stat ( x, zlm.lr[,,'Pr(>Chisq)'], name )
