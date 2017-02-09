@@ -4,17 +4,22 @@
 \name{normalize}
 \alias{normalize}
 \alias{normalize,NGSexpressionSet-method}
+\alias{normalize,SingleCellsNGS-method}
 \alias{normalize,StefansExpressionSet-method}
 \title{description of function normalize}
 \usage{
-normalize(x)
+normalize(object, ..., name = NULL)
 
-normalize(x)
+\S4method{normalize}{NGSexpressionSet}(object, ..., readCounts = NULL,
+  to_gene_length = FALSE, geneLengthCol = "transcriptLength", name = NULL)
 
-normalize(x)
+\S4method{normalize}{SingleCellsNGS}(object, ..., reads = 600,
+  name = "normalized")
+
+\S4method{normalize}{StefansExpressionSet}(object, ..., name = NULL)
 }
 \arguments{
-\item{x}{The NGSexpressionSet}
+\item{name}{the new name of the object (deafule old name + normalized)}
 
 \item{readCounts}{The number of reads from each bam file or another value you want to normalize the data to}
 
@@ -22,9 +27,15 @@ normalize(x)
 
 \item{geneLengthCol}{the column in the annotation data.frame to (in addition) normalize the genes to (e.g. trancript length)}
 
-\item{x}{The SingleCellsNGS object}
-
 \item{reads}{the required read depth}
+
+\item{x}{The NGSexpressionSet}
+
+\item{x}{The NGSexpressionSet}
+
+\item{name}{the new name of the object (deafule old name + normalized)}
+
+\item{x}{The SingleCellsNGS object}
 
 \item{name}{the name of the new object}
 
@@ -33,13 +44,20 @@ normalize(x)
 \value{
 the normalized data set (original data stored in NGS$raw
 
+the normalized data set (original data stored in NGS$raw
+
 the normalized data set (original data stored in slot 'raw'
 }
 \description{
 normalize the expression data (sample wise)
+This generic method is implemented in a object specific way - more options available
+for each obejct specific function.
+
+normalize the expression data (sample wise)
 
 normalize the expression data by subsampling as described in PMID 24531970
 
-constructor that has to be implemented in the data specific classes
+constructor that has to be implemented for a generic StefansExpressionSet
+This generic version was meant for array data and I have not had the need nor time to implement this part.
 }
 
