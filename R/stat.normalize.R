@@ -76,6 +76,7 @@ setMethod('normalize', signature = c ('SingleCellsNGS'),
 			}
 			object <- drop.samples( object, object@samples[which(object@samples$counts < reads), object@sampleNamesCol ] 
 					, name=name )
+			
 			if ( ! object@snorm ){
 				object@raw <- object@data
 			}
