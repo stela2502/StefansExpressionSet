@@ -21,4 +21,3 @@ a vector of annotation values
 \description{
 subsets the annotation table for a set of probesets
 }
-

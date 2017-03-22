@@ -6,7 +6,7 @@
 \alias{createStats,NGSexpressionSet-method}
 \title{description of function createStats}
 \usage{
-createStats(x, condition, files = F, A = NULL, B = NULL)
+createStats(x, condition, ..., files = F, A = NULL, B = NULL)
 }
 \arguments{
 \item{x}{the NGSexpressionSet}
@@ -27,4 +27,3 @@ calculate staistics on all possible groupings using the DEseq nbinomTest test Bo
 
 together create the group 'A vs. B'
 }
-

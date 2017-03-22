@@ -23,4 +23,3 @@ restrictSamples(x, column = "Analysis", value = NULL, name = "newSet",
 \description{
 Drop the samples, that have been selected!
 }
-

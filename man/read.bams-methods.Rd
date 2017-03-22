@@ -26,4 +26,3 @@ annotation is performed using DEseq functionallity. Read a set of bam files and 
 
 the quantification (better do that without using this function!)
 }
-

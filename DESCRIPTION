@@ -7,22 +7,22 @@ Maintainer: Stefan Lang <Stefan.Lang@med.lu.se>
 Description: StefansExpressionSet is a simple package to analyze NGS expression data
     sets. Expression analysis is based on the DESeq package. This package is mainly
     built to plot the results.
-Depends: 
-	reshape2, 
-	stringr, 
+Depends:
+	reshape2,
+	stringr,
 	RSvgDevice,
-	rgl, 
+	rgl,
 	gplots,
     RFclust.SGE,
 	ggplot2,
 	mclust,
 	DDRTree
-Suggests: MAST, destiny
-biocViews:
-    MAST
-    destiny(>= 2.0.3)
-License: GPL-2
 Suggests:
-    testthat
+    testthat, MAST, destiny, DEseq2
+biocViews:
+    MAST,
+    destiny(>= 2.0.3),
+    DEseq2
+License: GPL-2
 LazyData: true
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1

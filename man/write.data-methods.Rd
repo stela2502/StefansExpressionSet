@@ -16,4 +16,3 @@ write.data(x, annotation = NULL)
 \description{
 write the StefansExpressionSet data table to disk
 }
-

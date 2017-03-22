@@ -18,4 +18,3 @@ difference(x, clusters, groups.n)
 \description{
 this code has to be revised! NOT WORKING
 }
-

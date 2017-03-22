@@ -28,4 +28,3 @@ the correlation matrix
 \description{
 calculate a correlation matrix for the data object
 }
-

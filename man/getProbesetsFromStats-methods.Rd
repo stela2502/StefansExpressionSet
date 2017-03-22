@@ -28,4 +28,3 @@ for a restriction of a list of stat comparisons probes <- getProbesetsFromStats 
 
 x, v=1e-4, pos="adj.P.Val" )
 }
-

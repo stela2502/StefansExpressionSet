@@ -21,4 +21,3 @@ This function will collpase the data in the StefansExpressionSet to only contain
 
 per sample group.
 }
-

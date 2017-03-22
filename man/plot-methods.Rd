@@ -32,4 +32,3 @@ create heatmap for each statistics table and each pvalue cutoff This function us
 
 internally the plot.heatmaps() function for each selected probeset list
 }
-

@@ -14,4 +14,3 @@ writeStatTables(x, annotation = NULL, wData = F)
 \description{
 export the statistic files
 }
-

@@ -14,4 +14,3 @@ force.numeric(dataObj)
 \description{
 The moethod forces the values in the data matrix to be numbers.
 }
-

@@ -14,4 +14,3 @@ sd.filter(x)
 \description{
 drops all genes that have an sd of 0 over the whole dataset
 }
-

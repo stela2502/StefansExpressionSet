@@ -27,4 +27,3 @@ this file contains all generic fnction for data export and ploting Create an Ste
 
 object (S3) This object is mainly used for subsetting of the data and plotting @export
 }
-

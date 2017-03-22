@@ -23,4 +23,3 @@ a list of probesets that match the requirements
 \description{
 Using this function you can select probes based on there expression value in a set of samples
 }
-

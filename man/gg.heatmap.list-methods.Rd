@@ -25,4 +25,3 @@ gg.heatmap.list(dat, glist = NULL, colrs = NULL, groupCol = "GroupID",
 \description{
 uses ggplot2 to plot heatmaps
 }
-

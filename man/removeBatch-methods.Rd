@@ -23,4 +23,3 @@ restricted to the first entry in each group. Most variables in the sample descri
 
 table might be useless after this collape
 }
-

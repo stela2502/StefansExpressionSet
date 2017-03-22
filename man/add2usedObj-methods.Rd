@@ -20,4 +20,3 @@ add2usedObj(dataObj, list.name, data.name, object)
 \description{
 Add values to the usedObj list including some checks
 }
-

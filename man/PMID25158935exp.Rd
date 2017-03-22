@@ -14,4 +14,3 @@ The data was re-mapped against mouse mm10 using HISAT
 and quantified using the R subreads package.
 }
 \keyword{datasets}
-

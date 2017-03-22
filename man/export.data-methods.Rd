@@ -14,4 +14,3 @@ export.data(x)
 \description{
 write the StefansExpressionSet data, annotation and samples tables to disk
 }
-

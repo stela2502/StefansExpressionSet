@@ -22,4 +22,3 @@ the StefansExpressionSet object with values in the sig_genes slot
 \description{
 Query all stat tables and select genes based on multiple p value cutoff values
 }
-

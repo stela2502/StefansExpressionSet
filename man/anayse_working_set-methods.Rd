@@ -18,4 +18,3 @@ The z scored NGSexpressionSet
 \description{
 zscore the ngs dataset
 }
-

@@ -27,4 +27,3 @@ this check is testing how many percent of the total reads are taken from the fir
 
 x percent of the genes this function calls reads.taken.NGSexpressionSet internally.
 }
-

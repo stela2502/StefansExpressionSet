@@ -3,8 +3,9 @@
 \docType{methods}
 \name{simpleAnova}
 \alias{simpleAnova}
-\alias{simpleAnova,SingleCellsNGS-method}
 \alias{simpleAnova,StefansExpressionSet-method}
+\alias{simpleAnova}
+\alias{simpleAnova,SingleCellsNGS-method}
 \title{description of function simpleAnova}
 \usage{
 simpleAnova(x, groupCol = "GroupName", padjMethod = "BH")
@@ -44,4 +45,3 @@ of the SingleCellsNGS object. In contrast to the StefansExpressionSet version of
 
 the cells showing no expression are axcluded from the stats.
 }
-

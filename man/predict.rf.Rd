@@ -2,8 +2,8 @@
 % Please edit documentation in R/Grouping.predict.rf.R
 \docType{methods}
 \name{predict.rf}
-\alias{'predict.rf,SingleCellsNGS-method}
 \alias{predict.rf}
+\alias{'predict.rf,SingleCellsNGS-method}
 \title{description of function predict.rf}
 \usage{
 predict.rf(x, rf, bestColname = "predicted group using random forest")
@@ -21,4 +21,3 @@ a SingleCellsNGS object including the results and storing the RF object in the u
 \description{
 simple prediction of groups using a random forest trained during the bestGrouping process
 }
-

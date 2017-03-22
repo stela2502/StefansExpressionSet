@@ -31,4 +31,3 @@ Make3D4obj(x, group, mds.type = "PCA", cex = 0.5, colFunc = function(x) {
 \description{
 This function  created a MDS 3D plot with an inbuilt background describing the data colors
 }
-

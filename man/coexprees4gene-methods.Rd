@@ -24,4 +24,3 @@ a data.frame with the columns 'GeneSymbol', 'pval', 'cor', 'adj.p'
 \description{
 Calculate the coexpression for any given gene
 }
-

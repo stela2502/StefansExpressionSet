@@ -30,4 +30,3 @@ plot.histogram(dataObj, probesetID, cuts = vector("list", 1),
 \description{
 This function plots one gene as histogram to check whether there ar4e clear expression differences in different plates.
 }
-

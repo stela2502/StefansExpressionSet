@@ -21,4 +21,3 @@ group.hclust(x, groups, name, type = "genes", distfun = function(a) {
 \description{
 Create a groping based on a hclust run like hclust(dist(x@data),method="ward.D2")
 }
-

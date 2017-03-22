@@ -20,4 +20,3 @@ mds(dataObj, ..., mds.type = "PCA", onwhat = "Expression", genes = F)
 \description{
 Calculates the MDS for a given MDS type and stores the 3 dimensions in the object for later use.
 }
-

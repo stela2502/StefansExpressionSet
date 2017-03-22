@@ -18,4 +18,3 @@ reduce.Obj(x, probeSets = c(), name = "reducedSet")
 \description{
 reduces the dataset based on genes e.g. dropps genes from the StefansExpressionSet
 }
-

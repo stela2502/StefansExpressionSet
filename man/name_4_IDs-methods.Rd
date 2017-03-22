@@ -21,4 +21,3 @@ a list of probesets that has a expression less than 10 in sample A
 \description{
 Select probesets, that show a certain level in expression for a single sample probes
 }
-

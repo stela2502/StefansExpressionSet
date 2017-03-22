@@ -41,4 +41,3 @@ p <- plot.probeset( red, rownames(red@data)[20], geneNameCol= 'GeneID', boxplot=
 p <- plot.probeset( red, rownames(red@data)[20], geneNameCol= 'GeneID', boxplot=F)
 #produces the file '../../tmp/reducedSet_points_Mybl1_expression.svg'
 }
-

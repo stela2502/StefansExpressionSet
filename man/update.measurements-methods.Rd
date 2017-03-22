@@ -18,4 +18,3 @@ and the fraction of cells expressing for each gene. This data is used by interes
 
 putatively interesting genes in a SingleCellNGS object.
 }
-

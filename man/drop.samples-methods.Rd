@@ -18,4 +18,3 @@ drop.samples(x, samplenames = NULL, name = "dropped_samples")
 \description{
 drops samples from the StefansExpressionSet
 }
-

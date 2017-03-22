@@ -20,4 +20,3 @@ addCluster(x, userGroups, col = "groupID", what = "cells")
 \description{
 this function add new column to samples and annotation data NOT checking the column order
 }
-

@@ -23,4 +23,3 @@ A list containing the updated 'x' SingleCellsNGS object and res a vector of past
 \description{
 This function calculates an anova test for the groupCol nd all data.
 }
-

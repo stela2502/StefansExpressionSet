@@ -98,7 +98,7 @@ setMethod('mds', signature = c ('StefansExpressionSet'),
 			colnames(mds.proj) <- c( 'x','y','z')
 			
 		} else if ( mds.type == "DDRTree" ) {
-			
+			tab <- t(tab) ## mds works the other way round!
 			DDRTree_res <- DDRTree( tab, dimensions=3)
 			mds.proj <- t(DDRTree_res$Z)
 			rownames(mds.proj) <- colnames(tab)

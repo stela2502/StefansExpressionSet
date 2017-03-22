@@ -20,4 +20,3 @@ interesting_genes(x, Min = 0.4, Max = 0.8, genes = 100)
 \description{
 This method uses the values created by update.measurements() and selects the most interesting subset of genes.
 }
-

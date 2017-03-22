@@ -14,4 +14,3 @@ ranks(x)
 \description{
 creates a new ranks vector in the StefansExpressionSet
 }
-

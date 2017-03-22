@@ -21,4 +21,3 @@ a vector of sample names that did not pass the check
 \description{
 this function checks how many reads are taken from the total dataset using the top 5 percent of genes only
 }
-

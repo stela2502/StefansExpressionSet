@@ -18,4 +18,3 @@ quality_of_fit(x, what = "cells", col = "groupID")
 \description{
 this calculated a quality of fit for the expression data
 }
-

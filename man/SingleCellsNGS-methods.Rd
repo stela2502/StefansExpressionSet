@@ -30,4 +30,3 @@ create a new SingleCellsNGS object This object is mainly used for plotting the
 
 data
 }
-

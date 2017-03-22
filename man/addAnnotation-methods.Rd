@@ -18,4 +18,3 @@ addAnnotation(x, mart, mart.col = "refseq_mrna")
 \description{
 add aditional annotation to the StefansExpressionSet
 }
-

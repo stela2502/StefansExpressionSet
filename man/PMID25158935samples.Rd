@@ -12,4 +12,3 @@ PMID25158935samples
 The data was collected from the NCBI SRA archive
 }
 \keyword{datasets}
-

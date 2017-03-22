@@ -30,4 +30,3 @@ clusters(dataObj, clusterby = "raw", useGrouping = NULL, groups.n = 3,
 \description{
 Culters the data either based on the raw data values or any MDS data type and adds the grouping into the samples table.
 }
-

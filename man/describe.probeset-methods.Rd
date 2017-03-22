@@ -16,4 +16,3 @@ describe.probeset(x, probeset)
 \description{
 print all annotation values + all values + all stat results for one probeset
 }
-

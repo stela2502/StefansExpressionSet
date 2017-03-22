@@ -3,8 +3,12 @@
 \docType{methods}
 \name{normalize}
 \alias{normalize}
+\alias{normalize,StefansExpressionSet-method}
+\alias{normalize}
 \alias{normalize,NGSexpressionSet-method}
+\alias{normalize}
 \alias{normalize,SingleCellsNGS-method}
+\alias{normalize}
 \alias{normalize,StefansExpressionSet-method}
 \title{description of function normalize}
 \usage{
@@ -60,4 +64,3 @@ normalize the expression data by subsampling as described in PMID 24531970
 constructor that has to be implemented for a generic StefansExpressionSet
 This generic version was meant for array data and I have not had the need nor time to implement this part.
 }
-

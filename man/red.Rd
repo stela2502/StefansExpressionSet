@@ -12,4 +12,3 @@ red
 Reduced StefansExpressionSet from the PMID25158935exp + PMID25158935samples dataset
 }
 \keyword{datasets}
-

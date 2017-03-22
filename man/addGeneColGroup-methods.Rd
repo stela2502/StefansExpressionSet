@@ -18,4 +18,3 @@ addGeneColGroup(x, melted, colName = NULL)
 \description{
 an internal function to add row level clusters to a merged data table
 }
-

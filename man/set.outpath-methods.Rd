@@ -16,4 +16,3 @@ set.outpath(x, path = NULL)
 \description{
 Drop the samples, that have been selected!
 }
-

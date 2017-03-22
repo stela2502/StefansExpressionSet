@@ -23,4 +23,3 @@ melt.StefansExpressionSet(dat, groupcol = "GroupName", colCol = NULL,
 \description{
 met an StefansExpressionSet to be plotted using ggplot2 functions
 }
-

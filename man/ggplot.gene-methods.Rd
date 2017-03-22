@@ -25,4 +25,3 @@ ggplot.gene(dat, gene, colrs = NULL, groupCol = "GroupID", colCol = NULL,
 \description{
 Plot one gene in the StefansExpressionSet as boxplot or points plot (using ggplot2)
 }
-

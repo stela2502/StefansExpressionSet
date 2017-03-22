@@ -18,4 +18,3 @@ addSampleColGroup(x, melted, colName = NULL)
 \description{
 an internal method adding new color columns to the melted dataset
 }
-

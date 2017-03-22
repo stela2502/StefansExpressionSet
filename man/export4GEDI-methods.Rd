@@ -24,4 +24,3 @@ Convert the values in the StefansExpressionSet to the format GEDI program can im
 \seealso{
 \url{"http://apps.childrenshospital.org/clinical/research/ingber/GEDI/gedihome.htm"}
 }
-

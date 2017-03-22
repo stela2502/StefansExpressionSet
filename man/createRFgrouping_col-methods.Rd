@@ -23,4 +23,3 @@ createRFgrouping_col(x, RFname, k = 10,
 \description{
 Create a sample grouping data from one RFclust.SGE object
 }
-

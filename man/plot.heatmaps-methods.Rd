@@ -30,4 +30,3 @@ An rather ancient, but flexible heatmapping function that depends on heatmap.2 a
 
 selection/conversion options
 }
-

@@ -18,4 +18,3 @@ force absolute unique names in a vector by adding _<amount of repeats> to each v
 
 if there is more than one repeat opf the value @exportMethod
 }
-
