@@ -13,12 +13,12 @@ setGeneric('loadObj', ## Name
 		}
 )
 
-setMethod('loadObj', signature = c ('StefansExpressionSet'),
+setMethod('loadObj', signature = c ('character'),
 		definition = function ( file=NULL ){
 			if ( is.null(file)){
-				stop( "Sorry I need to filename to load from" )
+				stop( "Sorry I need a 'file' to load from" )
 			}
-			load( file.path(data@outpath, file) )
+			load( file )
 			data
 		}
 )

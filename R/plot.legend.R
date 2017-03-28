@@ -40,10 +40,10 @@ setMethod('plot.legend', signature = c ('StefansExpressionSet'),
 				file = file.path(x@outpath, paste( collapse='_',unlist(strsplit( c(file, colname), '\\s+', perl=T))))
 				h = 4 * ceiling(n /17)
 				if ( svg ) {
-					devSVG( file=paste(file,'svg',sep='.'), width= 4, height=h, type=X11type )
+					devSVG( file=paste(file,'svg',sep='.'), width= 4, height=h )
 				}
 				else if ( pdf ) {
-					pdf( file=paste(file, 'pdf', sep='.'), width= 4, height=h, type=X11type )
+					pdf( file=paste(file, 'pdf', sep='.'), width= 4, height=h )
 				}
 				else {
 					png(file=paste(file, 'png', sep='.'), width= 400, height=h*100, type=X11type )

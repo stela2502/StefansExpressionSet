@@ -86,11 +86,11 @@ setMethod('complexHeatmap', signature = c ('StefansExpressionSet'),
 				if ( pdf ) {
 					width= ceiling(nrow(x@samples)/300) * 10
 					height = ceiling( nrow(x@annotation) / 100 ) * 8
-					pdf( file=paste(file.path(x@outpath,ofile),'pdf',sep='.', type=X11type), width=10, height=8)
+					pdf( file=paste(file.path(x@outpath,ofile),'pdf',sep='.'), width=10, height=8)
 				}else{
 					width= ceiling(nrow(x@samples)/300) * 1600
 					height = ceiling( nrow(x@annotation) / 100 ) *800
-					png( file=paste(file.path(x@outpath,ofile),'png',sep='.', type=X11type), width=1600, height=800)
+					png( file=paste(file.path(x@outpath,ofile),'png',sep='.'), width=1600, height=800, type=X11type)
 				}
 				for ( v in colGroups ) {
 					plot.legend(x, file=paste(ofile, 'col'), colname=v, pdf=pdf, col=colColors[[v]], X11type=X11type )
@@ -109,7 +109,7 @@ setMethod('complexHeatmap', signature = c ('StefansExpressionSet'),
 			
 			if ( ! is.null(ofile)){
 				dev.off()
-				pdf( file=paste(file.path(x@outpath,ofile),'_legend_values.pdf',sep='.'), width=8, height=4, type=X11type)
+				pdf( file=paste(file.path(x@outpath,ofile),'_legend_values.pdf',sep='.'), width=8, height=4)
 				Z <- as.matrix(1:(length(brks)-2))
 				image(Z, col=heapmapCols(length(brks)-2),axes = FALSE, main='color key')
 				axis( 1, at=c(0,0.1,1), labels=c('NA','low','high'))
