@@ -144,4 +144,49 @@ setMethod('SingleCellsNGS', signature = c ('data.frame'),
 			as(x,'SingleCellsNGS')
 		} )
 
+#' @name FromCountsObj
+#' @aliases FromCountsObj,FromCountsObj-method
+#' @rdname FromCountsObj-methods
+#' @docType methods
+#' @description  create a new StefansExpressionSet object based on a DEseq counts object
+#' @param dat the counts object
+#' @param type the classnam 'StefsnExpressionSet', 'NGSexpressionSet' (default) or 'SingleCellNGS'
+#' @param outpath the outpath for this object
+#' @param name the name of the new obejct
+#' @title description of function FromCountsObj
+#' @export 
+setGeneric('FromCountsObj' ,
+	function ( dat, type="NGSexpressionSet", outpath="", name="WorkingSet" ) {
+		standardGeneric('FromCountsObj')
+	} )
 
+setMethod('FromCountsObj', signature = c ('list'),
+		definition = function ( dat, type="NGSexpressionSet", outpath=NULL, name='WorkingSet') {
+			if ( is.null(outpath) ){
+				outpath = paste(pwd(),"../output/", sep='')
+			}
+			if ( ! all.equal( sort(names(dat1)) ,c("annotation","counts","stat","targets") ) ) {
+				stop ( "dat is not a counts object containing the right entries" )
+			}
+			if ( is.na(match(type, c('StefansExpressionSet', 'NGSexpressionSet', 'SingleCellsNGS')) ) ){
+				stop( "the type has to be one of c('StefansExpressionSet', 'NGSexpressionSet', 'SingleCellsNGS')" )
+			}
+						
+			samples <- data.frame(t(dat$stat))
+			colnames(samples) <- as.character(t(samples[1,]))
+			samples <- samples[-1,]
+			samples$filename <- rownames(samples)
+			
+			dat$annotation[,2] <- unlist(lapply(dat$annotation[,2],function(x) { t <- str_split(x,';' ); t[[1]][1] } ))
+			dat$annotation[,3] <- unlist(lapply(dat$annotation[,3],function(x) { t <- unlist(str_split(x,';' )); min(t) } ))
+			dat$annotation[,4] <- unlist(lapply(dat$annotation[,4],function(x) { t <- unlist(str_split(x,';' )); max(t) } ))
+			
+			x <- StefansExpressionSet(  cbind(dat$annotation, dat$counts),
+					samples ,
+					namecol='filename',
+					namerow=colnames(dat$annotation)[1],
+					outpath=outpath,
+					name=name
+			)			
+			as(x, type )
+		} )

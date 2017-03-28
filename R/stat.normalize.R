@@ -32,6 +32,7 @@ setGeneric('normalize', ## Name
 setMethod('normalize', signature = c ('NGSexpressionSet'),
 		definition = function (  object, ..., readCounts=NULL, to_gene_length=FALSE, geneLengthCol='transcriptLength', name=NULL ) {
 			if ( ! object@snorm ){
+				browser()
 				if ( is.null( readCounts ) ) {
 					readCounts <- as.vector( DESeq::estimateSizeFactorsForMatrix ( as.matrix(object@data)) )
 				}

@@ -18,14 +18,14 @@
 #' @export 
 setGeneric('complexHeatmap', ## Name
 		function ( x,  ofile=NULL, colGroups=NULL, rowGroups=NULL, colColors=NULL, rowColors=NULL, pdf=FALSE, subpath='', 
-				main = '',  heapmapCols= function(x){ c("darkgrey",bluered(x))} , brks=10) { ## Argumente der generischen Funktion
+				main = '',  heapmapCols= function(x){ c("darkgrey",bluered(x))}, brks=10, X11type= 'cairo' ) { ## Argumente der generischen Funktion
 			standardGeneric('complexHeatmap') ## der Aufruf von standardGeneric sorgt für das Dispatching
 		}
 )
 
 setMethod('complexHeatmap', signature = c ('StefansExpressionSet'),
 		definition = function ( x,  ofile=NULL, colGroups=NULL, rowGroups=NULL, colColors=NULL, rowColors=NULL, pdf=FALSE,
-				subpath='', main = '' ,  heapmapCols= function(x){ c("darkgrey",bluered(x))}, brks=10 ) {
+				subpath='', main = '' ,  heapmapCols= function(x){ c("darkgrey",bluered(x))}, brks=10, X11type= 'cairo' ) {
 			
 			Rowv = FALSE
 			Colv = FALSE
@@ -86,17 +86,17 @@ setMethod('complexHeatmap', signature = c ('StefansExpressionSet'),
 				if ( pdf ) {
 					width= ceiling(nrow(x@samples)/300) * 10
 					height = ceiling( nrow(x@annotation) / 100 ) * 8
-					pdf( file=paste(file.path(x@outpath,ofile),'pdf',sep='.'), width=10, height=8)
+					pdf( file=paste(file.path(x@outpath,ofile),'pdf',sep='.', type=X11type), width=10, height=8)
 				}else{
 					width= ceiling(nrow(x@samples)/300) * 1600
 					height = ceiling( nrow(x@annotation) / 100 ) *800
-					png( file=paste(file.path(x@outpath,ofile),'png',sep='.'), width=1600, height=800)
+					png( file=paste(file.path(x@outpath,ofile),'png',sep='.', type=X11type), width=1600, height=800)
 				}
 				for ( v in colGroups ) {
-					plot.legend(x, file=paste(ofile, 'col'), colname=v, pdf=pdf, col=colColors[[v]] )
+					plot.legend(x, file=paste(ofile, 'col'), colname=v, pdf=pdf, col=colColors[[v]], X11type=X11type )
 				}
 				for ( v in rowGroups ) {
-					plot.legend(x, file=paste(ofile, 'row'), colname=v, pdf=pdf, col=rowColors[[v]] )
+					plot.legend(x, file=paste(ofile, 'row'), colname=v, pdf=pdf, col=rowColors[[v]], X11type=X11type )
 				}
 			}
 			heatmap.3(
@@ -109,7 +109,7 @@ setMethod('complexHeatmap', signature = c ('StefansExpressionSet'),
 			
 			if ( ! is.null(ofile)){
 				dev.off()
-				pdf( file=paste(file.path(x@outpath,ofile),'_legend_values.pdf',sep='.'), width=8, height=4)
+				pdf( file=paste(file.path(x@outpath,ofile),'_legend_values.pdf',sep='.'), width=8, height=4, type=X11type)
 				Z <- as.matrix(1:(length(brks)-2))
 				image(Z, col=heapmapCols(length(brks)-2),axes = FALSE, main='color key')
 				axis( 1, at=c(0,0.1,1), labels=c('NA','low','high'))

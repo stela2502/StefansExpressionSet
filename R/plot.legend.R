@@ -14,13 +14,13 @@
 #' @title description of function plot.legend
 #' @export 
 setGeneric('plot.legend', ## Name
-		function ( x, colname, file=NULL, svg=F, pdf=F, col=NULL ) { ## Argumente der generischen Funktion
+		function ( x, colname, file=NULL, svg=F, pdf=F, col=NULL, X11type='cairo' ) { ## Argumente der generischen Funktion
 			standardGeneric('plot.legend') ## der Aufruf von standardGeneric sorgt für das Dispatching
 		}
 )
 
 setMethod('plot.legend', signature = c ('StefansExpressionSet'),
-		definition = function ( x, colname, file=NULL, svg=F, pdf=F, col=NULL ) {
+		definition = function ( x, colname, file=NULL, svg=F, pdf=F, col=NULL, X11type='cairo' ) {
 			if ( is.null(col) ){
 				col=x@usedObj[['colorRange']][[colname]]
 			}
@@ -40,13 +40,13 @@ setMethod('plot.legend', signature = c ('StefansExpressionSet'),
 				file = file.path(x@outpath, paste( collapse='_',unlist(strsplit( c(file, colname), '\\s+', perl=T))))
 				h = 4 * ceiling(n /17)
 				if ( svg ) {
-					devSVG( file=paste(file,'svg',sep='.'), width= 4, height=h )
+					devSVG( file=paste(file,'svg',sep='.'), width= 4, height=h, type=X11type )
 				}
 				else if ( pdf ) {
-					pdf( file=paste(file, 'pdf', sep='.'), width= 4, height=h )
+					pdf( file=paste(file, 'pdf', sep='.'), width= 4, height=h, type=X11type )
 				}
 				else {
-					png(file=paste(file, 'png', sep='.'), width= 400, height=h*100 )
+					png(file=paste(file, 'png', sep='.'), width= 400, height=h*100, type=X11type )
 				}
 			}
 			plot(1, type="n", axes=F, xlab="", ylab="", main=colname)
