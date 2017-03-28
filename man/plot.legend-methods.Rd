@@ -6,7 +6,8 @@
 \alias{plot.legend,plot.legend-method}
 \title{description of function plot.legend}
 \usage{
-plot.legend(x, colname, file = NULL, svg = F, pdf = F, col = NULL)
+plot.legend(x, colname, file = NULL, svg = F, pdf = F, col = NULL,
+  X11type = "cairo")
 }
 \arguments{
 \item{x}{the StefansExpressionSet object}

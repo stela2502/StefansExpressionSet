@@ -9,7 +9,7 @@
 complexHeatmap(x, ofile = NULL, colGroups = NULL, rowGroups = NULL,
   colColors = NULL, rowColors = NULL, pdf = FALSE, subpath = "",
   main = "", heapmapCols = function(x) {     c("darkgrey", bluered(x)) },
-  brks = 10)
+  brks = 10, X11type = "cairo")
 }
 \arguments{
 \item{x}{the StefansExpressionSet object}
