@@ -165,7 +165,7 @@ setMethod('FromCountsObj', signature = c ('list'),
 			if ( is.null(outpath) ){
 				outpath = paste(pwd(),"../output/", sep='')
 			}
-			if ( ! all.equal( sort(names(dat1)) ,c("annotation","counts","stat","targets") ) ) {
+			if ( ! all.equal( sort(names(dat)) ,c("annotation","counts","stat","targets") ) ) {
 				stop ( "dat is not a counts object containing the right entries" )
 			}
 			if ( is.na(match(type, c('StefansExpressionSet', 'NGSexpressionSet', 'SingleCellsNGS')) ) ){
