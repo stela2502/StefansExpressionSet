@@ -18,11 +18,12 @@ Depends:
 	mclust,
 	DDRTree
 Suggests:
-    testthat, MAST, destiny, DEseq2
+    testthat, MAST, destiny
 biocViews:
     MAST,
     destiny(>= 2.0.3),
-    DEseq2
+    DEseq2,
+    limma
 License: GPL-2
 LazyData: true
 RoxygenNote: 6.0.1

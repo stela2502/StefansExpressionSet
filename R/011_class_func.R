@@ -8,7 +8,7 @@
 #' @param Samples A sample description table
 #' @param name The name of this object is going to be used in the output of all plots and tables - make it specific
 #' @param namecol The samples table column that contains the (to be set) names of the samples in the data matrix
-#' @param namerow This is the name of the gene level annotation column in the dat file to use as ID 
+#' @param namerow This is the name of the gene level annotation column in the dat file to use as ID
 #' @param outpath Where to store the output from the analysis
 #' @title description of function StefansExpressionSet
 #' @exportMethod  StefansExpressionSet
@@ -17,7 +17,7 @@ setGeneric("StefansExpressionSet", ## Name
 			standardGeneric("StefansExpressionSet") ## der Aufruf von standardGeneric sorgt für das Dispatching
 		})
 
-setMethod("StefansExpressionSet", signature = c ('data.frame'), 
+setMethod("StefansExpressionSet", signature = c ('data.frame'),
 		definition = function ( dat, Samples, class='StefansExpressionSet', name='filename', namecol=NULL, namerow= 'GeneID', outpath = '' ) {
 			S <- Samples
 			
@@ -25,18 +25,18 @@ setMethod("StefansExpressionSet", signature = c ('data.frame'),
 				r <-  apply ( S,2, function( x, coln ) { length( which( is.na(match(x, coln))==F))  }, colnames( dat) )
 				namecol = names( which( r == max(r) ) )
 			}
-		
+			
 			n <- make.names(as.vector(S[,namecol]))
 			mat <- match( as.vector(S[,namecol]), colnames(dat))
 			if ( sum(is.na(mat)) > 0 ) {
-				stop(paste( 'The samples', 
-					paste( as.vector(S[,namecol])[is.na(mat)], collapse=', '),
-					'Do not have data column in the "dat" data.frame' ) 
+				stop(paste( 'The samples',
+								paste( as.vector(S[,namecol])[is.na(mat)], collapse=', '),
+								'Do not have data column in the "dat" data.frame' )
 				)
 			}
 			ret <- dat[, mat ]
 			annotation <- dat[, is.na(match( colnames(dat), as.vector(S[,namecol]) ))==T ]
-
+			
 			if ( class(annotation) == 'factor'){
 				annotation <- data.frame( annotation )
 				colnames(annotation) <- namerow
@@ -97,13 +97,13 @@ setMethod("StefansExpressionSet", signature = c ('data.frame'),
 #' @param Samples A sample description table
 #' @param name The name of this object is going to be used in the output of all plots and tables - make it specific
 #' @param namecol The samples table column that contains the (to be set) names of the samples in the data matrix
-#' @param namerow This is the name of the gene level annotation column in the dat file to use as ID 
+#' @param namerow This is the name of the gene level annotation column in the dat file to use as ID
 #' @param outpath Where to store the output from the analysis
 #' @return A new NGSexpressionSet object
 #' @title description of function NGSexpressionSet
-#' @export 
+#' @export
 setGeneric('NGSexpressionSet', ## Name
-		function ( dat, Samples,  name='WorkingSet', namecol='filename', namerow= 'GeneID', outpath = NULL) { ## Argumente der generischen Funktion
+		function ( dat, ... ) { ## Argumente der generischen Funktion
 			standardGeneric('NGSexpressionSet') ## der Aufruf von standardGeneric sorgt für das Dispatching
 		}
 )
@@ -113,9 +113,30 @@ setMethod('NGSexpressionSet', signature = c ('data.frame'),
 			x <- StefansExpressionSet( dat, Samples,  name=name, namecol=namecol, namerow= namerow, outpath =  outpath)
 			x <- as(x,'NGSexpressionSet')
 			x
-		} 
+		}
 )
 
+setMethod('NGSexpressionSet', signature = c ('list'),
+		definition = function ( dat ) {
+			ret = NULL
+			if (all.equal( names ( dat), c("counts" ,"annotation", "targets", "stat")  ) ) {
+				samples <- data.frame(t(dat$stat))
+				colnames(samples) <- as.NGSexpressionSet.character(t(samples[1,]))
+				samples$filename <- rownames(samples)
+				rownames(samples) <-1:nrow(samples)
+				ret <- NGSexpressionSet( 
+						dat= cbind(dat$annotation, dat$counts), 
+						samples = samples, 
+						namecol= 'filename', 
+						namerow= 'GeneID',
+						outpath= ''
+				)
+			}
+			else {
+				print ("The list needs to contain the entries counts ,annotation, targets and stat" )
+			}
+			ret
+		} )
 
 #' @name SingleCellsNGS
 #' @aliases SingleCellsNGS,SingleCellsNGS-method
@@ -127,11 +148,11 @@ setMethod('NGSexpressionSet', signature = c ('data.frame'),
 #' @param Samples A sample description table
 #' @param name The name of this object is going to be used in the output of all plots and tables - make it specific
 #' @param namecol The samples table column that contains the (to be set) names of the samples in the data matrix
-#' @param namerow This is the name of the gene level annotation column in the dat file to use as ID 
+#' @param namerow This is the name of the gene level annotation column in the dat file to use as ID
 #' @param outpath Where to store the output from the analysis
 #' @return A new SingleCellsNGS object
 #' @title description of function SingleCellsNGS
-#' @export 
+#' @export
 setGeneric('SingleCellsNGS', ## Name
 		function ( dat, Samples,  name='WorkingSet', namecol='GroupName', namerow= 'GeneID',  outpath = '') { ## Argumente der generischen Funktion
 			standardGeneric('SingleCellsNGS') ## der Aufruf von standardGeneric sorgt für das Dispatching
@@ -143,6 +164,7 @@ setMethod('SingleCellsNGS', signature = c ('data.frame'),
 			x <- StefansExpressionSet( dat, Samples, name=name, namecol=namecol, namerow= namerow, outpath =  outpath)
 			as(x,'SingleCellsNGS')
 		} )
+
 
 #' @name FromCountsObj
 #' @aliases FromCountsObj,FromCountsObj-method
@@ -190,3 +212,4 @@ setMethod('FromCountsObj', signature = c ('list'),
 			)			
 			as(x, type )
 		} )
+
