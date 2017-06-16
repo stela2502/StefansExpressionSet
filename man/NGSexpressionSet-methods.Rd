@@ -6,8 +6,7 @@
 \alias{NGSexpressionSet,NGSexpressionSet-method}
 \title{description of function NGSexpressionSet}
 \usage{
-NGSexpressionSet(dat, Samples, name = "WorkingSet", namecol = "filename",
-  namerow = "GeneID", outpath = NULL)
+NGSexpressionSet(dat, ...)
 }
 \arguments{
 \item{dat}{data frame or matrix containing all expression data}

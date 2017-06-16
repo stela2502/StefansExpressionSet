@@ -21,10 +21,11 @@
 #' @param name if you want to run multiple RFclusterings on e.g. using different input genes you need to specify a name (default ='RFclust')
 #' @param nforest the numer of forests to grow for each rep (defualt = 500)
 #' @param ntree the numer of trees per forest (default = 500)
+#' @param settings a list of slurm settings (A t and p are used) that will make the RFclust.SGE module use a slurm backend for calculations.
 #' @return a SingleCellsNGS object including the results and storing the RF object in the usedObj list (bestColname)
 #' @export 
 setGeneric('rfCluster_row',
-		function ( x, rep=5, SGE=F, email, k=16, slice=30, subset=200,nforest=500, ntree=500, name='RFclust'){
+		function ( x, rep=5, SGE=F, email, k=16, slice=30, subset=200,nforest=500, ntree=500, name='RFclust', settings=list()){
 			standardGeneric('rfCluster_row')
 		}
 )
@@ -69,7 +70,29 @@ setMethod('rfCluster_row', signature = c ('StefansExpressionSet'),
 					
 					if ( length( x@usedObj[['rfExpressionSets_row']] ) < i  ) {
 						x@usedObj[['rfExpressionSets_row']][[ i ]] <- transpose(reduce.Obj( x, rownames(x@data)[sample(c(1:total),subset)], tname ))
-						x@usedObj[['rfObj_row']][[ i ]] <- RFclust.SGE ( dat=x@usedObj[['rfExpressionSets_row']][[ i ]]@data, SGE=SGE, slice=slice, email=email, tmp.path=opath, name= tname )
+						if ( length(settings) > 0 ){
+							 x@usedObj[['rfObj_row']][[ i ]] <- 
+								 RFclust.SGE ( 
+									dat=x@usedObj[['rfExpressionSets_row']][[ i ]]@data, 
+									SGE=F, 
+									slice=slice, 
+									email=email, 
+									tmp.path=opath, 
+									name= tname,
+								        slurm=T,
+									settings=settings
+									)
+						}else {
+							x@usedObj[['rfObj_row']][[ i ]] <- 
+								RFclust.SGE ( 
+									dat=x@usedObj[['rfExpressionSets_row']][[ i ]]@data, 
+									SGE=SGE, 
+									slice=slice, 
+									email=email, 
+									tmp.path=opath, 
+									name= tname 
+									)
+						}
 					}
 					names(x@usedObj[['rfExpressionSets_row']]) [i] <- tname
 					names(x@usedObj[['rfObj_row']]) [i] <- tname
