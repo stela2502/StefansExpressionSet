@@ -7,7 +7,8 @@
 \title{rfCluster_col}
 \usage{
 rfCluster_col(x, rep = 5, SGE = F, email, k = 16, slice = 30,
-  subset = 200, nforest = 500, ntree = 500, name = "RFclust")
+  subset = 200, nforest = 500, ntree = 500, name = "RFclust",
+  settings = list())
 }
 \arguments{
 \item{x}{the single cells ngs object}
@@ -29,6 +30,8 @@ rfCluster_col(x, rep = 5, SGE = F, email, k = 16, slice = 30,
 \item{ntree}{the numer of trees per forest (default = 500)}
 
 \item{name}{if you want to run multiple RFclusterings on e.g. using different input genes you need to specify a name (default ='RFclust')}
+
+\item{settings}{a list of slurm settings (A t and p are used) that will make the RFclust.SGE module use a slurm backend for calculations.}
 
 \item{bestColname}{the column name to store the results in}
 }

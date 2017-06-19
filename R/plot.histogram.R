@@ -1,6 +1,6 @@
-#' @name plot.histogram
-#' @aliases plot.histogram,StefansExpressionSet-method
-#' @rdname plot.histogram-methods
+#' @name plot_histogram
+#' @aliases plot_histogram,StefansExpressionSet-method
+#' @rdname plot_histogram-methods
 #' @docType methods
 #' @description This function plots one gene as histogram to check whether there ar4e clear expression differences in different plates.
 #' @param dataObj the StefansExpressionSet object
@@ -11,15 +11,15 @@
 #' @param nameCol the gene name column to enhance the plot information
 #' @param png create a png file (default =F)
 #' @param breaks the amount of breaks in the hist default=15
-#' @title description of function plot.histograms
+#' @title description of function plot_histograms
 #' @export 
-setGeneric('plot.histogram', ## Name
+setGeneric('plot_histogram', ## Name
 		function ( dataObj, probesetID, cuts=vector('list',1), subpath='preprocess', colGroup='ArrayID', nameCol='gene_name', png=FALSE, breaks=15 ) { ## Argumente der generischen Funktion
-			standardGeneric('plot.histogram') ## der Aufruf von standardGeneric sorgt für das Dispatching
+			standardGeneric('plot_histogram') ## der Aufruf von standardGeneric sorgt für das Dispatching
 		}
 )
 
-setMethod('plot.histogram', signature = c ('StefansExpressionSet'),
+setMethod('plot_histogram', signature = c ('StefansExpressionSet'),
 		definition = function ( dataObj, probesetID, cuts=vector('list',1), subpath='preprocess', colGroup='ArrayID', nameCol='gene_name', png=FALSE,breaks=15 ) {
 			
 			ma <- dataObj@data

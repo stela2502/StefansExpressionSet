@@ -26,6 +26,5 @@
 		<nature>de.walware.statet.r.RNature</nature>
 		<nature>de.walware.docmlet.tex.natures.Tex</nature>
 		<nature>org.epic.perleditor.perlnature</nature>
-		<nature>de.walware.statet.r.RPkgNature</nature>
 	</natures>
 </projectDescription>

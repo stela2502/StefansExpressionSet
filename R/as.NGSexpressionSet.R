@@ -1,5 +1,4 @@
 #' @name as_NGSexpressionSet
-#' @alias.NGSexpressionSetes as.NGSexpressionSet,NGSexpressionSet-method
 #' @rdname as_NGSexpressionSet-methods
 #' @docType methods
 #' @description create a NGSexpressionSet from a counts list object

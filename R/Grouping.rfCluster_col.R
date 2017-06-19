@@ -155,6 +155,7 @@ setMethod('createRFgrouping_col', signature = c ('StefansExpressionSet'),
 			if ( is.na( match( RFname, names(x@usedObj[['rfObj']])))){
 				stop( paste("the RFname",RFname,"is not defined in this object; defined grouings are:",paste(names(x@usedObj[['rfObj']]), collapse=" ",sep=', ') ) )
 			}
+			browser()
 			groups <- createGroups( x@usedObj[['rfObj']][[RFname]], k=k, name=RFname )
 			x@usedObj[['rfExpressionSets']][[RFname]]@samples <- 
 					cbind ( x@usedObj[['rfExpressionSets']][[RFname]]@samples, groups[,3:(2+length(k))] )
@@ -163,12 +164,23 @@ setMethod('createRFgrouping_col', signature = c ('StefansExpressionSet'),
 					paste('group n=',k)
 			m <- max(k)
 			## create the predictive random forest object
-			x@usedObj[['rfExpressionSets']][[RFname]] <- 
-					bestGrouping( x@usedObj[['rfExpressionSets']][[RFname]], group=paste('group n=', m), bestColname = paste('OptimalGrouping',m ,RFname) )
-			x@samples[, paste( single_res_col) ] <-
+			## this is not necessary if the whole object has been analyzed!
+			if ( all.equal( colnames(x@usedObj[['rfObj']][[RFname]]@dat), colnames(x@data) ) ) {
+				## use the column in grouping
+				for ( id in 1:length(k) ){
+					x@samples[, paste( single_res_col, ' n=', k[id], sep="") ] = factor(groups[,2+id], levels=c(1:k[id]))
+					x <- colors_4( x, paste( single_res_col, ' n=', k[id], sep="")  )
+				}
+			}else {
+				#predict based on the RFdata
+				x@usedObj[['rfExpressionSets']][[RFname]] <- 
+					bestGrouping( x@usedObj[['rfExpressionSets']][[RFname]], group=paste('group n=', m), bestColname = paste('OptimalGrouping',m ,RFname))
+			
+				x@samples[, paste( single_res_col) ] <-
 					predict( x@usedObj[['rfExpressionSets']][[RFname]]@usedObj[[paste( 'predictive RFobj group n=',m) ]], t(as.matrix(x@data)) )
-			x@samples[, paste( single_res_col) ] <- factor( x@samples[, paste( single_res_col) ], levels= 1:m )
-			x <- colors_4( x, single_res_col )
+				x@samples[, paste( single_res_col) ] <- factor( x@samples[, paste( single_res_col) ], levels= 1:m )
+				x <- colors_4( x, single_res_col )
+			}
 			x
 		} 
 )

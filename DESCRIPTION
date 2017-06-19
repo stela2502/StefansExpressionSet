@@ -18,7 +18,7 @@ Depends:
 	mclust,
 	DDRTree
 Suggests:
-    testthat, MAST, destiny
+    testthat, MAST, destiny, BioData
 biocViews:
     MAST,
     destiny(>= 2.0.3),
