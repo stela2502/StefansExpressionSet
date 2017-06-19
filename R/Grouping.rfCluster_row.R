@@ -75,7 +75,7 @@ setMethod('rfCluster_row', signature = c ('StefansExpressionSet'),
 								 RFclust.SGE ( 
 									dat=x@usedObj[['rfExpressionSets_row']][[ i ]]@data, 
 									SGE=F, 
-									slice=slice, 
+									slices=slice, 
 									email=email, 
 									tmp.path=opath, 
 									name= tname,
@@ -87,7 +87,7 @@ setMethod('rfCluster_row', signature = c ('StefansExpressionSet'),
 								RFclust.SGE ( 
 									dat=x@usedObj[['rfExpressionSets_row']][[ i ]]@data, 
 									SGE=SGE, 
-									slice=slice, 
+									slices=slice, 
 									email=email, 
 									tmp.path=opath, 
 									name= tname 
