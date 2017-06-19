@@ -1,3 +1,5 @@
 .project
 /PMID25158935_DataValues.xls
 /PMID25158935_Sample_Description.xls
+*.Rout
+runRFclust*RData
