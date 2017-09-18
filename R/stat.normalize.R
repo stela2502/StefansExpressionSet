@@ -34,7 +34,7 @@ setMethod('normalize', signature = c ('NGSexpressionSet'),
 			if ( ! object@snorm ){
 				browser()
 				if ( is.null( readCounts ) ) {
-					readCounts <- as.vector( DESeq::estimateSizeFactorsForMatrix ( as.matrix(object@data)) )
+					readCounts <- as.vector( DESeq2::estimateSizeFactorsForMatrix ( as.matrix(object@data)) )
 				}
 				object@samples$SizeFactor <- readCounts
 				object@raw <- object@data
