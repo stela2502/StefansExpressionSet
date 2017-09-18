@@ -24,6 +24,9 @@ setMethod('drop.samples', signature = c ( 'StefansExpressionSet') ,
 		red@samples <- x@samples[ is.na(match(x@samples[,x@sampleNamesCol], samplenames  ) ) == T ,]
 		
 		red@data <- x@data[, make.names(as.vector(red@samples[,red@sampleNamesCol]))]
+		if ( ncol(x@raw ) > 0 ) {
+			red@raw <- x@raw[, make.names(as.vector(red@samples[,red@sampleNamesCol]))]
+		}
 		
 		for ( n in c('colorRange') ) {
 			red@usedObj[[n]] <- x@usedObj[[n]]

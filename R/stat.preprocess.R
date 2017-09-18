@@ -28,6 +28,7 @@ setMethod('preprocess', signature = c ('NGSexpressionSet'),
 					t <- as.matrix(x@data)
 				}
 				#colnames( t ) <- x@samples[,condition]
+				colnames(t) <- NULL
 				dat$cds <- DESeq2::DESeqDataSetFromMatrix(
 					t,
 					x@samples,
